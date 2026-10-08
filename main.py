@@ -1,19 +1,10 @@
-import os
-import urllib.parse
 import urllib.request
+import json
 
-token = os.environ["TELEGRAM_BOT_TOKEN"]
-chat_id = os.environ["TELEGRAM_CHAT_ID"]
+url = "https://www.financecalendar.com/wp-json/fc/v1/today"
 
-message = "🔔 Hello! Economic Calendar Alert System is working!"
+response = urllib.request.urlopen(url)
+data = json.loads(response.read())
 
-url = f"https://api.telegram.org/bot{token}/sendMessage"
-
-data = urllib.parse.urlencode({
-    "chat_id": chat_id,
-    "text": message
-}).encode()
-
-urllib.request.urlopen(url, data=data)
-
-print("Telegram message sent successfully!")
+print("Economic calendar data received!")
+print(data)
