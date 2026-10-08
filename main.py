@@ -3,8 +3,5 @@ import json
 
 url = "https://www.financecalendar.com/wp-json/fc/v1/today"
 
-response = urllib.request.urlopen(url)
-data = json.loads(response.read())
-
-print("Economic calendar data received!")
-print(data)
+request = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+response = urllib.request.urlopen(request)
