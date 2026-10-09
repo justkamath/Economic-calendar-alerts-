@@ -71,13 +71,15 @@ def main():
         if event.get("impact", "").lower() != "high":
             continue
 
+        
         name = event.get("name", "Unnamed event")
         time_text = event.get("time_utc")
         print("Event name:", event.get("name"))
-print("Event UTC time:", time_text)
-print("Current UTC time:", now.isoformat())
+        print("Event UTC time:", time_text)
+        print("Current UTC time:", now.isoformat())
         if not time_text:
             continue
+
 
         event_time = datetime.fromisoformat(
             time_text.replace("Z", "+00:00")
