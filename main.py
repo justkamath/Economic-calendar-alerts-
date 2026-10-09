@@ -7,6 +7,14 @@ from datetime import datetime, timezone, timedelta
 import os
 import urllib.parse
 
+STATE_FILE = "sent_alerts.json"
+
+try:
+    with open(STATE_FILE, "r") as file:
+        sent_alerts = json.load(file)
+except (FileNotFoundError, json.JSONDecodeError):
+    sent_alerts = {}
+
 url = "https://www.financecalendar.com/wp-json/fc/v1/today"
 
 request = urllib.request.Request(
