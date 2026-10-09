@@ -59,6 +59,11 @@ def main():
     alerts = load_alerts()
 
     events = calendar.get("events", [])
+    print("Total events:", len(events))
+print("High-impact events:", sum(
+    1 for event in events
+    if event.get("impact", "").lower() == "high"
+))
     for event in events:
         if event.get("impact", "").lower() != "high":
             continue
