@@ -73,6 +73,9 @@ def main():
 
         name = event.get("name", "Unnamed event")
         time_text = event.get("time_utc")
+        print("Event name:", event.get("name"))
+print("Event UTC time:", time_text)
+print("Current UTC time:", now.isoformat())
         if not time_text:
             continue
 
