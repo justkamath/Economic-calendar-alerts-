@@ -1,6 +1,6 @@
 import urllib.request
 import json
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 
 url = "https://www.financecalendar.com/wp-json/fc/v1/today"
 
@@ -15,4 +15,6 @@ high_impact_events = [
 
 for event in high_impact_events:
     print("Event:", event.get("name"))
-    print("Time (UTC):", event.get("time_utc"))
+    utc_time = datetime.fromisoformat(event.get("time_utc").replace("Z", "+00:00"))
+ist_time = utc_time.astimezone(timezone(timedelta(hours=5, minutes=30)))
+print("Time (IST):", ist_time.strftime("%d-%m-%Y %I:%M %p"))
