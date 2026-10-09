@@ -14,5 +14,5 @@ high_impact_events = [
 ]
 
 for event in high_impact_events:
-print("Event:", event.get("name"))
-print("Time (UTC):", event.get("time_utc"))
+    print("Event:", event.get("name"))
+    print("Time (UTC):", event.get("time_utc"))
