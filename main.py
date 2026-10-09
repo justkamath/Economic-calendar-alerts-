@@ -11,5 +11,6 @@ high_impact_events = [
     event for event in data["events"]
     if event.get("impact") == "high"
 ]
-
-print("High-impact events:", len(high_impact_events))
+for event in high_impact_events:
+    print("Event:", event.get("name"))
+    print("Time:", event.get("time_utc"))print("High-impact events:", len(high_impact_events))
