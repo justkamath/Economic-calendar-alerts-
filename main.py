@@ -36,3 +36,24 @@ for event in high_impact_events:
             "Time (IST):",
             ist_time.strftime("%d-%m-%Y %I:%M %p")
         )
+
+token = os.environ["TELEGRAM_BOT_TOKEN"]
+chat_id = os.environ["TELEGRAM_CHAT_ID"]
+
+message = "✅ Economic calendar is connected to Telegram!"
+
+url = f"https://api.telegram.org/bot{token}/sendMessage"
+
+data_to_send = urllib.parse.urlencode({
+    "chat_id": chat_id,
+    "text": message
+}).encode()
+
+request = urllib.request.Request(
+    url,
+    data=data_to_send,
+    headers={"User-Agent": "Mozilla/5.0"}
+)
+
+response = urllib.request.urlopen(request)
+print("Telegram test message sent!")
