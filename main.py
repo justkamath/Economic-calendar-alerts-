@@ -2,6 +2,8 @@
 import urllib.request
 import json
 from datetime import datetime, timezone, timedelta
+import os
+import urllib.parse
 
 url = "https://www.financecalendar.com/wp-json/fc/v1/today"
 
