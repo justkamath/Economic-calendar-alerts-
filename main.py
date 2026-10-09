@@ -14,6 +14,11 @@ try:
         sent_alerts = json.load(file)
 except (FileNotFoundError, json.JSONDecodeError):
     sent_alerts = {}
+    
+def save_sent_alerts():
+    with open(STATE_FILE, "w") as file:
+        json.dump(sent_alerts, file, indent=2)
+
 
 url = "https://www.financecalendar.com/wp-json/fc/v1/today"
 
