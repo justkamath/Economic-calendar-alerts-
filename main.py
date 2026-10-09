@@ -1,74 +1,135 @@
 
 import urllib.request
+import urllib.parse
 import json
 import os
-import tempfile
 from datetime import datetime, timezone, timedelta
-import os
-import urllib.parse
 
+API_URL = "https://www.financecalendar.com/wp-json/fc/v1/today"
 STATE_FILE = "sent_alerts.json"
+IST = timezone(timedelta(hours=5, minutes=30))
 
-try:
-    with open(STATE_FILE, "r") as file:
-        sent_alerts = json.load(file)
-except (FileNotFoundError, json.JSONDecodeError):
-    sent_alerts = {}
-    
-def save_sent_alerts():
+
+def load_alerts():
+    try:
+        with open(STATE_FILE, "r") as file:
+            return json.load(file)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return {}
+
+
+def save_alerts(alerts):
     with open(STATE_FILE, "w") as file:
-        json.dump(sent_alerts, file, indent=2)
+        json.dump(alerts, file, indent=2)
 
 
-url = "https://www.financecalendar.com/wp-json/fc/v1/today"
+def send_telegram(message):
+    token = os.environ["TELEGRAM_BOT_TOKEN"]
+    chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
-request = urllib.request.Request(
-    url,
-    headers={"User-Agent": "Mozilla/5.0"}
-)
-response = urllib.request.urlopen(request)
+    url = f"https://api.telegram.org/bot{token}/sendMessage"
+    body = urllib.parse.urlencode({
+        "chat_id": chat_id,
+        "text": message
+    }).encode()
 
-data = json.loads(response.read())
+    request = urllib.request.Request(
+        url,
+        data=body,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
 
-high_impact_events = [
-    event for event in data["events"]
-    if event.get("impact") == "high"
-]
+    with urllib.request.urlopen(request, timeout=20) as response:
+        result = json.loads(response.read())
 
-ist_zone = timezone(timedelta(hours=5, minutes=30))
+    if not result.get("ok"):
+        raise RuntimeError("Telegram did not accept the message")
 
-for event in high_impact_events:
-    print("Event:", event.get("name"))
 
-    time_text = event.get("time_utc")
+def main():
+    request = urllib.request.Request(
+        API_URL,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
 
-    if time_text:
-        utc_time = datetime.fromisoformat(
+    with urllib.request.urlopen(request, timeout=30) as response:
+        calendar = json.loads(response.read())
+
+    now = datetime.now(timezone.utc)
+    alerts = load_alerts()
+
+    events = calendar.get("events", [])
+    for event in events:
+        if event.get("impact", "").lower() != "high":
+            continue
+
+        name = event.get("name", "Unnamed event")
+        time_text = event.get("time_utc")
+        if not time_text:
+            continue
+
+        event_time = datetime.fromisoformat(
             time_text.replace("Z", "+00:00")
         )
-        ist_time = utc_time.astimezone(ist_zone)
-        print(
-            "Time (IST):",
-            ist_time.strftime("%d-%m-%Y %I:%M %p")
+        if event_time.tzinfo is None:
+            event_time = event_time.replace(tzinfo=timezone.utc)
+
+        event_time = event_time.astimezone(timezone.utc)
+
+        # Ignore events that have already happened.
+        if event_time <= now:
+            continue
+
+        event_key = f"{name}|{event_time.isoformat()}"
+        if event_key not in alerts:
+            alerts[event_key] = {
+                "detected": False,
+                "1h": False,
+                "30m": False
+            }
+
+        state = alerts[event_key]
+        time_ist = event_time.astimezone(IST).strftime(
+            "%d-%m-%Y %I:%M %p"
         )
 
-token = os.environ["TELEGRAM_BOT_TOKEN"]
-chat_id = os.environ["TELEGRAM_CHAT_ID"]
+        # Alert once when the event is first detected.
+        if not state["detected"]:
+            send_telegram(
+                f"🔴 HIGH-IMPACT ECONOMIC EVENT DETECTED\n\n"
+                f"📌 {name}\n"
+                f"🕒 Time (IST): {time_ist}\n\n"
+                f"Source: financecalendar.com"
+            )
+            state["detected"] = True
+            save_alerts(alerts)
 
-message = "✅ Economic calendar is connected to Telegram!"
+        minutes_left = (event_time - now).total_seconds() / 60
 
-url = f"https://api.telegram.org/bot{token}/sendMessage"
+        # Reminder windows tolerate some GitHub Actions scheduling delay.
+        if 55 <= minutes_left <= 65 and not state["1h"]:
+            send_telegram(
+                f"⏰ 1-HOUR REMINDER\n\n"
+                f"📌 {name}\n"
+                f"🕒 Time (IST): {time_ist}\n\n"
+                f"Source: financecalendar.com"
+            )
+            state["1h"] = True
+            save_alerts(alerts)
 
-data_to_send = urllib.parse.urlencode({
-    "chat_id": chat_id,
-    "text": message
-}).encode()
+        if 25 <= minutes_left <= 35 and not state["30m"]:
+            send_telegram(
+                f"⏰ 30-MINUTE REMINDER\n\n"
+                f"📌 {name}\n"
+                f"🕒 Time (IST): {time_ist}\n\n"
+                f"Source: financecalendar.com"
+            )
+            state["30m"] = True
+            save_alerts(alerts)
 
-request = urllib.request.Request(
-    url,
-    data=data_to_send,
-    headers={"User-Agent": "Mozilla/5.0"}
-)
+    save_alerts(alerts)
+    print("Calendar checked successfully.")
 
-response = urllib.request.urlopen(request)
-print("Telegram test message sent!")
+
+if __name__ == "__main__":
+    main()
