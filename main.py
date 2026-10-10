@@ -12,7 +12,13 @@ from datetime import timedelta as date_timedelta
 today = datetime.now(timezone.utc).date()
 end_date = today + timedelta(days=7)
 
-API_URL = "https://www.financecalendar.com/wp-json/fc/v1/calendar?impact=high"
+today = date.today()
+end_date = today + date_timedelta(days=92)
+
+API_URL = (
+    "https://www.financecalendar.com/wp-json/fc/v1/calendar"
+    f"?from={today.isoformat()}&to={end_date.isoformat()}&impact=high"
+)
 
 
 STATE_FILE = "sent_alerts.json"
