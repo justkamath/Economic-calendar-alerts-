@@ -5,7 +5,9 @@ import json
 import os
 from datetime import datetime, timezone, timedelta
 
-API_URL = "https://www.financecalendar.com/wp-json/fc/v1/today"
+
+API_URL = "https://www.financecalendar.com/wp-json/fc/v1/calendar?from=2026-10-10&to=2026-10-17&impact=high&limit=500"
+
 STATE_FILE = "sent_alerts.json"
 IST = timezone(timedelta(hours=5, minutes=30))
 
