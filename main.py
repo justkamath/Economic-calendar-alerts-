@@ -41,12 +41,12 @@ def send_telegram(message):
     }
 )
 
-    with urllib.request.urlopen(request, timeout=30) as response:
+        with urllib.request.urlopen(request, timeout=20) as response:
         result = json.loads(response.read())
 
-if not result.get("ok"):
-    print("Telegram error:", result)
-    raise RuntimeError("Telegram did not accept the message")
+    if not result.get("ok"):
+        print("Telegram error:", result)
+        raise RuntimeError("Telegram did not accept the message")
 
 def main():
     request = urllib.request.Request(
