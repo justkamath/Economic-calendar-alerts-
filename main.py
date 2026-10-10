@@ -41,7 +41,7 @@ def send_telegram(message):
     }
 )
 
-    with urllib.request.urlopen(request, timeout=20) as response:
+    with urllib.request.urlopen(request, timeout=30) as response:
     result = json.loads(response.read())
 
 if not result.get("ok"):
