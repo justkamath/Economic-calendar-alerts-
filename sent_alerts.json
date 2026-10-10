@@ -1,1 +1,22 @@
-{}
+{
+  "US CPI|2026-10-14T12:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "Australia Labour Force|2026-10-15T00:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "UK GDP|2026-10-15T06:00:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "Retail Sales|2026-10-15T12:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  }
+}
