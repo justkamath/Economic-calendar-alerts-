@@ -93,7 +93,7 @@ def main():
         )
         if event_time.tzinfo is None:
             event_time = event_time.replace(tzinfo=timezone.utc)
-                            print("Event time UTC:", event_time.isoformat(), "| Current time UTC:", now.isoformat())
+                            
 
         event_time = event_time.astimezone(timezone.utc)
 
