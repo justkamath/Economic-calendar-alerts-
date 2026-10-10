@@ -9,10 +9,9 @@ from datetime import datetime, timezone, timedelta
 
 today = datetime.now(timezone.utc).date()
 end_date = today + timedelta(days=7)
-API_URL = (
-    "https://www.financecalendar.com/wp-json/fc/v1/calendar"
-    f"?from={today}&to={end_date}&impact=high&limit=500"
-)
+
+API_URL = "https://www.financecalendar.com/wp-json/fc/v1/calendar?impact=high"
+
 
 
 STATE_FILE = "sent_alerts.json"
