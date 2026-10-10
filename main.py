@@ -28,20 +28,19 @@ def send_telegram(message):
     chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
+
     body = urllib.parse.urlencode({
         "chat_id": chat_id,
         "text": message
     }).encode()
 
     request = urllib.request.Request(
-    API_URL,
-    headers={
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "application/json"
-    }
-)
+        url,
+        data=body,
+        headers={"User-Agent": "Mozilla/5.0"}
+    )
 
-        with urllib.request.urlopen(request, timeout=20) as response:
+    with urllib.request.urlopen(request, timeout=20) as response:
         result = json.loads(response.read())
 
     if not result.get("ok"):
