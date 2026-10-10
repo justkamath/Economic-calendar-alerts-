@@ -34,10 +34,12 @@ def send_telegram(message):
     }).encode()
 
     request = urllib.request.Request(
-        url,
-        data=body,
-        headers={"User-Agent": "Mozilla/5.0"}
-    )
+    API_URL,
+    headers={
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json"
+    }
+)
 
     with urllib.request.urlopen(request, timeout=20) as response:
         result = json.loads(response.read())
