@@ -153,6 +153,7 @@ def main():
     save_alerts(alerts)
     print("Calendar checked successfully.")
 
-
+send_telegram("✅ Telegram test successful! Economic calendar bot is connected.")
+print("Telegram test message sent.")
 if __name__ == "__main__":
     main()
