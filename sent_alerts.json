@@ -11,7 +11,7 @@
   },
   "UK GDP|2026-10-15T06:00:00+00:00": {
     "detected": true,
-    "1h": false,
+    "1h": true,
     "30m": false
   },
   "Retail Sales|2026-10-15T12:30:00+00:00": {
