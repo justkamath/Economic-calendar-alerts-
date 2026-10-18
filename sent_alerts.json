@@ -258,5 +258,10 @@
     "detected": true,
     "1h": false,
     "30m": false
+  },
+  "Canada CPI|2027-01-18T13:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
   }
 }
