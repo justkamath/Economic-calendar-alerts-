@@ -272,17 +272,17 @@
   "CAD|CPI m/m|2026-10-19T12:30:00+00:00": {
     "detected": true,
     "1h": true,
-    "30m": false
+    "30m": true
   },
   "CAD|Median CPI y/y|2026-10-19T12:30:00+00:00": {
     "detected": true,
     "1h": true,
-    "30m": false
+    "30m": true
   },
   "CAD|Trimmed CPI y/y|2026-10-19T12:30:00+00:00": {
     "detected": true,
     "1h": true,
-    "30m": false
+    "30m": true
   },
   "GBP|CPI y/y|2026-10-21T06:00:00+00:00": {
     "detected": true,
