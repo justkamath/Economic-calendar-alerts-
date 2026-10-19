@@ -268,5 +268,30 @@
     "detected": true,
     "1h": false,
     "30m": false
+  },
+  "CAD|CPI m/m|2026-10-19T12:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "CAD|Median CPI y/y|2026-10-19T12:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "CAD|Trimmed CPI y/y|2026-10-19T12:30:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "GBP|CPI y/y|2026-10-21T06:00:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "NZD|CPI q/q|2026-10-21T21:45:00+00:00": {
+    "detected": true,
+    "1h": false,
+    "30m": false
   }
 }
