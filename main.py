@@ -3,23 +3,12 @@ import urllib.request
 import urllib.parse
 import json
 import os
+import html
 from datetime import datetime, timezone, timedelta
-from datetime import date
-from datetime import timedelta as date_timedelta
 
 
-
-today = datetime.now(timezone.utc).date()
-end_date = today + timedelta(days=7)
-
-today = date.today()
-end_date = today + date_timedelta(days=92)
-
-API_URL = (
-    "https://www.financecalendar.com/wp-json/fc/v1/calendar"
-    f"?from={today.isoformat()}&to={end_date.isoformat()}&impact=high"
-)
-
+# Forex Factory weekly economic calendar
+API_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
 
 STATE_FILE = "sent_alerts.json"
 IST = timezone(timedelta(hours=5, minutes=30))
@@ -46,7 +35,8 @@ def send_telegram(message):
 
     body = urllib.parse.urlencode({
         "chat_id": chat_id,
-        "text": message
+        "text": message,
+        "parse_mode": "HTML"
     }).encode()
 
     request = urllib.request.Request(
@@ -62,6 +52,7 @@ def send_telegram(message):
         print("Telegram error:", result)
         raise RuntimeError("Telegram did not accept the message")
 
+
 def main():
     request = urllib.request.Request(
         API_URL,
@@ -71,45 +62,37 @@ def main():
     with urllib.request.urlopen(request, timeout=30) as response:
         calendar = json.loads(response.read())
 
+    if not isinstance(calendar, list):
+        raise ValueError("Unexpected Forex Factory feed format")
+
     now = datetime.now(timezone.utc)
     alerts = load_alerts()
 
-    
-    events = calendar.get("events", [])
-    print("Total events:", len(events))
-    print("High-impact events:", sum(
-        1 for event in events
-        if event.get("impact", "").lower() == "high"
-    ))
+    print("Total events:", len(calendar))
 
-    for event in events:
+    high_events = [
+        event for event in calendar
+        if str(event.get("impact", "")).lower() == "high"
+    ]
 
-        if event.get("impact", "").lower() != "high":
-            continue
+    print("High-impact events:", len(high_events))
 
-        
-                
-        
-        
-        
-        name = event.get("name", "Unnamed event")
-        time_text = event.get("time_utc")
+    for event in high_events:
+        name = event.get("title") or "Unnamed event"
+        currency = event.get("country") or "N/A"
+        time_text = event.get("date")
 
         if not time_text:
             continue
 
-
-
-
-
-
-
         event_time = datetime.fromisoformat(
             time_text.replace("Z", "+00:00")
         )
+
         if event_time.tzinfo is None:
-            event_time = event_time.replace(tzinfo=timezone.utc)
-                            
+            event_time = event_time.replace(
+                tzinfo=timezone.utc
+            )
 
         event_time = event_time.astimezone(timezone.utc)
 
@@ -117,7 +100,10 @@ def main():
         if event_time <= now:
             continue
 
-        event_key = f"{name}|{event_time.isoformat()}"
+        event_key = (
+            f"{currency}|{name}|{event_time.isoformat()}"
+        )
+
         if event_key not in alerts:
             alerts[event_key] = {
                 "detected": False,
@@ -126,46 +112,74 @@ def main():
             }
 
         state = alerts[event_key]
+
         time_ist = event_time.astimezone(IST).strftime(
             "%d-%m-%Y %I:%M %p"
         )
 
-        # Alert once when the event is first detected.
+        safe_name = html.escape(str(name))
+        safe_currency = html.escape(str(currency))
+
+        previous = html.escape(
+            str(event.get("previous") or "Not available")
+        )
+        forecast = html.escape(
+            str(event.get("forecast") or "Not available")
+        )
+        actual = html.escape(
+            str(event.get("actual") or "Not available")
+        )
+
+        details = (
+            f"🌍 Currency: {safe_currency}\n"
+            f"📌 Event: <b>{safe_name}</b>\n"
+            f"🕒 Time (IST): {time_ist}\n"
+            f"📊 Previous: {previous}\n"
+            f"🔮 Forecast: {forecast}\n"
+            f"📈 Actual: {actual}\n"
+        )
+
+        source = (
+            'Source: <a href="https://www.forexfactory.com/calendar">'
+            'Forex Factory</a>'
+        )
+
+        # First detection alert.
         if not state["detected"]:
             send_telegram(
-                f"🔴 HIGH-IMPACT ECONOMIC EVENT DETECTED\n\n"
-                f"📌 {name}\n"
-                f"🕒 Time (IST): {time_ist}\n\n"
-                f"Source: financecalendar.com"
+                "🔴 <b>HIGH-IMPACT ECONOMIC EVENT DETECTED</b>\n\n"
+                f"{details}\n{source}"
             )
+
             state["detected"] = True
             save_alerts(alerts)
 
-        minutes_left = (event_time - now).total_seconds() / 60
+        minutes_left = (
+            event_time - now
+        ).total_seconds() / 60
 
-        # Reminder windows tolerate some GitHub Actions scheduling delay.
+        # One-hour reminder.
         if 55 <= minutes_left <= 65 and not state["1h"]:
             send_telegram(
-                f"⏰ 1-HOUR REMINDER\n\n"
-                f"📌 {name}\n"
-                f"🕒 Time (IST): {time_ist}\n\n"
-                f"Source: financecalendar.com"
+                "⏰ <b>1-HOUR REMINDER</b>\n\n"
+                f"{details}\n{source}"
             )
+
             state["1h"] = True
             save_alerts(alerts)
 
+        # Thirty-minute reminder.
         if 25 <= minutes_left <= 35 and not state["30m"]:
             send_telegram(
-                f"⏰ 30-MINUTE REMINDER\n\n"
-                f"📌 {name}\n"
-                f"🕒 Time (IST): {time_ist}\n\n"
-                f"Source: financecalendar.com"
+                "⏰ <b>30-MINUTE REMINDER</b>\n\n"
+                f"{details}\n{source}"
             )
+
             state["30m"] = True
             save_alerts(alerts)
 
     save_alerts(alerts)
-    print("Calendar checked successfully.")
+    print("Forex Factory calendar checked successfully.")
 
 
 if __name__ == "__main__":
