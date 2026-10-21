@@ -1,4 +1,5 @@
 
+
 import urllib.request
 import urllib.parse
 import json
@@ -14,16 +15,16 @@ IST = ZoneInfo("Asia/Kolkata")
 
 def load_alerts():
     try:
-        with open(STATE_FILE, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(STATE_FILE, "r", encoding="utf-8") as file:
+            data = json.load(file)
             return data if isinstance(data, dict) else {}
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
 
 def save_alerts(alerts):
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(alerts, f, indent=2)
+    with open(STATE_FILE, "w", encoding="utf-8") as file:
+        json.dump(alerts, file, indent=2)
 
 
 def send_telegram(message):
@@ -54,7 +55,28 @@ def send_telegram(message):
         raise RuntimeError(f"Telegram error: {result}")
 
 
+def get_value(event, *keys):
+    """Return the first available non-empty field."""
+    for key in keys:
+        value = event.get(key)
+
+        if value is None:
+            continue
+
+        text_value = str(value).strip()
+
+        if text_value.lower() in (
+            "", "-", "—", "n/a", "na", "null", "none"
+        ):
+            continue
+
+        return html.escape(text_value)
+
+    return "Not available"
+
+
 def get_event_time(event):
+    """Parse a supported event timestamp and convert it to UTC."""
     value = (
         event.get("release_at_utc")
         or event.get("time_utc")
@@ -65,27 +87,32 @@ def get_event_time(event):
         return None
 
     try:
-        dt = datetime.fromisoformat(
+        event_time = datetime.fromisoformat(
             str(value).replace("Z", "+00:00")
         )
-        if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=timezone.utc)
-        return dt.astimezone(timezone.utc)
+
+        if event_time.tzinfo is None:
+            event_time = event_time.replace(tzinfo=timezone.utc)
+
+        return event_time.astimezone(timezone.utc)
+
     except (ValueError, TypeError):
         return None
 
 
 def main():
     now = datetime.now(timezone.utc)
+
     start_date = now.date()
     end_date = (now + timedelta(days=30)).date()
 
     alerts = load_alerts()
 
-    # Manual resend OR automatic recovery after a failed run.
     manual_resend = (
-        os.environ.get("RESEND_ALERTS", "false").lower() == "true"
+        os.environ.get("RESEND_ALERTS", "false").strip().lower()
+        == "true"
     )
+
     recovery_pending = alerts.get("_recovery_pending", False)
     force_resend = manual_resend or recovery_pending
 
@@ -116,11 +143,13 @@ def main():
         calendar = None
 
     if not isinstance(calendar, list):
-        raise ValueError("Unexpected calendar response format")
+        raise ValueError(
+            "Unexpected calendar response. Check the API response format."
+        )
 
     high_events = [
-        e for e in calendar
-        if str(e.get("impact", "")).strip().lower() == "high"
+        event for event in calendar
+        if str(event.get("impact", "")).strip().lower() == "high"
     ]
 
     print("Total events received:", len(calendar))
@@ -129,9 +158,15 @@ def main():
     for event in high_events:
         name = event.get("title") or event.get("name") or "Unnamed event"
         country = event.get("country") or "N/A"
+
         event_time = get_event_time(event)
 
-        if event_time is None or event_time <= now:
+        if event_time is None:
+            print("Skipping event with missing/invalid time:", name)
+            continue
+
+        # Ignore events that have already happened.
+        if event_time <= now:
             continue
 
         event_key = str(
@@ -148,7 +183,7 @@ def main():
 
         state = alerts[event_key]
 
-        # Reset event flags only during a resend/recovery run.
+        # Reset only when manual resend or recovery is requested.
         if force_resend:
             state["detected"] = False
             state["1h"] = False
@@ -158,13 +193,30 @@ def main():
             "%d-%m-%Y %I:%M %p"
         )
 
+        previous = get_value(
+            event, "prior", "previous", "previous_value"
+        )
+
+        forecast = get_value(
+            event,
+            "consensus",
+            "forecast",
+            "forecast_value",
+            "consensus_value",
+            "estimate"
+        )
+
+        actual = get_value(
+            event, "actual", "actual_value", "result"
+        )
+
         details = (
             f"🌍 Country: {html.escape(str(country))}\n"
             f"📌 Event: <b>{html.escape(str(name))}</b>\n"
             f"🕒 Time (IST): {time_ist}\n"
-            f"📊 Previous: {html.escape(str(event.get('prior') or event.get('previous') or 'Not available'))}\n"
-            f"🔮 Forecast: {html.escape(str(event.get('consensus') or event.get('forecast') or 'Not available'))}\n"
-            f"📈 Actual: {html.escape(str(event.get('actual') or 'Not available'))}\n"
+            f"📊 Previous: {previous}\n"
+            f"🔮 Forecast: {forecast}\n"
+            f"📈 Actual: {actual}\n"
         )
 
         source = (
@@ -174,31 +226,37 @@ def main():
 
         minutes_left = (event_time - now).total_seconds() / 60
 
+        # First detection alert.
         if not state.get("detected", False):
             send_telegram(
                 "🔴 <b>HIGH-IMPACT ECONOMIC EVENT DETECTED</b>\n\n"
                 f"{details}\n{source}"
             )
+
             state["detected"] = True
             save_alerts(alerts)
 
+        # One-hour reminder.
         if 55 <= minutes_left <= 65 and not state.get("1h", False):
             send_telegram(
                 "⏰ <b>1-HOUR REMINDER</b>\n\n"
                 f"{details}\n{source}"
             )
+
             state["1h"] = True
             save_alerts(alerts)
 
+        # Thirty-minute reminder.
         if 25 <= minutes_left <= 35 and not state.get("30m", False):
             send_telegram(
                 "⏰ <b>30-MINUTE REMINDER</b>\n\n"
                 f"{details}\n{source}"
             )
+
             state["30m"] = True
             save_alerts(alerts)
 
-    # Clear the recovery flag only after the entire run succeeds.
+    # Clear recovery flag only after a successful complete run.
     alerts["_recovery_pending"] = False
     save_alerts(alerts)
 
