@@ -36,10 +36,13 @@ def send_telegram(message):
     url = f"https://api.telegram.org/bot{token}/sendMessage"
 
     body = urllib.parse.urlencode({
-        "chat_id": chat_id,
-        "text": message,
-        "parse_mode": "HTML"
-    }).encode()
+    "chat_id": chat_id,
+    "text": message,
+    "parse_mode": "HTML",
+    "link_preview_options": json.dumps({
+        "is_disabled": True
+    })
+}).encode()
 
     request = urllib.request.Request(
         url,
