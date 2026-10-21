@@ -1,14 +1,13 @@
 
-
-name: Run Python - Calendar Alerts
+name: Economic Calendar Alerts
 
 on:
   workflow_dispatch:
     inputs:
       resend_alerts:
-        description: "Resend all upcoming high-impact event alerts"
-        required: true
+        description: "Enable to resend all upcoming high-impact alerts"
         type: boolean
+        required: true
         default: false
 
   schedule:
@@ -22,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Get our code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -30,14 +29,14 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run Python program
+      - name: Run calendar bot
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RESEND_ALERTS: ${{ inputs.resend_alerts || false }}
         run: python main.py
 
-      - name: Save sent alert history
+      - name: Save alert history
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
