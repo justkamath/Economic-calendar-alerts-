@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
 
-# Economic calendar: rolling 30-day range
+# Economic calendar API
 API_URL = "https://www.financecalendar.com/wp-json/fc/v1/calendar"
 
 STATE_FILE = "sent_alerts.json"
@@ -57,80 +57,8 @@ def send_telegram(message):
         raise RuntimeError(f"Telegram error: {result}")
 
 
-def check_bot_commands(alerts):
-    """Check for /resend commands sent to the configured chat."""
-    token = os.environ["TELEGRAM_BOT_TOKEN"]
-    chat_id = str(os.environ["TELEGRAM_CHAT_ID"])
-
-    offset_key = "_telegram_update_offset"
-    offset = alerts.get(offset_key, 0)
-
-    url = (
-        f"https://api.telegram.org/bot{token}/getUpdates?"
-        + urllib.parse.urlencode({
-            "offset": offset,
-            "timeout": 0
-        })
-    )
-
-    request = urllib.request.Request(
-        url,
-        headers={"User-Agent": "EconomicCalendarBot/1.0"}
-    )
-
-    try:
-        with urllib.request.urlopen(request, timeout=20) as response:
-            result = json.loads(response.read().decode("utf-8"))
-
-        if not result.get("ok"):
-            print("Could not read Telegram commands:", result)
-            return False
-
-    except Exception as error:
-        print("Could not check Telegram commands:", error)
-        print("Continuing with the calendar check.")
-        return False
-
-    force_resend = False
-
-    for update in result.get("result", []):
-        alerts[offset_key] = update["update_id"] + 1
-
-        message = update.get("message", {})
-        message_chat = str(
-            message.get("chat", {}).get("id", "")
-        )
-
-        if message_chat != chat_id:
-            continue
-
-        text = message.get("text", "").strip()
-        if not text:
-            continue
-
-        command = text.split()[0].split("@")[0].lower()
-
-        if command == "/resend":
-            force_resend = True
-
-            # Acknowledge the command.
-            try:
-                send_telegram(
-                    "🔄 <b>Resend requested</b>\n"
-                    "I'll resend detection alerts for upcoming "
-                    "high-impact events in the current 30-day feed."
-                )
-            except Exception as error:
-                print("Could not send command confirmation:", error)
-
-    # Save the offset so the same command is not processed repeatedly.
-    save_alerts(alerts)
-
-    return force_resend
-
-
 def get_event_time(event):
-    """Read supported timestamp fields and return a UTC datetime."""
+    """Parse an event timestamp and convert it to UTC."""
     time_text = (
         event.get("release_at_utc")
         or event.get("time_utc")
@@ -157,13 +85,20 @@ def get_event_time(event):
 def main():
     now = datetime.now(timezone.utc)
 
+    # Request the next 30 days of calendar events.
     start_date = now.date()
     end_date = (now + timedelta(days=30)).date()
 
     alerts = load_alerts()
 
-    # Check commands before downloading the calendar.
-    force_resend = check_bot_commands(alerts)
+    # Set to true only when manually selected in GitHub Actions.
+    force_resend = (
+        os.environ.get("RESEND_ALERTS", "false").strip().lower()
+        == "true"
+    )
+
+    print("Date range:", start_date, "to", end_date)
+    print("Force resend enabled:", force_resend)
 
     params = urllib.parse.urlencode({
         "from": start_date.isoformat(),
@@ -188,10 +123,10 @@ def main():
 
     if not isinstance(calendar, list):
         raise ValueError(
-            "Unexpected calendar response. Check the API response format."
+            "Unexpected calendar response format. "
+            "Check the API response."
         )
 
-    print("Date range:", start_date, "to", end_date)
     print("Total events received:", len(calendar))
 
     high_events = [
@@ -211,7 +146,7 @@ def main():
             print("Skipping event with missing/invalid time:", name)
             continue
 
-        # Ignore events that have already happened.
+        # Never send alerts for events that have already happened.
         if event_time <= now:
             continue
 
@@ -229,7 +164,7 @@ def main():
 
         state = alerts[event_key]
 
-        # Reset alert state only when a new /resend command is received.
+        # Reset the state only for this manual resend run.
         if force_resend:
             state["detected"] = False
             state["1h"] = False
@@ -272,11 +207,10 @@ def main():
             'Finance Calendar</a>'
         )
 
-        minutes_left = (
-            event_time - now
-        ).total_seconds() / 60
+        minutes_left = (event_time - now).total_seconds() / 60
 
-        # Send the detection alert once, unless /resend was requested.
+        # Send the detection alert if it has not been sent,
+        # or if manual resend was selected.
         if not state.get("detected", False):
             send_telegram(
                 "🔴 <b>HIGH-IMPACT ECONOMIC EVENT DETECTED</b>\n\n"
