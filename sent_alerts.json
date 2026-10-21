@@ -1,400 +1,395 @@
 {
-  "US CPI|2026-10-14T12:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Australia Labour Force|2026-10-15T00:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK GDP|2026-10-15T06:00:00+00:00": {
-    "detected": true,
-    "1h": true,
-    "30m": false
-  },
-  "Retail Sales|2026-10-15T12:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": true
-  },
-  "China GDP|2026-10-19T02:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Canada CPI|2026-10-19T12:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK Labour Market Report|2026-10-20T06:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK CPI Inflation|2026-10-21T06:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
   "Australia CPI|2026-10-28T00:30:00+00:00": {
-    "detected": true,
     "1h": false,
-    "30m": false
-  },
-  "Bank of Canada Rate Decision|2026-10-28T13:45:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "FOMC decision|2026-10-28T18:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "PCE inflation|2026-10-29T12:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "US GDP|2026-10-29T12:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "ECB decision|2026-10-29T12:45:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "ISM Manufacturing PMI|2026-11-02T15:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Eurozone Flash CPI|2026-11-04T10:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Bank of England decision|2026-11-05T12:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Canada Labour Force Survey|2026-11-06T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "US jobs report (NFP)|2026-11-06T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "US CPI|2026-11-10T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK GDP|2026-11-12T07:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Canada CPI|2026-11-16T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK Labour Market Report|2026-11-17T07:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Retail Sales|2026-11-17T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK CPI Inflation|2026-11-18T07:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Australia Labour Force|2026-11-19T00:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
   "Australia CPI|2026-11-25T00:30:00+00:00": {
-    "detected": true,
     "1h": false,
-    "30m": false
-  },
-  "US GDP|2026-11-25T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "PCE inflation|2026-11-25T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Eurozone Flash CPI|2026-12-01T10:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "ISM Manufacturing PMI|2026-12-01T15:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "US jobs report (NFP)|2026-12-04T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Canada Labour Force Survey|2026-12-04T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Bank of Canada Rate Decision|2026-12-09T14:45:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "FOMC decision|2026-12-09T19:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "US CPI|2026-12-10T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK GDP|2026-12-11T07:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Canada CPI|2026-12-14T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK Labour Market Report|2026-12-15T07:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "UK CPI Inflation|2026-12-16T07:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Retail Sales|2026-12-16T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Australia Labour Force|2026-12-17T00:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "Bank of England decision|2026-12-17T12:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "ECB decision|2026-12-17T12:45:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "US GDP|2026-12-23T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "PCE inflation|2026-12-23T13:30:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "ISM Manufacturing PMI|2027-01-01T15:00:00+00:00": {
-    "detected": true,
-    "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
   "Australia CPI|2027-01-06T00:30:00+00:00": {
-    "detected": true,
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "Eurozone Flash CPI|2027-01-06T10:00:00+00:00": {
-    "detected": true,
+  "Australia Labour Force|2026-10-15T00:30:00+00:00": {
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "Canada Labour Force Survey|2027-01-08T13:30:00+00:00": {
-    "detected": true,
+  "Australia Labour Force|2026-11-19T00:30:00+00:00": {
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "UK GDP|2027-01-15T07:00:00+00:00": {
-    "detected": true,
+  "Australia Labour Force|2026-12-17T00:30:00+00:00": {
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "China GDP|2027-01-18T02:00:00+00:00": {
-    "detected": true,
+  "Bank of Canada Rate Decision|2026-10-28T13:45:00+00:00": {
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "Canada CPI|2027-01-18T13:30:00+00:00": {
-    "detected": true,
+  "Bank of Canada Rate Decision|2026-12-09T14:45:00+00:00": {
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "UK Labour Market Report|2027-01-19T07:00:00+00:00": {
-    "detected": true,
+  "Bank of England decision|2026-11-05T12:00:00+00:00": {
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
+  },
+  "Bank of England decision|2026-12-17T12:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
   },
   "CAD|CPI m/m|2026-10-19T12:30:00+00:00": {
-    "detected": true,
     "1h": true,
-    "30m": true
+    "30m": true,
+    "detected": true
   },
   "CAD|Median CPI y/y|2026-10-19T12:30:00+00:00": {
-    "detected": true,
     "1h": true,
-    "30m": true
+    "30m": true,
+    "detected": true
   },
   "CAD|Trimmed CPI y/y|2026-10-19T12:30:00+00:00": {
-    "detected": true,
     "1h": true,
-    "30m": true
+    "30m": true,
+    "detected": true
+  },
+  "Canada CPI|2026-10-19T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Canada CPI|2026-11-16T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Canada CPI|2026-12-14T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Canada CPI|2027-01-18T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Canada Labour Force Survey|2026-11-06T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Canada Labour Force Survey|2026-12-04T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Canada Labour Force Survey|2027-01-08T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "China GDP|2026-10-19T02:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "China GDP|2027-01-18T02:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "ECB decision|2026-10-29T12:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "ECB decision|2026-12-17T12:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Eurozone Flash CPI|2026-11-04T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Eurozone Flash CPI|2026-12-01T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Eurozone Flash CPI|2027-01-06T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "FOMC decision|2026-10-28T18:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "FOMC decision|2026-12-09T19:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
   },
   "GBP|CPI y/y|2026-10-21T06:00:00+00:00": {
-    "detected": true,
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
+  },
+  "ISM Manufacturing PMI|2026-11-02T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "ISM Manufacturing PMI|2026-12-01T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "ISM Manufacturing PMI|2027-01-01T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
   },
   "NZD|CPI q/q|2026-10-21T21:45:00+00:00": {
-    "detected": true,
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
+  "PCE inflation|2026-10-29T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "PCE inflation|2026-11-25T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "PCE inflation|2026-12-23T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Retail Sales|2026-10-15T12:30:00+00:00": {
+    "1h": false,
+    "30m": true,
+    "detected": true
+  },
+  "Retail Sales|2026-11-17T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "Retail Sales|2026-12-16T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK CPI Inflation|2026-10-21T06:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK CPI Inflation|2026-11-18T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK CPI Inflation|2026-12-16T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK GDP|2026-10-15T06:00:00+00:00": {
+    "1h": true,
+    "30m": false,
+    "detected": true
+  },
+  "UK GDP|2026-11-12T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK GDP|2026-12-11T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK GDP|2027-01-15T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK Labour Market Report|2026-10-20T06:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK Labour Market Report|2026-11-17T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK Labour Market Report|2026-12-15T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "UK Labour Market Report|2027-01-19T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US CPI|2026-11-10T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US CPI|2026-12-10T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US GDP|2026-10-29T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US GDP|2026-11-25T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US GDP|2026-12-23T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US jobs report (NFP)|2026-11-06T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "US jobs report (NFP)|2026-12-04T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "_recovery_pending": false,
+  "_telegram_test_sent": true,
+  "_telegram_update_offset": 937637445,
   "australia-cpi-october-2026": {
-    "detected": true,
     "1h": false,
-    "30m": false
-  },
-  "bank-of-canada-rate-decision-october-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "fomc-rate-decision-october-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "us-gross-domestic-product-october-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "us-personal-income-and-outlays-pce-october-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "ecb-rate-decision-october-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "bank-of-japan-rate-decision-october-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "us-ism-manufacturing-pmi-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "rba-rate-decision-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "eurozone-flash-cpi-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "bank-of-england-mpc-rate-decision-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "canada-labour-force-survey-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "us-employment-situation-non-farm-payrolls-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "us-cpi-report-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "uk-gdp-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "canada-cpi-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "uk-labour-market-report-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "us-retail-sales-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
-  },
-  "uk-cpi-inflation-november-2026": {
-    "detected": true,
-    "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
   "australia-labour-force-november-2026": {
-    "detected": true,
     "1h": false,
-    "30m": false
+    "30m": false,
+    "detected": true
   },
-  "_telegram_update_offset": 937637445,
-  "_recovery_pending": false,
-  "_telegram_test_sent": true
+  "bank-of-canada-rate-decision-october-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "bank-of-england-mpc-rate-decision-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "bank-of-japan-rate-decision-october-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "canada-cpi-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "canada-labour-force-survey-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "ecb-rate-decision-october-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "eurozone-flash-cpi-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "fomc-rate-decision-october-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "rba-rate-decision-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "uk-cpi-inflation-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "uk-gdp-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "uk-labour-market-report-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "us-cpi-report-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "us-employment-situation-non-farm-payrolls-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "us-gross-domestic-product-october-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "us-ism-manufacturing-pmi-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "us-personal-income-and-outlays-pce-october-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "us-retail-sales-november-2026": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  }
 }
