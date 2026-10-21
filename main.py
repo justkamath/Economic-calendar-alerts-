@@ -1,4 +1,5 @@
 
+
 import os
 import json
 import html
@@ -23,17 +24,17 @@ def load_state():
 
 
 def save_state(state):
-    temporary = STATE_FILE + ".tmp"
-    with open(temporary, "w", encoding="utf-8") as f:
+    temp = STATE_FILE + ".tmp"
+    with open(temp, "w", encoding="utf-8") as f:
         json.dump(state, f, indent=2)
-    os.replace(temporary, STATE_FILE)
+    os.replace(temp, STATE_FILE)
 
 
 def clean(value):
     if value is None:
         return "Not available"
     value = str(value).strip()
-    if value.lower() in ("", "-", "—", "n/a", "null", "none"):
+    if value.lower() in ("", "-", "—", "n/a", "na", "null", "none"):
         return "Not available"
     return value
 
@@ -44,7 +45,8 @@ def parse_event_time(value):
     try:
         dt = datetime.fromisoformat(str(value).replace("Z", "+00:00"))
         if dt.tzinfo is None:
-            dt = dt.replace(tzinfo=UTC)
+            # Feed timestamps should include a timezone.
+            raise ValueError("Timestamp has no timezone")
         return dt.astimezone(UTC)
     except (ValueError, TypeError):
         return None
@@ -67,11 +69,8 @@ def fetch_calendar():
 def send_telegram(message):
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
-
     if not token or not chat_id:
-        raise RuntimeError(
-            "Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID secret."
-        )
+        raise RuntimeError("Telegram secrets are missing.")
 
     body = urllib.parse.urlencode({
         "chat_id": chat_id,
@@ -91,21 +90,42 @@ def send_telegram(message):
     if not result.get("ok"):
         raise RuntimeError(f"Telegram API error: {result}")
 
-    print("Telegram accepted message; message_id:",
-          result.get("result", {}).get("message_id"))
+    message_id = result.get("result", {}).get("message_id")
+    print("TELEGRAM_SENT message_id =", message_id)
 
 
-def telegram_test_once(state):
-    # Send the diagnostic only once, then remember successful delivery.
-    if state.get("_telegram_test_sent"):
-        return
+def make_key(event, event_time):
+    country = clean(event.get("country"))
+    title = clean(event.get("title"))
+    return f"{country}|{title}|{event_time.isoformat()}"
 
-    send_telegram(
-        "✅ <b>Economic Calendar Bot Test</b>\n"
-        "Telegram delivery is working."
-    )
-    state["_telegram_test_sent"] = True
-    save_state(state)
+
+def migrate_old_state(state, events):
+    """
+    Match old records by normalized title and timestamp.
+    This avoids treating a known event as new just because
+    an older bot version used a different key format.
+    """
+    old_records = []
+    for key, value in state.items():
+        if isinstance(value, dict) and any(
+            field in value for field in ("detected", "1h", "30m")
+        ):
+            old_records.append((key, value))
+
+    for key, event, event_time in events:
+        if key in state:
+            continue
+
+        title = clean(event.get("title")).lower()
+        timestamp = event_time.isoformat()
+
+        for old_key, old_value in old_records:
+            old_title = old_key.split("|")[0].lower()
+            if title in old_key.lower() and timestamp in old_key:
+                state[key] = dict(old_value)
+                print("STATE_MIGRATED:", old_key, "->", key)
+                break
 
 
 def main():
@@ -114,40 +134,37 @@ def main():
     state = load_state()
 
     print("Source: Forex Factory weekly JSON")
-    print("Current UTC:", now.isoformat())
-    print("Configured window: next 30 days")
-
-    # Sends a one-time test message. Remove this call after verifying delivery.
-    telegram_test_once(state)
+    print("Now UTC:", now.isoformat())
+    print("Window end UTC:", end.isoformat())
 
     calendar = fetch_calendar()
     print("Events received:", len(calendar))
 
-    upcoming = []
+    if not calendar:
+        raise RuntimeError("Forex Factory returned an empty calendar.")
 
+    events = []
     for event in calendar:
         if not isinstance(event, dict):
             continue
-
         if clean(event.get("impact")).lower() != "high":
             continue
 
         event_time = parse_event_time(event.get("date"))
-        if event_time is None or not (now < event_time <= end):
+        if event_time is None:
+            print("SKIP invalid timestamp:", event.get("title"))
+            continue
+        if not (now < event_time <= end):
             continue
 
-        name = clean(event.get("title"))
-        country = clean(event.get("country"))
-        key = f"{country}|{name}|{event_time.isoformat()}"
+        events.append((make_key(event, event_time), event, event_time))
 
-        upcoming.append((key, event, event_time))
+    print("Upcoming high-impact events in feed:", len(events))
+    print("WARNING: the weekly feed does not cover the complete 30 days.")
 
-    print("Upcoming high-impact events in available feed:", len(upcoming))
-    print("Note: this feed does not cover the full 30-day period.")
+    migrate_old_state(state, events)
 
-    for key, event, event_time in sorted(
-        upcoming, key=lambda item: item[2]
-    ):
+    for key, event, event_time in sorted(events, key=lambda item: item[2]):
         status = state.setdefault(key, {
             "detected": False,
             "1h": False,
@@ -155,20 +172,10 @@ def main():
         })
 
         minutes_left = (event_time - now).total_seconds() / 60
-
-        print(
-            "MATCH:", clean(event.get("title")),
-            "| UTC:", event_time.isoformat(),
-            "| IST:", event_time.astimezone(IST).isoformat(),
-            "| saved status:", status,
-        )
-
-        time_ist = event_time.astimezone(IST).strftime(
-            "%d-%m-%Y %I:%M %p"
-        )
+        time_ist = event_time.astimezone(IST).strftime("%d-%m-%Y %I:%M %p")
 
         details = (
-            f"🌍 Country: {html.escape(clean(event.get('country')))}\n"
+            f"🌍 Currency: {html.escape(clean(event.get('country')))}\n"
             f"📌 Event: <b>{html.escape(clean(event.get('title')))}</b>\n"
             f"🕒 Time (IST): {time_ist}\n"
             f"📊 Previous: {html.escape(clean(event.get('previous')))}\n"
@@ -177,31 +184,37 @@ def main():
             "Source: Forex Factory"
         )
 
+        print(
+            "EVENT:", clean(event.get("title")),
+            "| minutes left:", round(minutes_left),
+            "| state:", status,
+        )
+
+        # Detection alert. Save only after Telegram confirms delivery.
         if not status.get("detected", False):
-            print("Sending detection alert:", key)
-            send_telegram(
-                "🔴 <b>HIGH-IMPACT EVENT DETECTED</b>\n\n" + details
-            )
+            print("ACTION: send detection alert")
+            send_telegram("🔴 <b>HIGH-IMPACT EVENT DETECTED</b>\n\n" + details)
             status["detected"] = True
             save_state(state)
         else:
-            print("Detection alert skipped: already sent.")
+            print("SKIP detection: already marked sent")
 
+        # Reminder windows are checked independently.
         if 55 <= minutes_left <= 65 and not status.get("1h", False):
-            print("Sending 1-hour reminder:", key)
+            print("ACTION: send 1-hour reminder")
             send_telegram("⏰ <b>1-HOUR REMINDER</b>\n\n" + details)
             status["1h"] = True
             save_state(state)
         elif not status.get("1h", False):
-            print("1-hour reminder not due; minutes remaining:", round(minutes_left))
+            print("SKIP 1-hour reminder: outside reminder window")
 
         if 25 <= minutes_left <= 35 and not status.get("30m", False):
-            print("Sending 30-minute reminder:", key)
+            print("ACTION: send 30-minute reminder")
             send_telegram("⏰ <b>30-MINUTE REMINDER</b>\n\n" + details)
             status["30m"] = True
             save_state(state)
         elif not status.get("30m", False):
-            print("30-minute reminder not due; minutes remaining:", round(minutes_left))
+            print("SKIP 30-minute reminder: outside reminder window")
 
     save_state(state)
     print("Calendar check completed.")
