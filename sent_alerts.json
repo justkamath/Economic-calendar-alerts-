@@ -293,5 +293,105 @@
     "detected": true,
     "1h": false,
     "30m": false
+  },
+  "australia-cpi-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "bank-of-canada-rate-decision-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "fomc-rate-decision-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "us-gross-domestic-product-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "us-personal-income-and-outlays-pce-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "ecb-rate-decision-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "bank-of-japan-rate-decision-october-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "us-ism-manufacturing-pmi-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "rba-rate-decision-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "eurozone-flash-cpi-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "bank-of-england-mpc-rate-decision-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "canada-labour-force-survey-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "us-employment-situation-non-farm-payrolls-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "us-cpi-report-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "uk-gdp-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "canada-cpi-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "uk-labour-market-report-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "us-retail-sales-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "uk-cpi-inflation-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
+  },
+  "australia-labour-force-november-2026": {
+    "detected": true,
+    "1h": false,
+    "30m": false
   }
 }
