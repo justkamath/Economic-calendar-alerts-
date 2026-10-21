@@ -66,6 +66,7 @@ def fetch_calendar():
 def send_telegram(message):
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     chat_id = os.environ.get("TELEGRAM_CHAT_ID")
+
     if not token or not chat_id:
         raise RuntimeError("Telegram secrets are missing.")
 
@@ -80,6 +81,7 @@ def send_telegram(message):
         f"https://api.telegram.org/bot{token}/sendMessage",
         data=body,
     )
+
     with urllib.request.urlopen(request, timeout=20) as response:
         result = json.loads(response.read().decode("utf-8"))
 
@@ -90,7 +92,6 @@ def send_telegram(message):
 
 
 def event_key(event, event_time):
-    # Stable key used consistently by this version.
     return (
         f"{clean(event.get('country'))}|"
         f"{clean(event.get('title'))}|"
@@ -100,6 +101,7 @@ def event_key(event, event_time):
 
 def event_message(event, event_time, heading):
     time_ist = event_time.astimezone(IST).strftime("%d-%m-%Y %I:%M %p")
+
     return (
         f"{heading}\n\n"
         f"🌍 Country: {html.escape(clean(event.get('country')))}\n"
@@ -112,21 +114,21 @@ def event_message(event, event_time, heading):
     )
 
 
-def send_once(state, key, status_name, message):
+def send_once(state, key, status_name, message, force=False):
     status = state.setdefault(key, {
         "detected": False,
         "1h": False,
         "30m": False,
     })
 
-    if status.get(status_name, False):
+    if status.get(status_name, False) and not force:
         print("SKIP already sent:", status_name, key)
         return
 
     print("SENDING:", status_name, key)
     send_telegram(message)
 
-    # Save only after Telegram confirms success.
+    # Save only after Telegram confirms delivery.
     status[status_name] = True
     save_state(state)
     print("STATE_SAVED:", status_name, key)
@@ -137,14 +139,22 @@ def main():
     end = now + timedelta(days=30)
     state = load_state()
 
+    # Set RESEND_DETECTION=true for ONE manual workflow run
+    # to resend detection alerts even if their state says sent.
+    resend_detection = (
+        os.environ.get("RESEND_DETECTION", "false").lower() == "true"
+    )
+
     print("Source: Forex Factory weekly JSON")
     print("Current UTC:", now.isoformat())
-    print("Configured horizon: 30 days (feed coverage is only this week)")
+    print("Configured horizon: 30 days")
+    print("Resend detection mode:", resend_detection)
 
     calendar = fetch_calendar()
     print("Events received:", len(calendar))
 
     upcoming = []
+
     for event in calendar:
         if not isinstance(event, dict):
             continue
@@ -161,11 +171,13 @@ def main():
         upcoming.append((event_key(event, event_time), event, event_time))
 
     print("Upcoming high-impact events:", len(upcoming))
+    print("WARNING: Forex Factory's weekly feed does not cover all 30 days.")
 
     for key, event, event_time in sorted(
         upcoming, key=lambda item: item[2]
     ):
         minutes_left = (event_time - now).total_seconds() / 60
+
         print(
             "EVENT:", clean(event.get("title")),
             "| minutes left:", round(minutes_left),
@@ -177,20 +189,26 @@ def main():
             key,
             "detected",
             event_message(
-                event, event_time,
-                "🔴 <b>HIGH-IMPACT EVENT DETECTED</b>"
+                event,
+                event_time,
+                "🔴 <b>HIGH-IMPACT EVENT DETECTED</b>",
             ),
+            force=resend_detection,
         )
 
         if 55 <= minutes_left <= 65:
             send_once(
-                state, key, "1h",
+                state,
+                key,
+                "1h",
                 event_message(event, event_time, "⏰ <b>1-HOUR REMINDER</b>"),
             )
 
         if 25 <= minutes_left <= 35:
             send_once(
-                state, key, "30m",
+                state,
+                key,
+                "30m",
                 event_message(event, event_time, "⏰ <b>30-MINUTE REMINDER</b>"),
             )
 
@@ -199,3 +217,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
