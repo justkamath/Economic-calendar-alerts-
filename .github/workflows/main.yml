@@ -1,8 +1,16 @@
 
+
 name: Run Python - Calendar Alerts
 
 on:
   workflow_dispatch:
+    inputs:
+      resend_alerts:
+        description: "Resend all upcoming high-impact event alerts"
+        required: true
+        type: boolean
+        default: false
+
   schedule:
     - cron: "*/5 * * * *"
 
@@ -26,6 +34,7 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RESEND_ALERTS: ${{ inputs.resend_alerts || false }}
         run: python main.py
 
       - name: Save sent alert history
