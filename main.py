@@ -1,30 +1,178 @@
 
-
+import os
+import json
+import html
+import time
 import urllib.request
 import urllib.parse
-import json
-import os
-import html
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+from html.parser import HTMLParser
 
-API_URL = "https://www.financecalendar.com/wp-json/fc/v1/calendar"
 STATE_FILE = "sent_alerts.json"
 IST = ZoneInfo("Asia/Kolkata")
+UTC = timezone.utc
+BASE_URL = "https://www.forexfactory.com/calendar"
 
 
-def load_alerts():
+class CalendarParser(HTMLParser):
+    """Extract calendar rows from Forex Factory HTML."""
+
+    def __init__(self):
+        super().__init__()
+        self.rows = []
+        self.current = None
+        self.cell = None
+        self.in_table = False
+        self.table_depth = 0
+
+    def handle_starttag(self, tag, attrs):
+        attrs = dict(attrs)
+        classes = attrs.get("class", "").split()
+
+        if tag == "table" and "calendar__table" in classes:
+            self.in_table = True
+            self.table_depth = 1
+            return
+
+        if not self.in_table:
+            return
+
+        if tag == "table":
+            self.table_depth += 1
+
+        if tag == "tr" and (
+            "calendar__row" in classes or "calendar_row" in classes
+        ):
+            self.current = {}
+            self.cell = None
+
+        if tag == "td" and self.current is not None:
+            for field in (
+                "date", "time", "currency", "impact",
+                "event", "actual", "forecast", "previous"
+            ):
+                if f"calendar__{field}" in classes:
+                    self.cell = field
+                    self.current.setdefault(field, "")
+                    break
+
+        if self.cell == "impact" and tag == "span":
+            self.current["_impact_title"] = attrs.get("title", "")
+
+    def handle_data(self, data):
+        if self.current is not None and self.cell:
+            self.current[self.cell] = (
+                self.current.get(self.cell, "") + data
+            )
+
+    def handle_endtag(self, tag):
+        if not self.in_table:
+            return
+
+        if tag == "td":
+            self.cell = None
+
+        if tag == "tr" and self.current is not None:
+            self.rows.append(self.current)
+            self.current = None
+            self.cell = None
+
+        if tag == "table":
+            self.table_depth -= 1
+            if self.table_depth <= 0:
+                self.in_table = False
+
+
+def load_state():
     try:
-        with open(STATE_FILE, "r", encoding="utf-8") as file:
-            data = json.load(file)
+        with open(STATE_FILE, encoding="utf-8") as f:
+            data = json.load(f)
             return data if isinstance(data, dict) else {}
-    except (FileNotFoundError, json.JSONDecodeError):
+    except (OSError, json.JSONDecodeError):
         return {}
 
 
-def save_alerts(alerts):
-    with open(STATE_FILE, "w", encoding="utf-8") as file:
-        json.dump(alerts, file, indent=2)
+def save_state(state):
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(state, f, indent=2)
+
+
+def fetch_page(url):
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": (
+                "Mozilla/5.0 (X11; Linux x86_64) "
+                "AppleWebKit/537.36 Chrome/131.0 Safari/537.36"
+            ),
+            "Accept": "text/html,application/xhtml+xml",
+        },
+    )
+
+    with urllib.request.urlopen(request, timeout=30) as response:
+        page = response.read().decode("utf-8", errors="replace")
+
+    if "calendar__table" not in page:
+        raise RuntimeError(
+            "Forex Factory calendar table was not found. "
+            "The site may have blocked the request or changed its page."
+        )
+
+    parser = CalendarParser()
+    parser.feed(page)
+
+    if not parser.rows:
+        raise RuntimeError(
+            "No calendar rows were parsed. Refusing to treat "
+            "the calendar check as successful."
+        )
+
+    return parser.rows
+
+
+def clean(value):
+    value = " ".join(str(value or "").split())
+    if not value or value.lower() in {
+        "-", "—", "n/a", "na", "none", "null"
+    }:
+        return "Not available"
+    return value
+
+
+def parse_calendar_datetime(date_text, time_text, year):
+    date_text = clean(date_text)
+    time_text = clean(time_text)
+
+    if date_text == "Not available":
+        return None
+
+    # Forex Factory calendar dates commonly look like "Mon Oct 19".
+    for fmt in ("%a %b %d %Y", "%b %d %Y"):
+        try:
+            day = datetime.strptime(
+                f"{date_text} {year}", fmt
+            ).date()
+            break
+        except ValueError:
+            day = None
+
+    if day is None:
+        return None
+
+    if time_text.lower() in ("all day", "day", "not available"):
+        time_text = "12:00am"
+
+    try:
+        clock = datetime.strptime(
+            time_text.lower().replace(" ", ""), "%I:%M%p"
+        ).time()
+    except ValueError:
+        return None
+
+    # Calendar display time is not guaranteed to be UTC.
+    # This assumes the page's displayed timezone is UTC.
+    return datetime.combine(day, clock, tzinfo=UTC)
 
 
 def send_telegram(message):
@@ -32,235 +180,147 @@ def send_telegram(message):
     chat_id = os.environ["TELEGRAM_CHAT_ID"]
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
-
     body = urllib.parse.urlencode({
         "chat_id": chat_id,
         "text": message,
         "parse_mode": "HTML",
-        "link_preview_options": json.dumps({
-            "is_disabled": True
-        })
+        "link_preview_options": json.dumps({"is_disabled": True}),
     }).encode()
 
-    request = urllib.request.Request(
-        url,
-        data=body,
-        headers={"User-Agent": "EconomicCalendarBot/1.0"}
-    )
+    request = urllib.request.Request(url, data=body)
 
     with urllib.request.urlopen(request, timeout=20) as response:
         result = json.loads(response.read().decode("utf-8"))
 
     if not result.get("ok"):
-        raise RuntimeError(f"Telegram error: {result}")
-
-
-def get_value(event, *keys):
-    """Return the first available non-empty field."""
-    for key in keys:
-        value = event.get(key)
-
-        if value is None:
-            continue
-
-        text_value = str(value).strip()
-
-        if text_value.lower() in (
-            "", "-", "—", "n/a", "na", "null", "none"
-        ):
-            continue
-
-        return html.escape(text_value)
-
-    return "Not available"
-
-
-def get_event_time(event):
-    """Parse a supported event timestamp and convert it to UTC."""
-    value = (
-        event.get("release_at_utc")
-        or event.get("time_utc")
-        or event.get("date")
-    )
-
-    if not value:
-        return None
-
-    try:
-        event_time = datetime.fromisoformat(
-            str(value).replace("Z", "+00:00")
-        )
-
-        if event_time.tzinfo is None:
-            event_time = event_time.replace(tzinfo=timezone.utc)
-
-        return event_time.astimezone(timezone.utc)
-
-    except (ValueError, TypeError):
-        return None
+        raise RuntimeError(f"Telegram send failed: {result}")
 
 
 def main():
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
+    end = now + timedelta(days=30)
+    state = load_state()
 
-    start_date = now.date()
-    end_date = (now + timedelta(days=30)).date()
+    # Fetch five consecutive calendar weeks.
+    week_start = now.date() - timedelta(days=now.weekday())
+    weeks = []
+    cursor = week_start
 
-    alerts = load_alerts()
+    while cursor <= end.date():
+        weeks.append(cursor)
+        cursor += timedelta(days=7)
 
-    manual_resend = (
-        os.environ.get("RESEND_ALERTS", "false").strip().lower()
-        == "true"
-    )
+    events = {}
+    for week in weeks:
+        week_label = week.strftime("%b%d.%Y").lower()
+        url = f"{BASE_URL}?week={week_label}"
+        print("Fetching Forex Factory:", url)
 
-    recovery_pending = alerts.get("_recovery_pending", False)
-    force_resend = manual_resend or recovery_pending
+        rows = fetch_page(url)
 
-    print("Date range:", start_date, "to", end_date)
-    print("Manual resend:", manual_resend)
-    print("Recovery pending:", recovery_pending)
-    print("Force resend enabled:", force_resend)
+        current_date = ""
+        for row in rows:
+            if clean(row.get("date")) != "Not available":
+                current_date = clean(row.get("date"))
 
-    params = urllib.parse.urlencode({
-        "from": start_date.isoformat(),
-        "to": end_date.isoformat(),
-        "impact": "high"
-    })
+            impact = (
+                row.get("_impact_title", "")
+                + " "
+                + row.get("impact", "")
+            ).lower()
 
-    request = urllib.request.Request(
-        f"{API_URL}?{params}",
-        headers={"User-Agent": "EconomicCalendarBot/1.0"}
-    )
+            if "high" not in impact and "red" not in impact:
+                continue
 
-    with urllib.request.urlopen(request, timeout=30) as response:
-        data = json.loads(response.read().decode("utf-8"))
+            name = clean(row.get("event"))
+            currency = clean(row.get("currency"))
+            if name == "Not available":
+                continue
 
-    if isinstance(data, list):
-        calendar = data
-    elif isinstance(data, dict):
-        calendar = data.get("events")
-    else:
-        calendar = None
+            event_dt = parse_calendar_datetime(
+                current_date, row.get("time"), week.year
+            )
+            if event_dt is None:
+                print("Skipping event with unrecognized date/time:", name)
+                continue
 
-    if not isinstance(calendar, list):
-        raise ValueError(
-            "Unexpected calendar response. Check the API response format."
-        )
+            if not (now < event_dt <= end):
+                continue
 
-    high_events = [
-        event for event in calendar
-        if str(event.get("impact", "")).strip().lower() == "high"
-    ]
-
-    print("Total events received:", len(calendar))
-    print("High-impact events:", len(high_events))
-
-    for event in high_events:
-        name = event.get("title") or event.get("name") or "Unnamed event"
-        country = event.get("country") or "N/A"
-
-        event_time = get_event_time(event)
-
-        if event_time is None:
-            print("Skipping event with missing/invalid time:", name)
-            continue
-
-        # Ignore events that have already happened.
-        if event_time <= now:
-            continue
-
-        event_key = str(
-            event.get("id")
-            or f"{country}|{name}|{event_time.isoformat()}"
-        )
-
-        if event_key not in alerts:
-            alerts[event_key] = {
-                "detected": False,
-                "1h": False,
-                "30m": False
+            key = f"{currency}|{name}|{event_dt.isoformat()}"
+            events[key] = {
+                "name": name,
+                "currency": currency,
+                "time": event_dt,
+                "previous": clean(row.get("previous")),
+                "forecast": clean(row.get("forecast")),
+                "actual": clean(row.get("actual")),
             }
 
-        state = alerts[event_key]
+        time.sleep(1)
 
-        # Reset only when manual resend or recovery is requested.
-        if force_resend:
-            state["detected"] = False
-            state["1h"] = False
-            state["30m"] = False
+    if not events:
+        raise RuntimeError(
+            "No upcoming high-impact events were parsed. "
+            "Check the Forex Factory page format and timezone."
+        )
 
-        time_ist = event_time.astimezone(IST).strftime(
+    print("Upcoming high-impact events:", len(events))
+
+    for key, event in events.items():
+        status = state.setdefault(key, {
+            "detected": False,
+            "1h": False,
+            "30m": False,
+        })
+
+        minutes_left = (
+            event["time"] - now
+        ).total_seconds() / 60
+
+        time_ist = event["time"].astimezone(IST).strftime(
             "%d-%m-%Y %I:%M %p"
         )
 
-        previous = get_value(
-            event, "prior", "previous", "previous_value"
-        )
-
-        forecast = get_value(
-            event,
-            "consensus",
-            "forecast",
-            "forecast_value",
-            "consensus_value",
-            "estimate"
-        )
-
-        actual = get_value(
-            event, "actual", "actual_value", "result"
-        )
-
         details = (
-            f"🌍 Country: {html.escape(str(country))}\n"
-            f"📌 Event: <b>{html.escape(str(name))}</b>\n"
+            f"🌍 Currency: {html.escape(event['currency'])}\n"
+            f"📌 Event: <b>{html.escape(event['name'])}</b>\n"
             f"🕒 Time (IST): {time_ist}\n"
-            f"📊 Previous: {previous}\n"
-            f"🔮 Forecast: {forecast}\n"
-            f"📈 Actual: {actual}\n"
+            f"📊 Previous: {html.escape(event['previous'])}\n"
+            f"🔮 Forecast: {html.escape(event['forecast'])}\n"
+            f"📈 Actual: {html.escape(event['actual'])}"
         )
 
         source = (
-            'Source: <a href="https://www.financecalendar.com/">'
-            'Finance Calendar</a>'
+            '\nSource: <a href="https://www.forexfactory.com/calendar">'
+            'Forex Factory</a>'
         )
 
-        minutes_left = (event_time - now).total_seconds() / 60
-
-        # First detection alert.
-        if not state.get("detected", False):
+        if not status["detected"]:
             send_telegram(
-                "🔴 <b>HIGH-IMPACT ECONOMIC EVENT DETECTED</b>\n\n"
-                f"{details}\n{source}"
+                "🔴 <b>HIGH-IMPACT EVENT DETECTED</b>\n\n"
+                + details + source
             )
+            status["detected"] = True
+            save_state(state)
 
-            state["detected"] = True
-            save_alerts(alerts)
-
-        # One-hour reminder.
-        if 55 <= minutes_left <= 65 and not state.get("1h", False):
+        if 55 <= minutes_left <= 65 and not status["1h"]:
             send_telegram(
                 "⏰ <b>1-HOUR REMINDER</b>\n\n"
-                f"{details}\n{source}"
+                + details + source
             )
+            status["1h"] = True
+            save_state(state)
 
-            state["1h"] = True
-            save_alerts(alerts)
-
-        # Thirty-minute reminder.
-        if 25 <= minutes_left <= 35 and not state.get("30m", False):
+        if 25 <= minutes_left <= 35 and not status["30m"]:
             send_telegram(
                 "⏰ <b>30-MINUTE REMINDER</b>\n\n"
-                f"{details}\n{source}"
+                + details + source
             )
+            status["30m"] = True
+            save_state(state)
 
-            state["30m"] = True
-            save_alerts(alerts)
-
-    # Clear recovery flag only after a successful complete run.
-    alerts["_recovery_pending"] = False
-    save_alerts(alerts)
-
-    print("Economic calendar check completed successfully.")
+    print("Calendar check completed.")
 
 
 if __name__ == "__main__":
