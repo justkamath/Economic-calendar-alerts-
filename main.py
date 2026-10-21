@@ -7,26 +7,23 @@ import html
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
-
-# Economic calendar API
 API_URL = "https://www.financecalendar.com/wp-json/fc/v1/calendar"
-
 STATE_FILE = "sent_alerts.json"
 IST = ZoneInfo("Asia/Kolkata")
 
 
 def load_alerts():
     try:
-        with open(STATE_FILE, "r", encoding="utf-8") as file:
-            data = json.load(file)
+        with open(STATE_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
             return data if isinstance(data, dict) else {}
     except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
 
 def save_alerts(alerts):
-    with open(STATE_FILE, "w", encoding="utf-8") as file:
-        json.dump(alerts, file, indent=2)
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(alerts, f, indent=2)
 
 
 def send_telegram(message):
@@ -58,46 +55,43 @@ def send_telegram(message):
 
 
 def get_event_time(event):
-    """Parse an event timestamp and convert it to UTC."""
-    time_text = (
+    value = (
         event.get("release_at_utc")
         or event.get("time_utc")
         or event.get("date")
     )
 
-    if not time_text:
+    if not value:
         return None
 
     try:
-        event_time = datetime.fromisoformat(
-            str(time_text).replace("Z", "+00:00")
+        dt = datetime.fromisoformat(
+            str(value).replace("Z", "+00:00")
         )
-
-        if event_time.tzinfo is None:
-            event_time = event_time.replace(tzinfo=timezone.utc)
-
-        return event_time.astimezone(timezone.utc)
-
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
     except (ValueError, TypeError):
         return None
 
 
 def main():
     now = datetime.now(timezone.utc)
-
-    # Request the next 30 days of calendar events.
     start_date = now.date()
     end_date = (now + timedelta(days=30)).date()
 
     alerts = load_alerts()
 
-    # Set to true only when manually selected in GitHub Actions.
-    force_resend = (
-        os.environ.get("RESEND_ALERTS", "false").strip().lower()
-        == "true"
+    # Manual resend OR automatic recovery after a failed run.
+    manual_resend = (
+        os.environ.get("RESEND_ALERTS", "false").lower() == "true"
     )
+    recovery_pending = alerts.get("_recovery_pending", False)
+    force_resend = manual_resend or recovery_pending
 
     print("Date range:", start_date, "to", end_date)
+    print("Manual resend:", manual_resend)
+    print("Recovery pending:", recovery_pending)
     print("Force resend enabled:", force_resend)
 
     params = urllib.parse.urlencode({
@@ -122,38 +116,28 @@ def main():
         calendar = None
 
     if not isinstance(calendar, list):
-        raise ValueError(
-            "Unexpected calendar response format. "
-            "Check the API response."
-        )
-
-    print("Total events received:", len(calendar))
+        raise ValueError("Unexpected calendar response format")
 
     high_events = [
-        event for event in calendar
-        if str(event.get("impact", "")).strip().lower() == "high"
+        e for e in calendar
+        if str(e.get("impact", "")).strip().lower() == "high"
     ]
 
+    print("Total events received:", len(calendar))
     print("High-impact events:", len(high_events))
 
     for event in high_events:
         name = event.get("title") or event.get("name") or "Unnamed event"
         country = event.get("country") or "N/A"
-
         event_time = get_event_time(event)
 
-        if event_time is None:
-            print("Skipping event with missing/invalid time:", name)
+        if event_time is None or event_time <= now:
             continue
 
-        # Never send alerts for events that have already happened.
-        if event_time <= now:
-            continue
-
-        event_id = event.get("id") or (
-            f"{country}|{name}|{event_time.isoformat()}"
+        event_key = str(
+            event.get("id")
+            or f"{country}|{name}|{event_time.isoformat()}"
         )
-        event_key = str(event_id)
 
         if event_key not in alerts:
             alerts[event_key] = {
@@ -164,7 +148,7 @@ def main():
 
         state = alerts[event_key]
 
-        # Reset the state only for this manual resend run.
+        # Reset event flags only during a resend/recovery run.
         if force_resend:
             state["detected"] = False
             state["1h"] = False
@@ -174,32 +158,13 @@ def main():
             "%d-%m-%Y %I:%M %p"
         )
 
-        safe_name = html.escape(str(name))
-        safe_country = html.escape(str(country))
-
-        previous = html.escape(str(
-            event.get("prior")
-            or event.get("previous")
-            or "Not available"
-        ))
-
-        forecast = html.escape(str(
-            event.get("consensus")
-            or event.get("forecast")
-            or "Not available"
-        ))
-
-        actual = html.escape(str(
-            event.get("actual") or "Not available"
-        ))
-
         details = (
-            f"🌍 Country: {safe_country}\n"
-            f"📌 Event: <b>{safe_name}</b>\n"
+            f"🌍 Country: {html.escape(str(country))}\n"
+            f"📌 Event: <b>{html.escape(str(name))}</b>\n"
             f"🕒 Time (IST): {time_ist}\n"
-            f"📊 Previous: {previous}\n"
-            f"🔮 Forecast: {forecast}\n"
-            f"📈 Actual: {actual}\n"
+            f"📊 Previous: {html.escape(str(event.get('prior') or event.get('previous') or 'Not available'))}\n"
+            f"🔮 Forecast: {html.escape(str(event.get('consensus') or event.get('forecast') or 'Not available'))}\n"
+            f"📈 Actual: {html.escape(str(event.get('actual') or 'Not available'))}\n"
         )
 
         source = (
@@ -209,45 +174,35 @@ def main():
 
         minutes_left = (event_time - now).total_seconds() / 60
 
-        # Send the detection alert if it has not been sent,
-        # or if manual resend was selected.
         if not state.get("detected", False):
             send_telegram(
                 "🔴 <b>HIGH-IMPACT ECONOMIC EVENT DETECTED</b>\n\n"
                 f"{details}\n{source}"
             )
-
             state["detected"] = True
             save_alerts(alerts)
 
-        # One-hour reminder.
-        if (
-            55 <= minutes_left <= 65
-            and not state.get("1h", False)
-        ):
+        if 55 <= minutes_left <= 65 and not state.get("1h", False):
             send_telegram(
                 "⏰ <b>1-HOUR REMINDER</b>\n\n"
                 f"{details}\n{source}"
             )
-
             state["1h"] = True
             save_alerts(alerts)
 
-        # Thirty-minute reminder.
-        if (
-            25 <= minutes_left <= 35
-            and not state.get("30m", False)
-        ):
+        if 25 <= minutes_left <= 35 and not state.get("30m", False):
             send_telegram(
                 "⏰ <b>30-MINUTE REMINDER</b>\n\n"
                 f"{details}\n{source}"
             )
-
             state["30m"] = True
             save_alerts(alerts)
 
+    # Clear the recovery flag only after the entire run succeeds.
+    alerts["_recovery_pending"] = False
     save_alerts(alerts)
-    print("Economic calendar checked successfully.")
+
+    print("Economic calendar check completed successfully.")
 
 
 if __name__ == "__main__":
