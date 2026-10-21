@@ -1,0 +1,24 @@
+# ---- Secrets & environment (never commit) ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ---- Production variables ----
+.env.production
+.env.prod
+production.env
+secrets/
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ---- Temp / editor / OS ----
+*.tmp
+.idea/
+.vscode/
+.DS_Store
