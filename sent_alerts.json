@@ -393,5 +393,6 @@
     "detected": true,
     "1h": false,
     "30m": false
-  }
+  },
+  "_telegram_update_offset": 937637445
 }
