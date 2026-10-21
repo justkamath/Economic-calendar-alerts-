@@ -22,13 +22,21 @@ def save_state(state):
     os.replace(temp, cfg.STATE_FILE)
 
 
+def _event_time_from_key(key):
+    """Return the event datetime for a 'country|title|iso-time' key, else None."""
+    parts = key.split("|")
+    if len(parts) < 3:
+        return None  # legacy/metadata key, not produced by the current code
+    try:
+        return datetime.fromisoformat(parts[-1])
+    except ValueError:
+        return None
+
+
 def prune_state(state, now):
-    """Drop entries whose event time is older than KEEP_DAYS."""
+    """Drop entries older than KEEP_DAYS and legacy keys the app no longer uses."""
     cutoff = now - timedelta(days=cfg.KEEP_DAYS)
     for key in list(state):
-        try:
-            when = datetime.fromisoformat(key.rsplit("|", 1)[1])
-            if when < cutoff:
-                del state[key]
-        except (IndexError, ValueError):
-            pass  # non-event keys (metadata) are left alone
+        when = _event_time_from_key(key)
+        if when is None or when < cutoff:
+            del state[key]
