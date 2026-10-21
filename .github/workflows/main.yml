@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       resend_alerts:
-        description: "Resend all upcoming high-impact alerts"
+        description: "Resend upcoming high-impact detection alerts once"
         required: true
         type: boolean
         default: false
@@ -15,6 +15,10 @@ on:
 
 permissions:
   contents: write
+
+concurrency:
+  group: economic-calendar-bot
+  cancel-in-progress: false
 
 jobs:
   run-python:
@@ -32,15 +36,15 @@ jobs:
 
       - name: Run calendar bot with automatic retries
         uses: nick-fields/retry@v3
-        env:
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          RESEND_ALERTS: ${{ inputs.resend_alerts || false }}
         with:
           timeout_minutes: 2
           max_attempts: 3
           retry_wait_seconds: 10
           command: python main.py
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          RESEND_DETECTION: ${{ github.event_name == 'workflow_dispatch' && inputs.resend_alerts || false }}
 
       - name: Save sent alert history
         if: always()
@@ -49,6 +53,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add sent_alerts.json
           if ! git diff --cached --quiet; then
-            git commit -m "Update sent alert history"
+            git commit -m "Update alert history"
             git push
           fi
