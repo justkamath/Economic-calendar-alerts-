@@ -5,9 +5,9 @@ on:
   workflow_dispatch:
     inputs:
       resend_alerts:
-        description: "Enable to resend all upcoming high-impact alerts"
-        type: boolean
+        description: "Resend all upcoming high-impact alerts"
         required: true
+        type: boolean
         default: false
 
   schedule:
@@ -19,6 +19,7 @@ permissions:
 jobs:
   run-python:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
@@ -29,14 +30,20 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Run calendar bot
+      - name: Run calendar bot with automatic retries
+        uses: nick-fields/retry@v3
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RESEND_ALERTS: ${{ inputs.resend_alerts || false }}
-        run: python main.py
+        with:
+          timeout_minutes: 2
+          max_attempts: 3
+          retry_wait_seconds: 10
+          command: python main.py
 
-      - name: Save alert history
+      - name: Save sent alert history
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
