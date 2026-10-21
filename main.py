@@ -122,16 +122,18 @@ def main():
 
         upcoming.append((key, event, event_time))
 
+    
     print("Upcoming high-impact events in available feed:", len(upcoming))
+
     for key, event, event_time in upcoming:
-    print(
-        "MATCH:",
-        event.get("title"),
-        "| impact:", event.get("impact"),
-        "| UTC:", event_time.isoformat(),
-        "| IST:", event_time.astimezone(IST).isoformat(),
-        "| saved:", key in state,
-    )    print("Note: the official JSON feed covers this week, not all 30 days.")
+        print(
+            "MATCH:",
+            event.get("title"),
+            "| impact:", event.get("impact"),
+            "| UTC:", event_time.isoformat(),
+            "| IST:", event_time.astimezone(IST).isoformat(),
+            "| saved:", key in state,
+        )
 
     for key, event, event_time in sorted(upcoming, key=lambda item: item[2]):
         status = state.setdefault(key, {
