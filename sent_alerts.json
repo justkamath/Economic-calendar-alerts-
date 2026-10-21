@@ -395,5 +395,6 @@
     "30m": false
   },
   "_telegram_update_offset": 937637445,
-  "_recovery_pending": false
+  "_recovery_pending": false,
+  "_telegram_test_sent": true
 }
