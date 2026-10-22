@@ -21,7 +21,7 @@
   },
   "CAD|IPPI m/m|2026-10-22T12:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CAD|Median CPI y/y|2026-10-19T12:30:00+00:00": {
@@ -31,12 +31,12 @@
   },
   "CAD|NHPI m/m|2026-10-22T12:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CAD|RMPI m/m|2026-10-22T12:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CAD|Retail Sales m/m|2026-10-23T12:30:00+00:00": {
@@ -166,7 +166,7 @@
   },
   "USD|Unemployment Claims|2026-10-22T12:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   }
 }
