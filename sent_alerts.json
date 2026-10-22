@@ -110,7 +110,7 @@
     "detected": true
   },
   "GBP|GfK Consumer Confidence|2026-10-22T23:01:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
