@@ -48,6 +48,33 @@ class AlertTests(unittest.TestCase):
                make_event(-10), make_event(60 * 24 * 30)]
         self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 1)
 
+    def test_min_impact_and_importance_order(self):
+        cal = [make_event(20, impact="Low", title="L"),
+               make_event(30, impact="High", title="H"),
+               make_event(25, impact="Medium", title="M"),
+               make_event(10, impact="Holiday", title="X")]
+        old = cfg.ALERT_MIN_IMPACT
+        try:
+            cfg.ALERT_MIN_IMPACT = "low"
+            titles = [e["title"] for _, e, _ in alerts.select_upcoming(cal, NOW)]
+            self.assertEqual(titles, ["H", "M", "L"])  # importance first
+            cfg.ALERT_MIN_IMPACT = "high"
+            self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 1)
+            cfg.ALERT_MIN_IMPACT = "holiday"
+            self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 4)
+        finally:
+            cfg.ALERT_MIN_IMPACT = old
+
+    def test_heading_matches_impact(self):
+        n, st = FakeNotifier(), {}
+        old = cfg.ALERT_MIN_IMPACT
+        cfg.ALERT_MIN_IMPACT = "low"
+        try:
+            self.run_once([make_event(300, impact="Medium")], st, n)
+        finally:
+            cfg.ALERT_MIN_IMPACT = old
+        self.assertIn("🟠 <b>MEDIUM-IMPACT EVENT DETECTED", n.sent[0])
+
     def test_no_duplicate_sends(self):
         n, st = FakeNotifier(), {}
         cal = [make_event(20)]
