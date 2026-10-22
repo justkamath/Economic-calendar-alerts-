@@ -43,7 +43,6 @@ API_URL = os.environ.get(
 )
 USER_AGENT = "EconomicCalendarAlerts/1.0"
 SOURCE_NAME = "Forex Factory"
-ALERT_IMPACT = "high"
 FETCH_RETRIES = 3
 FETCH_TIMEOUT = 30
 
@@ -64,6 +63,20 @@ UTC = timezone.utc
 DISPLAY_TZ = ZoneInfo(os.environ.get("DISPLAY_TIMEZONE", "Asia/Kolkata"))
 DISPLAY_TZ_LABEL = "IST"
 TIME_FORMAT = "%d-%m-%Y %I:%M %p"
+
+# ---------- Impact levels (most important first) ----------
+# Rank decides sort order and the minimum-level filter.
+IMPACT_RANK = {"high": 3, "medium": 2, "low": 1, "holiday": 0}
+IMPACT_STYLE = {  # emoji, label shown in the alert heading
+    "high": ("🔴", "HIGH"),
+    "medium": ("🟠", "MEDIUM"),
+    "low": ("🟡", "LOW"),
+    "holiday": ("⚪", "HOLIDAY"),
+}
+# Lowest level to alert on: high | medium | low | holiday ("low" = all events
+# except holidays, "holiday" = literally everything). Default keeps old behaviour.
+_min = os.environ.get("ALERT_MIN_IMPACT", "high").strip().lower()
+ALERT_MIN_IMPACT = _min if _min in IMPACT_RANK else "high"
 
 # ---------- Alert logic ----------
 HORIZON_DAYS = 7  # the free weekly feed only covers the current week
