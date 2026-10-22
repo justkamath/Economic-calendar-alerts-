@@ -27,7 +27,7 @@ def main():
     print("Events received:", len(calendar))
 
     upcoming = select_upcoming(calendar, now)
-    print("Upcoming high-impact events:", len(upcoming))
+    print(f"Upcoming events (min impact: {cfg.ALERT_MIN_IMPACT}):", len(upcoming))
 
     process(upcoming, now, notifier, state)
     print("Calendar check completed.")
