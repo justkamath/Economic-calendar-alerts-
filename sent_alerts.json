@@ -1,7 +1,27 @@
 {
+  "AUD|Flash Manufacturing PMI|2026-10-22T22:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|Flash Services PMI|2026-10-22T22:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "CAD|CPI m/m|2026-10-19T12:30:00+00:00": {
     "1h": true,
     "30m": true,
+    "detected": true
+  },
+  "CAD|Core Retail Sales m/m|2026-10-23T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|IPPI m/m|2026-10-22T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
     "detected": true
   },
   "CAD|Median CPI y/y|2026-10-19T12:30:00+00:00": {
@@ -9,9 +29,69 @@
     "30m": true,
     "detected": true
   },
+  "CAD|NHPI m/m|2026-10-22T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|RMPI m/m|2026-10-22T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|Retail Sales m/m|2026-10-23T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "CAD|Trimmed CPI y/y|2026-10-19T12:30:00+00:00": {
     "1h": true,
     "30m": true,
+    "detected": true
+  },
+  "EUR|Belgian NBB Business Climate|2026-10-23T13:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Consumer Confidence|2026-10-22T14:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Flash Manufacturing PMI|2026-10-23T08:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Flash Services PMI|2026-10-23T08:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|French Flash Manufacturing PMI|2026-10-23T07:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|French Flash Services PMI|2026-10-23T07:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Flash Manufacturing PMI|2026-10-23T07:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Flash Services PMI|2026-10-23T07:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|CBI Industrial Order Expectations|2026-10-22T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
     "detected": true
   },
   "GBP|CPI y/y|2026-10-21T06:00:00+00:00": {
@@ -19,7 +99,72 @@
     "30m": false,
     "detected": true
   },
+  "GBP|Flash Manufacturing PMI|2026-10-23T08:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|Flash Services PMI|2026-10-23T08:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|GfK Consumer Confidence|2026-10-22T23:01:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|Retail Sales m/m|2026-10-23T06:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Flash Manufacturing PMI|2026-10-23T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|National Core CPI y/y|2026-10-22T23:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "NZD|CPI q/q|2026-10-21T21:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|CB Leading Index m/m|2026-10-22T14:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Flash Manufacturing PMI|2026-10-23T13:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Flash Services PMI|2026-10-23T13:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Natural Gas Storage|2026-10-22T14:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Revised UoM Consumer Sentiment|2026-10-23T14:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Revised UoM Inflation Expectations|2026-10-23T14:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Unemployment Claims|2026-10-22T12:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
