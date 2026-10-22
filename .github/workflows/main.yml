@@ -45,6 +45,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RESEND_DETECTION: ${{ github.event_name == 'workflow_dispatch' && inputs.resend_alerts || false }}
+          ALERT_MIN_IMPACT: ${{ vars.ALERT_MIN_IMPACT || 'high' }}
 
       - name: Save sent alert history
         if: always()
