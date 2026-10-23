@@ -116,7 +116,7 @@
   },
   "GBP|Retail Sales m/m|2026-10-23T06:00:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "JPY|Flash Manufacturing PMI|2026-10-23T00:30:00+00:00": {
