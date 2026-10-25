@@ -46,6 +46,10 @@ API_URLS = tuple(
         "https://nfs.faireconomy.media/ff_calendar_nextweek.json",
     ).split(",") if u.strip()
 )
+USER_AGENT = "EconomicCalendarAlerts/1.0"
+SOURCE_NAME = "Forex Factory"
+FETCH_RETRIES = 3
+FETCH_TIMEOUT = 30
 
 # ---------- Telegram ----------
 TELEGRAM_API_BASE = "https://api.telegram.org"
