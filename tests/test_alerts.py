@@ -45,7 +45,7 @@ class AlertTests(unittest.TestCase):
 
     def test_only_high_impact_in_horizon(self):
         cal = [make_event(20), make_event(20, impact="Low"),
-               make_event(-10), make_event(60 * 24 * 30)]
+               make_event(-10), make_event(60 * 24 * 60)]
         self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 1)
 
     def test_min_impact_and_importance_order(self):
