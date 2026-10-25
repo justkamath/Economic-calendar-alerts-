@@ -38,7 +38,7 @@ jobs:
       - name: Run calendar bot with automatic retries
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 2
+          timeout_minutes: 4         # was 2   (under "uses: nick-fields/retry@v3")
           max_attempts: 3
           retry_wait_seconds: 10
           command: python main.py
