@@ -6,6 +6,7 @@ from alerts import process, select_upcoming
 from notifiers import TelegramNotifier
 from sources import ForexFactorySource
 from state import load_state
+from summary import maybe_send_summary
 
 
 def main():
@@ -30,6 +31,7 @@ def main():
     print(f"Upcoming events (min impact: {cfg.ALERT_MIN_IMPACT}):", len(upcoming))
 
     process(upcoming, now, notifier, state)
+    maybe_send_summary(calendar, now, notifier, state)  # once a day
     print("Calendar check completed.")
 
 
