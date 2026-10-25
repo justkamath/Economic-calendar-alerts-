@@ -92,3 +92,15 @@ THIRTY_MIN_WINDOW = (0, 35)
 # ---------- State ----------
 STATE_FILE = str(BASE_DIR / "sent_alerts.json")
 KEEP_DAYS = 7
+
+# ---------- Daily summary ----------
+# One message per day listing that day's events, sent at SUMMARY_HOUR (local
+# time in DISPLAY_TIMEZONE) or on the first run after it.
+SUMMARY_ENABLED = os.environ.get("SUMMARY_ENABLED", "true").strip().lower() == "true"
+try:
+    SUMMARY_HOUR = min(23, max(0, int(os.environ.get("SUMMARY_HOUR", "8"))))
+except ValueError:
+    SUMMARY_HOUR = 8
+_smin = os.environ.get("SUMMARY_MIN_IMPACT", "medium").strip().lower()
+SUMMARY_MIN_IMPACT = _smin if _smin in IMPACT_RANK else "medium"
+
