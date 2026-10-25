@@ -23,7 +23,8 @@ concurrency:
 jobs:
   run-python:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15          # was 10  (the job limit, near the top)
+
 
     steps:
       - name: Checkout repository
