@@ -80,7 +80,7 @@ _min = os.environ.get("ALERT_MIN_IMPACT", "high").strip().lower()
 ALERT_MIN_IMPACT = _min if _min in IMPACT_RANK else "high"
 
 # ---------- Alert logic ----------
-HORIZON_DAYS = 7  # the free weekly feed only covers the current week
+HORIZON_DAYS = 31  # the free weekly feed only covers the current week
 # Minutes-before-event windows (wide so late cron runs still catch them)
 ONE_HOUR_WINDOW = (35, 65)    # exclusive low, inclusive high
 THIRTY_MIN_WINDOW = (0, 35)
