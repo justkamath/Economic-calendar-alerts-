@@ -101,6 +101,8 @@ try:
     SUMMARY_HOUR = min(23, max(0, int(os.environ.get("SUMMARY_HOUR", "8"))))
 except ValueError:
     SUMMARY_HOUR = 8
-_smin = os.environ.get("SUMMARY_MIN_IMPACT", "medium").strip().lower()
-SUMMARY_MIN_IMPACT = _smin if _smin in IMPACT_RANK else "medium"
+# Lowest level in the summary: all | holiday | low | medium | high
+# ("all" also includes events that have no impact label, shown as N/A).
+_smin = os.environ.get("SUMMARY_MIN_IMPACT", "all").strip().lower()
+SUMMARY_MIN_IMPACT = _smin if (_smin in IMPACT_RANK or _smin == "all") else "all"
 
