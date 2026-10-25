@@ -9,29 +9,37 @@ from utils import clean, parse_event_time
 MAX_CHARS = 3800  # Telegram's limit is 4096; leave headroom for markup
 
 
+RANK = {**cfg.IMPACT_RANK, "na": -1}   # "na" = no / unknown impact label
+NA_STYLE = ("⚫", "N/A")
+
+
+def _style(level):
+    return NA_STYLE if level == "na" else cfg.IMPACT_STYLE[level]
+
+
 def _level(event):
     level = clean(event.get("impact")).lower()
-    return level if level in cfg.IMPACT_RANK else None
+    return level if level in cfg.IMPACT_RANK else "na"
 
 
 def todays_events(calendar, now):
-    """(level, time, event) for today's events at/above SUMMARY_MIN_IMPACT,
-    most important first, then by time."""
+    """(level, time, event) for today's events at/above SUMMARY_MIN_IMPACT
+    ("all" = every event), most important first, then by time."""
     tz = cfg.DISPLAY_TZ
     today = now.astimezone(tz).date()
-    min_rank = cfg.IMPACT_RANK[cfg.SUMMARY_MIN_IMPACT]
+    min_rank = -1 if cfg.SUMMARY_MIN_IMPACT == "all" else cfg.IMPACT_RANK[cfg.SUMMARY_MIN_IMPACT]
     found = []
     for event in calendar:
         if not isinstance(event, dict):
             continue
         level = _level(event)
-        if level is None or cfg.IMPACT_RANK[level] < min_rank:
+        if RANK[level] < min_rank:
             continue
         when = parse_event_time(event.get("date"))
         if when is None or when.astimezone(tz).date() != today:
             continue
         found.append((level, when, event))
-    found.sort(key=lambda i: (-cfg.IMPACT_RANK[i[0]], i[1]))
+    found.sort(key=lambda i: (-RANK[i[0]], i[1]))
     return found
 
 
@@ -52,17 +60,19 @@ def _line(when, event):
 def build_messages(events, now):
     """Summary text split into Telegram-sized messages."""
     day = now.astimezone(cfg.DISPLAY_TZ).strftime("%a %d %b %Y")
-    min_label = cfg.IMPACT_STYLE[cfg.SUMMARY_MIN_IMPACT][1].title()
     header = f"📅 <b>Daily summary - {day} ({cfg.DISPLAY_TZ_LABEL})</b>"
     if not events:
-        return [f"{header}\n\nNo events at {min_label} impact or higher today."]
+        if cfg.SUMMARY_MIN_IMPACT == "all":
+            return [f"{header}\n\nNo events today."]
+        label = cfg.IMPACT_STYLE[cfg.SUMMARY_MIN_IMPACT][1].title()
+        return [f"{header}\n\nNo events at {label} impact or higher today."]
 
     lines = [header, f"{len(events)} event(s), most important first"]
     current = None
     for level, when, event in events:
         if level != current:
             current = level
-            emoji, label = cfg.IMPACT_STYLE[level]
+            emoji, label = _style(level)
             count = sum(1 for e in events if e[0] == level)
             lines += ["", f"{emoji} <b>{label.title()} ({count})</b>"]
         lines.append(_line(when, event))
