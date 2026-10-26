@@ -159,6 +159,11 @@
     "30m": false,
     "detected": true
   },
+  "EUR|German Prelim CPI m/m|2026-10-30T07:29:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|German Prelim GDP q/q|2026-10-30T09:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -325,7 +330,7 @@
     "detected": true
   },
   "JPY|SPPI y/y|2026-10-26T23:50:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
