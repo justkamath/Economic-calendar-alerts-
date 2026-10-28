@@ -46,7 +46,7 @@
   },
   "CAD|BOC Press Conference|2026-10-28T14:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CAD|BOC Rate Statement|2026-10-28T13:45:00+00:00": {
@@ -406,7 +406,7 @@
   },
   "USD|Crude Oil Inventories|2026-10-28T14:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "USD|Durable Goods Orders m/m|2026-10-27T12:30:00+00:00": {
