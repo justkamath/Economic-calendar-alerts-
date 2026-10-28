@@ -1,4 +1,5 @@
-"""Daily summary: one friendly message listing today's events, once per day."""
+"""Daily summary: a day planner listing today's events in the order they happen,
+grouped by part of the day, with a colour dot for importance. Sent once a day."""
 import html
 import time
 from datetime import timedelta
@@ -12,20 +13,21 @@ MAX_CHARS = 3800  # Telegram's limit is 4096; leave headroom for markup
 RANK = {**cfg.IMPACT_RANK, "na": -1}   # "na" = no / unknown impact label
 ORDER = ("high", "medium", "low", "holiday", "na")
 NA_STYLE = ("⚫", "N/A")
-
-TITLES = {
-    "high": "HIGH IMPACT",
-    "medium": "MEDIUM IMPACT",
-    "low": "LOW IMPACT",
-    "holiday": "BANK HOLIDAYS",
-    "na": "UNRATED",
-}
 SHORT = {"high": "High", "medium": "Medium", "low": "Low",
          "holiday": "Holiday", "na": "Unrated"}
 FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯🇵", "AUD": "🇦🇺",
          "NZD": "🇳🇿", "CAD": "🇨🇦", "CHF": "🇨🇭", "CNY": "🇨🇳"}
-RULE = "──────────────"
 
+# (first hour, last hour + 1, emoji, name) in local time (DISPLAY_TIMEZONE)
+PARTS = (
+    (0, 5, "🌙", "EARLY HOURS"),
+    (5, 12, "🌅", "MORNING"),
+    (12, 17, "☀️", "AFTERNOON"),
+    (17, 21, "🌆", "EVENING"),
+    (21, 24, "🌃", "NIGHT"),
+)
+NUMBERS_FOR = ("high", "medium")   # Previous / Forecast / Actual shown for these
+FOCUS_MAX = 8                      # currencies listed on the "In focus" line
 
 
 def _style(level):
@@ -66,64 +68,20 @@ def _time(when):
     return when.astimezone(cfg.DISPLAY_TZ).strftime("%I:%M %p").lstrip("0")
 
 
-def _who(event):
-    country = clean(event.get("country"))
-    flag = FLAGS.get(country.upper(), "🌐")
-    return f"{flag} {html.escape(country)}"
-
-
-def _details(event):
-    parts = []
-    for label, field in (("Previous", "previous"), ("Forecast", "forecast"),
-                         ("Actual", "actual")):
-        value = clean(event.get(field))
-        if value != "Not available":
-            parts.append(f"{label} <b>{html.escape(value)}</b>")
-    return "↳ " + "  |  ".join(parts) if parts else ""
-
-
-def _bullet(level, event):
-    """Same layout for every impact level (no space-based alignment, since
-    Telegram uses a proportional font)."""
-    title = html.escape(clean(event.get("title")))
-    if level == "high":
-        title = f"<b>{title}</b>"
-    lines = [f"➤ {_who(event)} — {title}"]
-    details = _details(event)
-    if details:
-        lines.append(details)
-    return lines
-
-
-def _section(level, items):
-    """Events of one level, grouped under a heading per start time."""
-    lines, current = [], None
-    for when, event in items:
-        stamp = _time(when)
-        if stamp != current:
-            current = stamp
-            lines += ["", f"🕒 <b>{stamp}</b>"]
-        lines += _bullet(level, event) + [""]  # blank line after each event
-    return lines
-
-
-def _counts(events):
-    counts = {}
-    for level, _, _ in events:
-        counts[level] = counts.get(level, 0) + 1
-    return counts
-
-
-def _glance(events):
-    counts = _counts(events)
-    return "  |  ".join(
-        f"{_style(level)[0]} {counts[level]} {SHORT[level]}"
-        for level in ORDER if level in counts
-    )
+def _flag(country):
+    return FLAGS.get(country.upper(), "🌐")
 
 
 def _events(n):
     return f"{n} event" + ("" if n == 1 else "s")
+
+
+def _glance(events, sep="   "):
+    counts = {}
+    for level, _, _ in events:
+        counts[level] = counts.get(level, 0) + 1
+    return sep.join(f"{_style(level)[0]} {counts[level]} {SHORT[level]}"
+                    for level in ORDER if level in counts)
 
 
 def _greeting(now):
@@ -133,8 +91,59 @@ def _greeting(now):
     return "Good afternoon" if hour < 17 else "Good evening"
 
 
+def _focus(events):
+    """Currencies in play today, the ones with most High events first."""
+    stats = {}
+    for level, _, event in events:
+        cur = clean(event.get("country"))
+        high, total = stats.get(cur, (0, 0))
+        stats[cur] = (high + (level == "high"), total + 1)
+    ranked = sorted(stats, key=lambda c: (-stats[c][0], -stats[c][1], c))
+    return "  ".join(f"{_flag(c)} {html.escape(c)}" for c in ranked[:FOCUS_MAX])
+
+
+def _details(event):
+    parts = []
+    for label, field in (("Previous", "previous"), ("Forecast", "forecast"),
+                         ("Actual", "actual")):
+        value = clean(event.get(field))
+        if value != "Not available":
+            parts.append(f"{label} <b>{html.escape(value)}</b>")
+    return "    ↳ " + "  |  ".join(parts) if parts else ""
+
+
+def _event_lines(level, when, event):
+    emoji = _style(level)[0]
+    country = clean(event.get("country"))
+    lines = [f"{emoji} <b>{_time(when)}</b>  {_flag(country)} {html.escape(country)}",
+             f"    <b>{html.escape(clean(event.get('title')))}</b>"]
+    if level in NUMBERS_FOR:
+        details = _details(event)
+        if details:
+            lines.append(details)
+    lines.append("")  # blank line after every event
+    return lines
+
+
+def _part_of(when):
+    hour = when.astimezone(cfg.DISPLAY_TZ).hour
+    for start, end, emoji, name in PARTS:
+        if start <= hour < end:
+            return emoji, name
+    return PARTS[-1][2], PARTS[-1][3]
+
+
+def _tomorrow_lines(tomorrow):
+    if tomorrow is None:
+        return []
+    if tomorrow:
+        return [f"👀 <b>Tomorrow:</b> {_events(len(tomorrow))}  "
+                f"({_glance(tomorrow, '  |  ')})"]
+    return ["👀 <b>Tomorrow:</b> nothing scheduled yet"]
+
+
 def _chunk(lines):
-    """Split one section into Telegram-sized messages (no double blank lines)."""
+    """Split into Telegram-sized messages (no double blank lines)."""
     tidy = []
     for line in lines:
         if line == "" and tidy and tidy[-1] == "":
@@ -151,50 +160,31 @@ def _chunk(lines):
 
 
 def build_messages(events, now, tomorrow=None):
-    """The summary as a list of messages: a short overview first, then one
-    message per impact level (High, Medium, Low, ...), most important first.
-    `tomorrow` (optional) is tomorrow's event list, shown on the last message."""
+    """The day planner as a list of messages (normally just one).
+    `tomorrow` (optional) is tomorrow's event list, for the preview line."""
     local = now.astimezone(cfg.DISPLAY_TZ)
-    header = [f"📅 <b>{local.strftime('%A, %d %b %Y')}</b>"]
-    sections = [header]
+    lines = [f"📅 <b>{local.strftime('%A, %d %b %Y')}</b>"]
 
     if not events:
-        header.append(f"{_greeting(now)}! 😌 It's a quiet day, "
-                      "nothing on the calendar today.")
+        lines.append(f"{_greeting(now)}! 😌 It's a quiet day, "
+                     "nothing on the calendar today.")
     else:
-        header += [
-            f"{_greeting(now)}! Here's what's on today.",
-            f"🕐 All times in {cfg.DISPLAY_TZ_LABEL}",
-            "",
-            f"<b>Today at a glance</b>  ({_events(len(events))})",
-            _glance(events),
-            "",
-            "👇 Details below, one message per impact level",
-        ]
-        day = local.strftime("%A, %d %b")
-        for level in ORDER:
-            items = [(w, e) for lv, w, e in events if lv == level]
-            if not items:
-                continue
-            emoji, _ = _style(level)
-            sections.append(
-                [f"{emoji} <b>{TITLES[level]}</b>  ({_events(len(items))})",
-                 f"{day} ({cfg.DISPLAY_TZ_LABEL})"]
-                + _section(level, items)
-            )
+        lines += [f"{_greeting(now)}! Here's your day ({cfg.DISPLAY_TZ_LABEL})",
+                  "", _glance(events), f"🌍 In focus: {_focus(events)}", ""]
+        current = None
+        for level, when, event in sorted(
+                events, key=lambda i: (i[1], -RANK[i[0]])):
+            part = _part_of(when)
+            if part != current:
+                current = part
+                lines += [f"{part[0]} <b>{part[1]}</b>"]
+            lines += _event_lines(level, when, event)
+            # a part heading is followed directly by its first event
 
-    if tomorrow is not None:
-        sections[-1] += ["", RULE]
-        if tomorrow:
-            sections[-1].append(f"👀 <b>Tomorrow:</b> {_events(len(tomorrow))}  "
-                                f"({_glance(tomorrow)})")
-        else:
-            sections[-1].append("👀 <b>Tomorrow:</b> nothing scheduled yet")
-
-    messages = []
-    for section in sections:
-        messages += _chunk(section)
-    return messages
+    tail = _tomorrow_lines(tomorrow)
+    if tail:
+        lines += ["", *tail]
+    return _chunk(lines)
 
 
 # ---------- sending ----------
