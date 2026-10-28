@@ -78,24 +78,32 @@ def _details(event):
         value = clean(event.get(field))
         if value != "Not available":
             parts.append(f"{label} <b>{html.escape(value)}</b>")
-    return "📊 " + "  ·  ".join(parts) if parts else ""
+    return "↳ " + "  |  ".join(parts) if parts else ""
 
 
-def _item(level, when, event):
+def _bullet(level, event):
+    """Same layout for every impact level (no space-based alignment, since
+    Telegram uses a proportional font)."""
     title = html.escape(clean(event.get("title")))
-    if level == "high":  # full card
-        lines = [f"🕒 <b>{_time(when)}</b>  ·  {_who(event)}", f"<b>{title}</b>"]
-        details = _details(event)
-        if details:
-            lines.append(details)
-        return lines
-    if level == "medium":  # headline + details
-        lines = [f"🕒 {_time(when)}  ·  {_who(event)}  ·  <b>{title}</b>"]
-        details = _details(event)
-        if details:
-            lines.append("      " + details)
-        return lines
-    return [f"▫️ {_time(when)}  ·  {_who(event)}  ·  {title}"]  # one line
+    if level == "high":
+        title = f"<b>{title}</b>"
+    lines = [f"➤ {_who(event)} — {title}"]
+    details = _details(event)
+    if details:
+        lines.append(details)
+    return lines
+
+
+def _section(level, items):
+    """Events of one level, grouped under a heading per start time."""
+    lines, current = [], None
+    for when, event in items:
+        stamp = _time(when)
+        if stamp != current:
+            current = stamp
+            lines += ["", f"🕒 <b>{stamp}</b>"]
+        lines += _bullet(level, event) + [""]  # blank line after each event
+    return lines
 
 
 def _counts(events):
@@ -107,10 +115,14 @@ def _counts(events):
 
 def _glance(events):
     counts = _counts(events)
-    return "  ·  ".join(
+    return "  |  ".join(
         f"{_style(level)[0]} {counts[level]} {SHORT[level]}"
         for level in ORDER if level in counts
     )
+
+
+def _events(n):
+    return f"{n} event" + ("" if n == 1 else "s")
 
 
 def _greeting(now):
@@ -134,34 +146,38 @@ def build_messages(events, now, tomorrow=None):
             f"{_greeting(now)}! Here's what's on today.",
             f"🕐 All times in {cfg.DISPLAY_TZ_LABEL}",
             "",
-            f"<b>Today at a glance</b>  ({len(events)} events)",
+            f"<b>Today at a glance</b>  ({_events(len(events))})",
             _glance(events),
         ]
-        current = None
-        for level, when, event in events:
-            if level != current:
-                current = level
-                emoji, _ = _style(level)
-                lines += ["", RULE, f"{emoji} <b>{TITLES[level]}</b>", ""]
-            elif level == "high":
-                lines.append("")  # space between the full cards
-            lines += _item(level, when, event)
+        for level in ORDER:
+            items = [(w, e) for lv, w, e in events if lv == level]
+            if not items:
+                continue
+            emoji, _ = _style(level)
+            lines += ["", RULE, f"{emoji} <b>{TITLES[level]}</b>"]
+            lines += _section(level, items)
 
     if tomorrow is not None:
         lines += ["", RULE]
         if tomorrow:
-            lines.append(f"👀 <b>Tomorrow:</b> {len(tomorrow)} events  "
+            lines.append(f"👀 <b>Tomorrow:</b> {_events(len(tomorrow))}  "
                          f"({_glance(tomorrow)})")
         else:
             lines.append("👀 <b>Tomorrow:</b> nothing scheduled yet")
 
-    messages, chunk = [], ""
+    tidy = []  # never more than one blank line in a row
     for line in lines:
+        if line == "" and tidy and tidy[-1] == "":
+            continue
+        tidy.append(line)
+
+    messages, chunk = [], ""
+    for line in tidy:
         if chunk and len(chunk) + len(line) + 1 > MAX_CHARS:
-            messages.append(chunk)
+            messages.append(chunk.strip("\n"))
             chunk = ""
         chunk += ("\n" if chunk else "") + line
-    messages.append(chunk)
+    messages.append(chunk.strip("\n"))
     return messages
 
 
