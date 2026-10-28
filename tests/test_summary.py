@@ -1,115 +1,142 @@
-"""Daily summary: one message listing today's events, sent once per day."""
-import html
-import time
+"""Run from the repo root:  python -m unittest discover -s tests -v"""
+import os
+import sys
+import tempfile
+import unittest
+from datetime import datetime, timedelta
 
-import config as cfg
-from state import save_state
-from utils import clean, parse_event_time
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-MAX_CHARS = 3800  # Telegram's limit is 4096; leave headroom for markup
+import config as cfg  # noqa: E402
+import summary  # noqa: E402
 
-
-RANK = {**cfg.IMPACT_RANK, "na": -1}   # "na" = no / unknown impact label
-NA_STYLE = ("⚫", "N/A")
-
-
-def _style(level):
-    return NA_STYLE if level == "na" else cfg.IMPACT_STYLE[level]
+# 08:30 IST on 25 Oct 2026
+NOW = datetime(2026, 10, 25, 3, 0, tzinfo=cfg.UTC)
 
 
-def _level(event):
-    level = clean(event.get("impact")).lower()
-    return level if level in cfg.IMPACT_RANK else "na"
+def ev(hours, impact="High", title="CPI", country="USD", **extra):
+    when = NOW + timedelta(hours=hours)
+    return {"title": title, "country": country, "impact": impact,
+            "date": when.isoformat(), **extra}
 
 
-def todays_events(calendar, now):
-    """(level, time, event) for today's events at/above SUMMARY_MIN_IMPACT
-    ("all" = every event), most important first, then by time."""
-    tz = cfg.DISPLAY_TZ
-    today = now.astimezone(tz).date()
-    min_rank = -1 if cfg.SUMMARY_MIN_IMPACT == "all" else cfg.IMPACT_RANK[cfg.SUMMARY_MIN_IMPACT]
-    found = []
-    for event in calendar:
-        if not isinstance(event, dict):
-            continue
-        level = _level(event)
-        if RANK[level] < min_rank:
-            continue
-        when = parse_event_time(event.get("date"))
-        if when is None or when.astimezone(tz).date() != today:
-            continue
-        found.append((level, when, event))
-    found.sort(key=lambda i: (-RANK[i[0]], i[1]))
-    return found
+class FakeNotifier:
+    def __init__(self):
+        self.sent = []
+
+    def send(self, message):
+        self.sent.append(message)
 
 
-def _line(when, event):
-    local = when.astimezone(cfg.DISPLAY_TZ).strftime("%I:%M %p")
-    parts = []
-    for label, field in (("Prev", "previous"), ("Fcst", "forecast"),
-                         ("Actual", "actual")):
-        value = clean(event.get(field))
-        if value != "Not available":
-            parts.append(f"{label} {html.escape(value)}")
-    extra = f" ({' · '.join(parts)})" if parts else ""
-    country = html.escape(clean(event.get("country")))
-    title = html.escape(clean(event.get("title")))
-    return f"🕒 {local}  {country}  <b>{title}</b>{extra}"
+class SummaryTests(unittest.TestCase):
+    def setUp(self):
+        self._tmp = tempfile.TemporaryDirectory()
+        self._old = (cfg.STATE_FILE, cfg.SEND_DELAY_SECONDS, cfg.SUMMARY_ENABLED,
+                     cfg.SUMMARY_HOUR, cfg.SUMMARY_MIN_IMPACT)
+        cfg.STATE_FILE = os.path.join(self._tmp.name, "state.json")
+        cfg.SEND_DELAY_SECONDS = 0
+        cfg.SUMMARY_ENABLED, cfg.SUMMARY_HOUR, cfg.SUMMARY_MIN_IMPACT = True, 8, "medium"
+
+    def tearDown(self):
+        (cfg.STATE_FILE, cfg.SEND_DELAY_SECONDS, cfg.SUMMARY_ENABLED,
+         cfg.SUMMARY_HOUR, cfg.SUMMARY_MIN_IMPACT) = self._old
+        self._tmp.cleanup()
+
+    def test_only_today_and_min_impact_sorted_by_importance(self):
+        cal = [ev(5, "Medium", "M"), ev(7, "High", "H"), ev(1, "Low", "L"),
+               ev(40, "High", "Tomorrow")]
+        found = summary.todays_events(cal, NOW)
+        self.assertEqual([e["title"] for _, _, e in found], ["H", "M"])
+
+    def test_all_includes_every_level_and_na(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "Low", "L"), ev(2, "Holiday", "Hol"), ev(3, "", "NoLabel"),
+               ev(4, "Non-Economic", "NonEco"), ev(5, "High", "H"),
+               ev(6, "Medium", "M")]
+        found = summary.todays_events(cal, NOW)
+        self.assertEqual([e["title"] for _, _, e in found],
+                         ["H", "M", "L", "Hol", "NoLabel", "NonEco"])
+        text = "\n".join(summary.build_messages(found, NOW))
+        self.assertIn("⚫ <b>UNRATED</b>", text)
+        self.assertIn("⚫ 2 Unrated", text)
+
+    def test_empty_day_all_message(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        self.assertIn("quiet day", summary.build_messages([], NOW)[0])
+
+    def test_message_content(self):
+        cal = [ev(7, "High", "A <b> & B", previous="1%", forecast="2%")]
+        text = summary.build_messages(summary.todays_events(cal, NOW), NOW)[0]
+        self.assertIn("Sunday, 25 Oct 2026", text)
+        self.assertIn("Good morning", text)
+        self.assertIn("🔴 <b>HIGH IMPACT</b>", text)
+        self.assertIn("🇺🇸 USD", text)
+        self.assertIn("A &lt;b&gt; &amp; B", text)
+        self.assertIn("Previous <b>1%</b>", text)
+        self.assertIn("Forecast <b>2%</b>", text)
+        self.assertIn("🔴 1 High", text)
+
+    def test_empty_day_message(self):
+        text = summary.build_messages([], NOW)[0]
+        self.assertIn("quiet day", text)
+
+    def test_tomorrow_preview(self):
+        found = summary.todays_events([ev(2)], NOW)
+        tom = summary.events_for_day(
+            [ev(30, "High", "T1"), ev(31, "Medium", "T2")],
+            (NOW + timedelta(days=1)).astimezone(cfg.DISPLAY_TZ).date())
+        text = summary.build_messages(found, NOW, tom)[0]
+        self.assertIn("Tomorrow:</b> 2 events", text)
+        self.assertIn("nothing scheduled",
+                      summary.build_messages(found, NOW, [])[0])
+
+    def test_unknown_country_gets_globe_flag(self):
+        found = summary.todays_events([ev(2, country="XYZ")], NOW)
+        self.assertIn("🌐 XYZ", summary.build_messages(found, NOW)[0])
+
+    def test_long_summary_is_split(self):
+        cal = [ev(1, "Medium", "Event number %d " % i + "x" * 60) for i in range(120)]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW)
+        self.assertGreater(len(msgs), 1)
+        self.assertTrue(all(len(m) <= 4096 for m in msgs))
+
+    def test_sent_once_per_day(self):
+        n, st = FakeNotifier(), {}
+        summary.maybe_send_summary([ev(2)], NOW, n, st)
+        summary.maybe_send_summary([ev(2)], NOW + timedelta(minutes=5), n, st)
+        self.assertEqual(len(n.sent), 1)
+        summary.maybe_send_summary([ev(2)], NOW + timedelta(days=1), n, st)
+        self.assertEqual(len(n.sent), 2)
+
+    def test_not_before_summary_hour(self):
+        n, st = FakeNotifier(), {}
+        early = NOW - timedelta(hours=2)  # 06:30 IST
+        summary.maybe_send_summary([ev(2)], early, n, st)
+        self.assertEqual(n.sent, [])
+
+    def test_disabled(self):
+        cfg.SUMMARY_ENABLED = False
+        n = FakeNotifier()
+        summary.maybe_send_summary([ev(2)], NOW, n, {})
+        self.assertEqual(n.sent, [])
+
+    def test_failed_send_is_retried(self):
+        class Failing:
+            def send(self, m):
+                raise RuntimeError("boom")
+        st = {}
+        summary.maybe_send_summary([ev(2)], NOW, Failing(), st)
+        n = FakeNotifier()
+        summary.maybe_send_summary([ev(2)], NOW, n, st)
+        self.assertEqual(len(n.sent), 1)
+
+    def test_marker_is_pruned_later(self):
+        import state as state_mod
+        st = {}
+        summary.maybe_send_summary([ev(2)], NOW, FakeNotifier(), st)
+        state_mod.prune_state(st, NOW + timedelta(days=10))
+        self.assertEqual(st, {})
 
 
-def build_messages(events, now):
-    """Summary text split into Telegram-sized messages."""
-    day = now.astimezone(cfg.DISPLAY_TZ).strftime("%a %d %b %Y")
-    header = f"📅 <b>Daily summary - {day} ({cfg.DISPLAY_TZ_LABEL})</b>"
-    if not events:
-        if cfg.SUMMARY_MIN_IMPACT == "all":
-            return [f"{header}\n\nNo events today."]
-        label = cfg.IMPACT_STYLE[cfg.SUMMARY_MIN_IMPACT][1].title()
-        return [f"{header}\n\nNo events at {label} impact or higher today."]
-
-    lines = [header, f"{len(events)} event(s), most important first"]
-    current = None
-    for level, when, event in events:
-        if level != current:
-            current = level
-            emoji, label = _style(level)
-            count = sum(1 for e in events if e[0] == level)
-            lines += ["", f"{emoji} <b>{label.title()} ({count})</b>"]
-        lines.append(_line(when, event))
-
-    messages, chunk = [], ""
-    for line in lines:
-        if chunk and len(chunk) + len(line) + 1 > MAX_CHARS:
-            messages.append(chunk)
-            chunk = ""
-        chunk += ("\n" if chunk else "") + line
-    messages.append(chunk)
-    return messages
-
-
-def summary_key(now):
-    # Shaped like an event key ("a|b|ISO-time") so state pruning removes it
-    # automatically after KEEP_DAYS.
-    day = now.astimezone(cfg.DISPLAY_TZ).date().isoformat()
-    return f"summary|daily|{day}T00:00:00+00:00"
-
-
-def maybe_send_summary(calendar, now, notifier, state):
-    """Send today's summary once, from SUMMARY_HOUR onwards."""
-    if not cfg.SUMMARY_ENABLED:
-        return
-    if now.astimezone(cfg.DISPLAY_TZ).hour < cfg.SUMMARY_HOUR:
-        return
-    key = summary_key(now)
-    if state.get(key, {}).get("sent"):
-        return
-    try:
-        for message in build_messages(todays_events(calendar, now), now):
-            notifier.send(message)
-            time.sleep(cfg.SEND_DELAY_SECONDS)
-    except Exception as e:  # not marked as sent, so the next run retries
-        print("SUMMARY FAILED:", e)
-        return
-    state[key] = {"sent": True}
-    save_state(state)
-    print("Daily summary sent.")
+if __name__ == "__main__":
+    unittest.main()
