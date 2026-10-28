@@ -105,4 +105,8 @@ except ValueError:
 # ("all" also includes events that have no impact label, shown as N/A).
 _smin = os.environ.get("SUMMARY_MIN_IMPACT", "all").strip().lower()
 SUMMARY_MIN_IMPACT = _smin if (_smin in IMPACT_RANK or _smin == "all") else "all"
+# Manual "resend summary" from the workflow: send today's summary again now,
+# even if it was already sent or it is before SUMMARY_HOUR.
+RESEND_SUMMARY = os.environ.get("RESEND_SUMMARY", "false").strip().lower() == "true"
+
 
