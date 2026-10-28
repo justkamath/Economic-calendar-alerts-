@@ -174,14 +174,18 @@ def summary_key(now):
 
 
 def maybe_send_summary(calendar, now, notifier, state):
-    """Send today's summary once, from SUMMARY_HOUR onwards."""
+    """Send today's summary once, from SUMMARY_HOUR onwards.
+    With RESEND_SUMMARY it is sent now regardless of time or earlier sends."""
     if not cfg.SUMMARY_ENABLED:
-        return
-    if now.astimezone(cfg.DISPLAY_TZ).hour < cfg.SUMMARY_HOUR:
+        if cfg.RESEND_SUMMARY:
+            print("Summary resend requested, but SUMMARY_ENABLED is false.")
         return
     key = summary_key(now)
-    if state.get(key, {}).get("sent"):
-        return
+    if not cfg.RESEND_SUMMARY:
+        if now.astimezone(cfg.DISPLAY_TZ).hour < cfg.SUMMARY_HOUR:
+            return
+        if state.get(key, {}).get("sent"):
+            return
     try:
         today = now.astimezone(cfg.DISPLAY_TZ).date()
         events = events_for_day(calendar, today)
