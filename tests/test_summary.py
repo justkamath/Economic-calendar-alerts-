@@ -90,6 +90,29 @@ class SummaryTests(unittest.TestCase):
         self.assertIn("nothing scheduled",
                       summary.build_messages(found, NOW, [])[0])
 
+    def test_same_time_events_share_one_time_heading(self):
+        cal = [ev(2, "High", "A", country="AUD"), ev(2, "High", "B", country="AUD"),
+               ev(4, "High", "C", country="USD")]
+        text = summary.build_messages(summary.todays_events(cal, NOW), NOW)[0]
+        self.assertEqual(text.count("🕒"), 2)   # two distinct times, not three
+        self.assertIn("➤ 🇦🇺 AUD — <b>A</b>", text)
+        self.assertIn("➤ 🇦🇺 AUD — <b>B</b>", text)
+
+    def test_blank_line_after_each_event_and_no_double_blanks(self):
+        cal = [ev(2, "High", "A", country="AUD", previous="1%"),
+               ev(4, "High", "B", country="USD"), ev(5, "Low", "C")]
+        text = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])[0]
+        self.assertIn("↳ Previous <b>1%</b>\n\n", text)   # blank after event A
+        self.assertIn("<b>B</b>\n\n", text)                # and after event B
+        self.assertNotIn("\n\n\n", text)
+        self.assertFalse(text.endswith("\n"))
+
+    def test_singular_plural_event_count(self):
+        one = summary.todays_events([ev(2)], NOW)
+        self.assertIn("(1 event)", summary.build_messages(one, NOW)[0])
+        two = summary.todays_events([ev(2), ev(3)], NOW)
+        self.assertIn("(2 events)", summary.build_messages(two, NOW)[0])
+
     def test_unknown_country_gets_globe_flag(self):
         found = summary.todays_events([ev(2, country="XYZ")], NOW)
         self.assertIn("🌐 XYZ", summary.build_messages(found, NOW)[0])
@@ -112,6 +135,27 @@ class SummaryTests(unittest.TestCase):
         n, st = FakeNotifier(), {}
         early = NOW - timedelta(hours=2)  # 06:30 IST
         summary.maybe_send_summary([ev(2)], early, n, st)
+        self.assertEqual(n.sent, [])
+
+    def test_resend_forces_summary_even_if_sent_or_early(self):
+        n, st = FakeNotifier(), {}
+        early = NOW - timedelta(hours=2)  # 06:30 IST, before SUMMARY_HOUR
+        cfg.RESEND_SUMMARY = True
+        try:
+            summary.maybe_send_summary([ev(2)], early, n, st)   # early: still sends
+            summary.maybe_send_summary([ev(2)], early, n, st)   # already sent: again
+        finally:
+            cfg.RESEND_SUMMARY = False
+        self.assertEqual(len(n.sent), 2)
+
+    def test_resend_does_not_override_disabled(self):
+        cfg.SUMMARY_ENABLED = False
+        cfg.RESEND_SUMMARY = True
+        n = FakeNotifier()
+        try:
+            summary.maybe_send_summary([ev(2)], NOW, n, {})
+        finally:
+            cfg.RESEND_SUMMARY = False
         self.assertEqual(n.sent, [])
 
     def test_disabled(self):
