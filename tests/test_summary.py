@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config as cfg  # noqa: E402
 import summary  # noqa: E402
 
-# 08:30 IST on 25 Oct 2026
+# 08:30 IST on Sunday 25 Oct 2026
 NOW = datetime(2026, 10, 25, 3, 0, tzinfo=cfg.UTC)
 
 
@@ -47,39 +47,83 @@ class SummaryTests(unittest.TestCase):
          cfg.SUMMARY_HOUR, cfg.SUMMARY_MIN_IMPACT) = self._old
         self._tmp.cleanup()
 
-    def test_only_today_and_min_impact_sorted_by_importance(self):
+    # ----- selecting events -----
+    def test_only_today_and_min_impact(self):
         cal = [ev(5, "Medium", "M"), ev(7, "High", "H"), ev(1, "Low", "L"),
                ev(40, "High", "Tomorrow")]
         found = summary.todays_events(cal, NOW)
         self.assertEqual([e["title"] for _, _, e in found], ["H", "M"])
 
-    def test_all_includes_every_level_and_na(self):
+    def test_all_includes_every_level_and_unrated(self):
         cfg.SUMMARY_MIN_IMPACT = "all"
         cal = [ev(1, "Low", "L"), ev(2, "Holiday", "Hol"), ev(3, "", "NoLabel"),
                ev(4, "Non-Economic", "NonEco"), ev(5, "High", "H"),
                ev(6, "Medium", "M")]
         found = summary.todays_events(cal, NOW)
-        self.assertEqual([e["title"] for _, _, e in found],
-                         ["H", "M", "L", "Hol", "NoLabel", "NonEco"])
-        text = "\n".join(summary.build_messages(found, NOW))
-        self.assertIn("⚫ <b>UNRATED</b>", text)
+        self.assertEqual(len(found), 6)
+        text = whole(summary.build_messages(found, NOW))
         self.assertIn("⚫ 2 Unrated", text)
+        for title in ("L", "Hol", "NoLabel", "NonEco", "H", "M"):
+            self.assertIn(f"<b>{title}</b>", text)
 
-    def test_empty_day_all_message(self):
-        cfg.SUMMARY_MIN_IMPACT = "all"
-        self.assertIn("quiet day", summary.build_messages([], NOW)[0])
-
-    def test_message_content(self):
-        cal = [ev(7, "High", "A <b> & B", previous="1%", forecast="2%")]
+    # ----- the planner layout -----
+    def test_header_counts_and_focus(self):
+        cal = [ev(7, "High", "A", country="AUD"), ev(8, "High", "B", country="AUD"),
+               ev(9, "Medium", "C", country="GBP")]
         text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
         self.assertIn("Sunday, 25 Oct 2026", text)
-        self.assertIn("Good morning", text)
-        self.assertIn("🔴 <b>HIGH IMPACT</b>", text)
-        self.assertIn("🇺🇸 USD", text)
-        self.assertIn("A &lt;b&gt; &amp; B", text)
+        self.assertIn("Good morning! Here's your day (IST)", text)
+        self.assertIn("🔴 2 High   🟠 1 Medium", text)
+        self.assertIn("🌍 In focus: 🇦🇺 AUD  🇬🇧 GBP", text)  # most High events first
+
+    def test_events_in_time_order_grouped_by_part_of_day(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(13, "Low", "Nightly"),       # 21:30 IST  -> NIGHT
+               ev(10, "High", "Evening"),      # 18:30 IST  -> EVENING
+               ev(5, "Medium", "Afternoon"),   # 13:30 IST  -> AFTERNOON
+               ev(1, "High", "Morning"),       # 09:30 IST  -> MORNING
+               ev(-6, "Low", "Early")]         # 02:30 IST  -> EARLY HOURS
+        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
+        order = [text.index(x) for x in ("EARLY HOURS", "Early", "MORNING", "Morning",
+                                         "AFTERNOON", "Afternoon", "EVENING",
+                                         "Evening", "NIGHT", "Nightly")]
+        self.assertEqual(order, sorted(order))
+        self.assertIn("🌙 <b>EARLY HOURS</b>", text)
+        self.assertIn("🌃 <b>NIGHT</b>", text)
+
+    def test_empty_parts_of_the_day_are_skipped(self):
+        text = whole(summary.build_messages(
+            summary.todays_events([ev(1, "High", "Only")], NOW), NOW))
+        self.assertIn("MORNING", text)
+        for name in ("EARLY HOURS", "AFTERNOON", "EVENING", "NIGHT"):
+            self.assertNotIn(name, text)
+
+    def test_event_block_layout_and_escaping(self):
+        cal = [ev(1, "High", "A <b> & B", country="USD", previous="1%", forecast="2%")]
+        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
+        self.assertIn("🔴 <b>9:30 AM</b>  🇺🇸 USD\n    <b>A &lt;b&gt; &amp; B</b>\n"
+                      "    ↳ Previous <b>1%</b>  |  Forecast <b>2%</b>", text)
+
+    def test_numbers_only_for_high_and_medium(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "High", "H", previous="1%"), ev(2, "Medium", "M", previous="2%"),
+               ev(3, "Low", "L", previous="3%")]
+        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
         self.assertIn("Previous <b>1%</b>", text)
-        self.assertIn("Forecast <b>2%</b>", text)
-        self.assertIn("🔴 1 High", text)
+        self.assertIn("Previous <b>2%</b>", text)
+        self.assertNotIn("Previous <b>3%</b>", text)
+
+    def test_blank_line_after_every_event_and_no_double_blanks(self):
+        cal = [ev(1, "High", "A", previous="1%"), ev(2, "High", "B")]
+        text = whole(summary.build_messages(
+            summary.todays_events(cal, NOW), NOW, []))
+        self.assertIn("Previous <b>1%</b>\n\n🔴", text)   # blank between events
+        self.assertNotIn("\n\n\n", text)
+        self.assertFalse(text.endswith("\n"))
+
+    def test_unknown_country_gets_globe_flag(self):
+        found = summary.todays_events([ev(2, country="XYZ")], NOW)
+        self.assertIn("🌐 XYZ", whole(summary.build_messages(found, NOW)))
 
     def test_empty_day_message(self):
         text = summary.build_messages([], NOW)[0]
@@ -94,85 +138,17 @@ class SummaryTests(unittest.TestCase):
         self.assertIn("Tomorrow:</b> 2 events", text)
         self.assertIn("nothing scheduled",
                       whole(summary.build_messages(found, NOW, [])))
+        self.assertIn("nothing scheduled", summary.build_messages([], NOW, [])[0])
 
-    def test_same_time_events_share_one_time_heading(self):
-        cal = [ev(2, "High", "A", country="AUD"), ev(2, "High", "B", country="AUD"),
-               ev(4, "High", "C", country="USD")]
-        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
-        self.assertEqual(text.count("🕒"), 2)   # two distinct times, not three
-        self.assertIn("➤ 🇦🇺 AUD — <b>A</b>", text)
-        self.assertIn("➤ 🇦🇺 AUD — <b>B</b>", text)
-
-    def test_blank_line_after_each_event_and_no_double_blanks(self):
-        cal = [ev(2, "High", "A", country="AUD", previous="1%"),
-               ev(4, "High", "B", country="USD"), ev(5, "Low", "C")]
-        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW, []))
-        self.assertIn("↳ Previous <b>1%</b>\n\n", text)   # blank after event A
-        self.assertIn("<b>B</b>\n\n", text)                # and after event B
-        self.assertNotIn("\n\n\n", text)
-        self.assertFalse(text.endswith("\n"))
-
-    def test_singular_plural_event_count(self):
-        one = summary.todays_events([ev(2)], NOW)
-        self.assertIn("(1 event)", whole(summary.build_messages(one, NOW)))
-        two = summary.todays_events([ev(2), ev(3)], NOW)
-        self.assertIn("(2 events)", whole(summary.build_messages(two, NOW)))
-
-    def test_one_message_per_level_most_important_first(self):
-        cfg.SUMMARY_MIN_IMPACT = "all"
-        cal = [ev(1, "Low", "LowOne"), ev(2, "High", "HighOne"),
-               ev(3, "Medium", "MedOne"), ev(4, "High", "HighTwo")]
-        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
-        self.assertEqual(len(msgs), 4)   # overview + High + Medium + Low
-        self.assertIn("Today at a glance", msgs[0])
-        self.assertNotIn("HighOne", msgs[0])
-        self.assertIn("🔴 <b>HIGH IMPACT</b>  (2 events)", msgs[1])
-        self.assertIn("HighOne", msgs[1])
-        self.assertIn("HighTwo", msgs[1])
-        self.assertNotIn("MedOne", msgs[1])
-        self.assertIn("🟠 <b>MEDIUM IMPACT</b>  (1 event)", msgs[2])
-        self.assertIn("🟡 <b>LOW IMPACT</b>  (1 event)", msgs[3])
-        self.assertIn("Tomorrow", msgs[3])      # preview rides on the last one
-        self.assertNotIn("Tomorrow", "".join(msgs[:3]))
-
-    def test_level_with_no_events_gets_no_message(self):
-        cal = [ev(2, "High", "OnlyHigh")]
-        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW)
-        self.assertEqual(len(msgs), 2)          # overview + High only
-
-    def test_failure_midway_resumes_without_repeating(self):
-        cfg.SUMMARY_MIN_IMPACT = "all"
-        cal = [ev(1, "High", "H"), ev(2, "Medium", "M"), ev(3, "Low", "L")]
-
-        class FlakyOnce:
-            def __init__(self):
-                self.sent, self.failed = [], False
-
-            def send(self, message):
-                if len(self.sent) == 2 and not self.failed:
-                    self.failed = True
-                    raise RuntimeError("network")
-                self.sent.append(message)
-
-        n, st = FlakyOnce(), {}
-        summary.maybe_send_summary(cal, NOW, n, st)       # fails after 2 messages
-        self.assertEqual(len(n.sent), 2)
-        self.assertFalse(st[summary.summary_key(NOW)]["sent"])
-        summary.maybe_send_summary(cal, NOW, n, st)       # resumes at message 3
-        self.assertEqual(len(n.sent), 4)                  # overview+H+M+L, once each
-        self.assertEqual(len(set(n.sent)), 4)
-        self.assertTrue(st[summary.summary_key(NOW)]["sent"])
-
-    def test_unknown_country_gets_globe_flag(self):
-        found = summary.todays_events([ev(2, country="XYZ")], NOW)
-        self.assertIn("🌐 XYZ", whole(summary.build_messages(found, NOW)))
-
-    def test_long_summary_is_split(self):
+    def test_one_message_normally_and_split_when_huge(self):
+        one = summary.build_messages(summary.todays_events([ev(1), ev(2)], NOW), NOW)
+        self.assertEqual(len(one), 1)
         cal = [ev(1, "Medium", "Event number %d " % i + "x" * 60) for i in range(120)]
         msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW)
         self.assertGreater(len(msgs), 1)
         self.assertTrue(all(len(m) <= 4096 for m in msgs))
 
+    # ----- sending -----
     def test_sent_once_per_day(self):
         n, st = FakeNotifier(), {}
         cal = [ev(2), ev(26)]   # one High event today, one tomorrow
@@ -186,8 +162,7 @@ class SummaryTests(unittest.TestCase):
 
     def test_not_before_summary_hour(self):
         n, st = FakeNotifier(), {}
-        early = NOW - timedelta(hours=2)  # 06:30 IST
-        summary.maybe_send_summary([ev(2)], early, n, st)
+        summary.maybe_send_summary([ev(2)], NOW - timedelta(hours=2), n, st)
         self.assertEqual(n.sent, [])
 
     def test_resend_forces_summary_even_if_sent_or_early(self):
@@ -229,6 +204,30 @@ class SummaryTests(unittest.TestCase):
         summary.maybe_send_summary([ev(2)], NOW, n, st)
         self.assertEqual(len(n.sent), len(summary.build_messages(
             summary.todays_events([ev(2)], NOW), NOW, [])))
+
+    def test_failure_midway_resumes_without_repeating(self):
+        cal = [ev(1, "Medium", "Event %d " % i + "x" * 80) for i in range(80)]
+        total = len(summary.build_messages(summary.todays_events(cal, NOW), NOW, []))
+        self.assertGreaterEqual(total, 3)
+
+        class FlakyOnce:
+            def __init__(self):
+                self.sent, self.failed = [], False
+
+            def send(self, message):
+                if len(self.sent) == 2 and not self.failed:
+                    self.failed = True
+                    raise RuntimeError("network")
+                self.sent.append(message)
+
+        n, st = FlakyOnce(), {}
+        summary.maybe_send_summary(cal, NOW, n, st)       # fails after 2 messages
+        self.assertEqual(len(n.sent), 2)
+        self.assertFalse(st[summary.summary_key(NOW)]["sent"])
+        summary.maybe_send_summary(cal, NOW, n, st)       # resumes at message 3
+        self.assertEqual(len(n.sent), total)
+        self.assertEqual(len(set(n.sent)), total)         # nothing sent twice
+        self.assertTrue(st[summary.summary_key(NOW)]["sent"])
 
     def test_marker_is_pruned_later(self):
         import state as state_mod
