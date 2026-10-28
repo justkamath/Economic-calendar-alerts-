@@ -20,6 +20,11 @@ def ev(hours, impact="High", title="CPI", country="USD", **extra):
             "date": when.isoformat(), **extra}
 
 
+def whole(messages):
+    """All messages of one summary as a single string."""
+    return "\n".join(messages)
+
+
 class FakeNotifier:
     def __init__(self):
         self.sent = []
@@ -66,7 +71,7 @@ class SummaryTests(unittest.TestCase):
 
     def test_message_content(self):
         cal = [ev(7, "High", "A <b> & B", previous="1%", forecast="2%")]
-        text = summary.build_messages(summary.todays_events(cal, NOW), NOW)[0]
+        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
         self.assertIn("Sunday, 25 Oct 2026", text)
         self.assertIn("Good morning", text)
         self.assertIn("🔴 <b>HIGH IMPACT</b>", text)
@@ -85,15 +90,15 @@ class SummaryTests(unittest.TestCase):
         tom = summary.events_for_day(
             [ev(30, "High", "T1"), ev(31, "Medium", "T2")],
             (NOW + timedelta(days=1)).astimezone(cfg.DISPLAY_TZ).date())
-        text = summary.build_messages(found, NOW, tom)[0]
+        text = whole(summary.build_messages(found, NOW, tom))
         self.assertIn("Tomorrow:</b> 2 events", text)
         self.assertIn("nothing scheduled",
-                      summary.build_messages(found, NOW, [])[0])
+                      whole(summary.build_messages(found, NOW, [])))
 
     def test_same_time_events_share_one_time_heading(self):
         cal = [ev(2, "High", "A", country="AUD"), ev(2, "High", "B", country="AUD"),
                ev(4, "High", "C", country="USD")]
-        text = summary.build_messages(summary.todays_events(cal, NOW), NOW)[0]
+        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
         self.assertEqual(text.count("🕒"), 2)   # two distinct times, not three
         self.assertIn("➤ 🇦🇺 AUD — <b>A</b>", text)
         self.assertIn("➤ 🇦🇺 AUD — <b>B</b>", text)
@@ -101,7 +106,7 @@ class SummaryTests(unittest.TestCase):
     def test_blank_line_after_each_event_and_no_double_blanks(self):
         cal = [ev(2, "High", "A", country="AUD", previous="1%"),
                ev(4, "High", "B", country="USD"), ev(5, "Low", "C")]
-        text = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])[0]
+        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW, []))
         self.assertIn("↳ Previous <b>1%</b>\n\n", text)   # blank after event A
         self.assertIn("<b>B</b>\n\n", text)                # and after event B
         self.assertNotIn("\n\n\n", text)
@@ -109,13 +114,58 @@ class SummaryTests(unittest.TestCase):
 
     def test_singular_plural_event_count(self):
         one = summary.todays_events([ev(2)], NOW)
-        self.assertIn("(1 event)", summary.build_messages(one, NOW)[0])
+        self.assertIn("(1 event)", whole(summary.build_messages(one, NOW)))
         two = summary.todays_events([ev(2), ev(3)], NOW)
-        self.assertIn("(2 events)", summary.build_messages(two, NOW)[0])
+        self.assertIn("(2 events)", whole(summary.build_messages(two, NOW)))
+
+    def test_one_message_per_level_most_important_first(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "Low", "LowOne"), ev(2, "High", "HighOne"),
+               ev(3, "Medium", "MedOne"), ev(4, "High", "HighTwo")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
+        self.assertEqual(len(msgs), 4)   # overview + High + Medium + Low
+        self.assertIn("Today at a glance", msgs[0])
+        self.assertNotIn("HighOne", msgs[0])
+        self.assertIn("🔴 <b>HIGH IMPACT</b>  (2 events)", msgs[1])
+        self.assertIn("HighOne", msgs[1])
+        self.assertIn("HighTwo", msgs[1])
+        self.assertNotIn("MedOne", msgs[1])
+        self.assertIn("🟠 <b>MEDIUM IMPACT</b>  (1 event)", msgs[2])
+        self.assertIn("🟡 <b>LOW IMPACT</b>  (1 event)", msgs[3])
+        self.assertIn("Tomorrow", msgs[3])      # preview rides on the last one
+        self.assertNotIn("Tomorrow", "".join(msgs[:3]))
+
+    def test_level_with_no_events_gets_no_message(self):
+        cal = [ev(2, "High", "OnlyHigh")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW)
+        self.assertEqual(len(msgs), 2)          # overview + High only
+
+    def test_failure_midway_resumes_without_repeating(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "High", "H"), ev(2, "Medium", "M"), ev(3, "Low", "L")]
+
+        class FlakyOnce:
+            def __init__(self):
+                self.sent, self.failed = [], False
+
+            def send(self, message):
+                if len(self.sent) == 2 and not self.failed:
+                    self.failed = True
+                    raise RuntimeError("network")
+                self.sent.append(message)
+
+        n, st = FlakyOnce(), {}
+        summary.maybe_send_summary(cal, NOW, n, st)       # fails after 2 messages
+        self.assertEqual(len(n.sent), 2)
+        self.assertFalse(st[summary.summary_key(NOW)]["sent"])
+        summary.maybe_send_summary(cal, NOW, n, st)       # resumes at message 3
+        self.assertEqual(len(n.sent), 4)                  # overview+H+M+L, once each
+        self.assertEqual(len(set(n.sent)), 4)
+        self.assertTrue(st[summary.summary_key(NOW)]["sent"])
 
     def test_unknown_country_gets_globe_flag(self):
         found = summary.todays_events([ev(2, country="XYZ")], NOW)
-        self.assertIn("🌐 XYZ", summary.build_messages(found, NOW)[0])
+        self.assertIn("🌐 XYZ", whole(summary.build_messages(found, NOW)))
 
     def test_long_summary_is_split(self):
         cal = [ev(1, "Medium", "Event number %d " % i + "x" * 60) for i in range(120)]
@@ -125,11 +175,14 @@ class SummaryTests(unittest.TestCase):
 
     def test_sent_once_per_day(self):
         n, st = FakeNotifier(), {}
-        summary.maybe_send_summary([ev(2)], NOW, n, st)
-        summary.maybe_send_summary([ev(2)], NOW + timedelta(minutes=5), n, st)
-        self.assertEqual(len(n.sent), 1)
-        summary.maybe_send_summary([ev(2)], NOW + timedelta(days=1), n, st)
-        self.assertEqual(len(n.sent), 2)
+        cal = [ev(2), ev(26)]   # one High event today, one tomorrow
+        summary.maybe_send_summary(cal, NOW, n, st)
+        per_day = len(n.sent)
+        self.assertGreaterEqual(per_day, 1)
+        summary.maybe_send_summary(cal, NOW + timedelta(minutes=5), n, st)
+        self.assertEqual(len(n.sent), per_day)          # not sent twice
+        summary.maybe_send_summary(cal, NOW + timedelta(days=1), n, st)
+        self.assertEqual(len(n.sent), 2 * per_day)      # sent again next day
 
     def test_not_before_summary_hour(self):
         n, st = FakeNotifier(), {}
@@ -143,10 +196,12 @@ class SummaryTests(unittest.TestCase):
         cfg.RESEND_SUMMARY = True
         try:
             summary.maybe_send_summary([ev(2)], early, n, st)   # early: still sends
+            first = len(n.sent)
             summary.maybe_send_summary([ev(2)], early, n, st)   # already sent: again
         finally:
             cfg.RESEND_SUMMARY = False
-        self.assertEqual(len(n.sent), 2)
+        self.assertGreaterEqual(first, 1)
+        self.assertEqual(len(n.sent), 2 * first)
 
     def test_resend_does_not_override_disabled(self):
         cfg.SUMMARY_ENABLED = False
@@ -172,7 +227,8 @@ class SummaryTests(unittest.TestCase):
         summary.maybe_send_summary([ev(2)], NOW, Failing(), st)
         n = FakeNotifier()
         summary.maybe_send_summary([ev(2)], NOW, n, st)
-        self.assertEqual(len(n.sent), 1)
+        self.assertEqual(len(n.sent), len(summary.build_messages(
+            summary.todays_events([ev(2)], NOW), NOW, [])))
 
     def test_marker_is_pruned_later(self):
         import state as state_mod
