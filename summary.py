@@ -27,6 +27,7 @@ FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯�
 RULE = "──────────────"
 
 
+
 def _style(level):
     return NA_STYLE if level == "na" else cfg.IMPACT_STYLE[level]
 
@@ -132,45 +133,13 @@ def _greeting(now):
     return "Good afternoon" if hour < 17 else "Good evening"
 
 
-def build_messages(events, now, tomorrow=None):
-    """Summary text split into Telegram-sized messages.
-    `tomorrow` (optional) is tomorrow's event list, for the preview line."""
-    local = now.astimezone(cfg.DISPLAY_TZ)
-    lines = [f"📅 <b>{local.strftime('%A, %d %b %Y')}</b>"]
-
-    if not events:
-        lines.append(f"{_greeting(now)}! 😌 It's a quiet day, "
-                     "nothing on the calendar today.")
-    else:
-        lines += [
-            f"{_greeting(now)}! Here's what's on today.",
-            f"🕐 All times in {cfg.DISPLAY_TZ_LABEL}",
-            "",
-            f"<b>Today at a glance</b>  ({_events(len(events))})",
-            _glance(events),
-        ]
-        for level in ORDER:
-            items = [(w, e) for lv, w, e in events if lv == level]
-            if not items:
-                continue
-            emoji, _ = _style(level)
-            lines += ["", RULE, f"{emoji} <b>{TITLES[level]}</b>"]
-            lines += _section(level, items)
-
-    if tomorrow is not None:
-        lines += ["", RULE]
-        if tomorrow:
-            lines.append(f"👀 <b>Tomorrow:</b> {_events(len(tomorrow))}  "
-                         f"({_glance(tomorrow)})")
-        else:
-            lines.append("👀 <b>Tomorrow:</b> nothing scheduled yet")
-
-    tidy = []  # never more than one blank line in a row
+def _chunk(lines):
+    """Split one section into Telegram-sized messages (no double blank lines)."""
+    tidy = []
     for line in lines:
         if line == "" and tidy and tidy[-1] == "":
             continue
         tidy.append(line)
-
     messages, chunk = [], ""
     for line in tidy:
         if chunk and len(chunk) + len(line) + 1 > MAX_CHARS:
@@ -178,6 +147,53 @@ def build_messages(events, now, tomorrow=None):
             chunk = ""
         chunk += ("\n" if chunk else "") + line
     messages.append(chunk.strip("\n"))
+    return messages
+
+
+def build_messages(events, now, tomorrow=None):
+    """The summary as a list of messages: a short overview first, then one
+    message per impact level (High, Medium, Low, ...), most important first.
+    `tomorrow` (optional) is tomorrow's event list, shown on the last message."""
+    local = now.astimezone(cfg.DISPLAY_TZ)
+    header = [f"📅 <b>{local.strftime('%A, %d %b %Y')}</b>"]
+    sections = [header]
+
+    if not events:
+        header.append(f"{_greeting(now)}! 😌 It's a quiet day, "
+                      "nothing on the calendar today.")
+    else:
+        header += [
+            f"{_greeting(now)}! Here's what's on today.",
+            f"🕐 All times in {cfg.DISPLAY_TZ_LABEL}",
+            "",
+            f"<b>Today at a glance</b>  ({_events(len(events))})",
+            _glance(events),
+            "",
+            "👇 Details below, one message per impact level",
+        ]
+        day = local.strftime("%A, %d %b")
+        for level in ORDER:
+            items = [(w, e) for lv, w, e in events if lv == level]
+            if not items:
+                continue
+            emoji, _ = _style(level)
+            sections.append(
+                [f"{emoji} <b>{TITLES[level]}</b>  ({_events(len(items))})",
+                 f"{day} ({cfg.DISPLAY_TZ_LABEL})"]
+                + _section(level, items)
+            )
+
+    if tomorrow is not None:
+        sections[-1] += ["", RULE]
+        if tomorrow:
+            sections[-1].append(f"👀 <b>Tomorrow:</b> {_events(len(tomorrow))}  "
+                                f"({_glance(tomorrow)})")
+        else:
+            sections[-1].append("👀 <b>Tomorrow:</b> nothing scheduled yet")
+
+    messages = []
+    for section in sections:
+        messages += _chunk(section)
     return messages
 
 
@@ -202,12 +218,19 @@ def maybe_send_summary(calendar, now, notifier, state):
             return
         if state.get(key, {}).get("sent"):
             return
+    # Progress is saved after every message, so if a send fails part-way the
+    # next run carries on from the next message instead of repeating earlier ones.
+    done = 0 if cfg.RESEND_SUMMARY else state.get(key, {}).get("parts_sent", 0)
     try:
         today = now.astimezone(cfg.DISPLAY_TZ).date()
         events = events_for_day(calendar, today)
         tomorrow = events_for_day(calendar, today + timedelta(days=1))
-        for message in build_messages(events, now, tomorrow):
+        for number, message in enumerate(build_messages(events, now, tomorrow)):
+            if number < done:
+                continue
             notifier.send(message)
+            state[key] = {"sent": False, "parts_sent": number + 1}
+            save_state(state)
             time.sleep(cfg.SEND_DELAY_SECONDS)
     except Exception as e:  # not marked as sent, so the next run retries
         print("SUMMARY FAILED:", e)
