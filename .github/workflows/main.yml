@@ -5,7 +5,12 @@ on:
   workflow_dispatch:
     inputs:
       resend_alerts:
-        description: "Resend upcoming high-impact detection alerts once"
+        description: "Resend upcoming event alerts once"
+        required: true
+        type: boolean
+        default: false
+      resend_summary:
+        description: "Resend today's daily summary now"
         required: true
         type: boolean
         default: false
@@ -23,8 +28,7 @@ concurrency:
 jobs:
   run-python:
     runs-on: ubuntu-latest
-    timeout-minutes: 15          # was 10  (the job limit, near the top)
-
+    timeout-minutes: 15
 
     steps:
       - name: Checkout repository
@@ -38,7 +42,7 @@ jobs:
       - name: Run calendar bot with automatic retries
         uses: nick-fields/retry@v3
         with:
-          timeout_minutes: 4         # was 2   (under "uses: nick-fields/retry@v3")
+          timeout_minutes: 4
           max_attempts: 3
           retry_wait_seconds: 10
           command: python main.py
@@ -46,6 +50,7 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
           RESEND_DETECTION: ${{ github.event_name == 'workflow_dispatch' && inputs.resend_alerts || false }}
+          RESEND_SUMMARY: ${{ github.event_name == 'workflow_dispatch' && inputs.resend_summary || false }}
           ALERT_MIN_IMPACT: ${{ vars.ALERT_MIN_IMPACT || 'high' }}
 
       - name: Save sent alert history
