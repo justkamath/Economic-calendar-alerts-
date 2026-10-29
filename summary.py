@@ -17,6 +17,35 @@ TITLES = {"high": "HIGH IMPACT", "medium": "MEDIUM IMPACT", "low": "LOW IMPACT",
           "holiday": "BANK HOLIDAYS", "na": "UNRATED"}
 SHORT = {"high": "High", "medium": "Medium", "low": "Low",
          "holiday": "Holiday", "na": "Unrated"}
+# A short, relatable line under each set's heading: a feeling, never advice.
+# One is picked per day (it changes daily, but is the same for every run that day).
+TAGLINES = {
+    "high": (
+        "The ones that make charts go wild.",
+        "Today's main characters.",
+        "Where the real action happens.",
+        "The ones everyone is waiting for.",
+        "Big numbers, big reactions.",
+    ),
+    "medium": (
+        "Not the main act, but still on stage.",
+        "The ones that sneak up on you.",
+        "Small waves, still waves.",
+        "Plot twists, not headlines.",
+    ),
+    "low": (
+        "Mostly background noise.",
+        "Quiet ones, as usual.",
+        "Rarely make the headlines.",
+        "The calm between the storms.",
+    ),
+    "holiday": (
+        "Thin markets, slow day.",
+    ),
+    "na": (
+        "No rating, but here anyway.",
+    ),
+}
 FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯🇵", "AUD": "🇦🇺",
          "NZD": "🇳🇿", "CAD": "🇨🇦", "CHF": "🇨🇭", "CNY": "🇨🇳"}
 
@@ -139,8 +168,7 @@ def _tomorrow_lines(tomorrow):
     if tomorrow is None:
         return []
     if tomorrow:
-        return [f"👀 <b>Tomorrow:</b> {_events(len(tomorrow))}  "
-                f"({_glance(tomorrow, '  |  ')})"]
+        return [f"👀 <b>Tomorrow:</b> {_glance(tomorrow, '  |  ')}"]
     return ["👀 <b>Tomorrow:</b> nothing scheduled yet"]
 
 
@@ -161,12 +189,18 @@ def _chunk(lines):
     return messages
 
 
+def _tagline(level, now):
+    options = TAGLINES[level]
+    return options[now.astimezone(cfg.DISPLAY_TZ).date().toordinal() % len(options)]
+
+
 def _level_section(level, items, now):
     """One impact level as its own message: title, date, then its events in
     time order grouped by part of the day (same layout for every level)."""
     emoji, _ = _style(level)
     day = now.astimezone(cfg.DISPLAY_TZ).strftime("%A, %d %b")
     lines = [f"{emoji} <b>{TITLES[level]}</b>  ({_events(len(items))})",
+             f"<i>{_tagline(level, now)}</i>",
              f"{day} ({cfg.DISPLAY_TZ_LABEL})", ""]
     current = None
     for when, event in sorted(items, key=lambda i: i[0]):
