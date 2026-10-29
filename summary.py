@@ -46,6 +46,7 @@ TAGLINES = {
         "No rating, but here anyway.",
     ),
 }
+TAG_ICON = {"high": "⚡", "medium": "🌊", "low": "🍃", "holiday": "🏖️", "na": "🔎"}
 FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯🇵", "AUD": "🇦🇺",
          "NZD": "🇳🇿", "CAD": "🇨🇦", "CHF": "🇨🇭", "CNY": "🇨🇳"}
 
@@ -189,6 +190,11 @@ def _chunk(lines):
     return messages
 
 
+def _tagline_block(level, now):
+    """The tagline as a Telegram quote block (a coloured bar beside italic text)."""
+    return f"<blockquote>{TAG_ICON[level]} <i>{_tagline(level, now)}</i></blockquote>"
+
+
 def _tagline(level, now):
     options = TAGLINES[level]
     return options[now.astimezone(cfg.DISPLAY_TZ).date().toordinal() % len(options)]
@@ -200,7 +206,7 @@ def _level_section(level, items, now):
     for every level)."""
     emoji, _ = _style(level)
     lines = [f"{emoji} <b>{TITLES[level]}</b>  ({_events(len(items))})",
-             f"<i>{_tagline(level, now)}</i>", ""]
+             _tagline_block(level, now), ""]
     current = None
     for when, event in sorted(items, key=lambda i: i[0]):
         part = _part_of(when)
