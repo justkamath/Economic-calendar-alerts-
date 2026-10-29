@@ -224,7 +224,7 @@ def build_messages(events, now, tomorrow=None):
                         "nothing on the calendar today.")
     else:
         overview += [f"{_greeting(now)}! Here's your day ({cfg.DISPLAY_TZ_LABEL})",
-                     "", _glance(events), f"🌍 In focus: {_focus(events)}"]
+                     "", _glance(events), "", f"🌍 In focus: {_focus(events)}"]
     if tomorrow is not None:
         overview += [""] + _tomorrow_lines(tomorrow)
     if events:
