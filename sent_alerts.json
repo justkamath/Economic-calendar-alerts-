@@ -86,7 +86,7 @@
   },
   "CHF|Gov Board Member Tschudin Speaks|2026-10-29T17:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CHF|KOF Economic Barometer|2026-10-30T08:00:00+00:00": {
