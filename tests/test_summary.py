@@ -77,13 +77,13 @@ class SummaryTests(unittest.TestCase):
         self.assertIn("🌍 In focus: 🇦🇺 AUD  🇬🇧 GBP", text)  # most High events first
 
     def test_events_in_time_order_grouped_by_part_of_day(self):
-        cfg.SUMMARY_MIN_IMPACT = "all"
-        cal = [ev(13, "Low", "Nightly"),       # 21:30 IST  -> NIGHT
-               ev(10, "High", "Evening"),      # 18:30 IST  -> EVENING
-               ev(5, "Medium", "Afternoon"),   # 13:30 IST  -> AFTERNOON
-               ev(1, "High", "Morning"),       # 09:30 IST  -> MORNING
-               ev(-6, "Low", "Early")]         # 02:30 IST  -> EARLY HOURS
-        text = whole(summary.build_messages(summary.todays_events(cal, NOW), NOW))
+        cal = [ev(13, "High", "Nightly"),       # 21:30 IST  -> NIGHT
+               ev(10, "High", "Evening"),       # 18:30 IST  -> EVENING
+               ev(5, "High", "Afternoon"),      # 13:30 IST  -> AFTERNOON
+               ev(1, "High", "Morning"),        # 09:30 IST  -> MORNING
+               ev(-6, "High", "Early")]         # 02:30 IST  -> EARLY HOURS
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW)
+        text = msgs[1]                          # the High message
         order = [text.index(x) for x in ("EARLY HOURS", "Early", "MORNING", "Morning",
                                          "AFTERNOON", "Afternoon", "EVENING",
                                          "Evening", "NIGHT", "Nightly")]
@@ -140,13 +140,55 @@ class SummaryTests(unittest.TestCase):
                       whole(summary.build_messages(found, NOW, [])))
         self.assertIn("nothing scheduled", summary.build_messages([], NOW, [])[0])
 
-    def test_one_message_normally_and_split_when_huge(self):
+    def test_overview_plus_one_message_per_level_and_split_when_huge(self):
         one = summary.build_messages(summary.todays_events([ev(1), ev(2)], NOW), NOW)
-        self.assertEqual(len(one), 1)
+        self.assertEqual(len(one), 2)           # overview + High
         cal = [ev(1, "Medium", "Event number %d " % i + "x" * 60) for i in range(120)]
         msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW)
-        self.assertGreater(len(msgs), 1)
+        self.assertGreater(len(msgs), 2)        # a huge level splits into several
         self.assertTrue(all(len(m) <= 4096 for m in msgs))
+
+    def test_one_message_per_level_most_important_first(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "Low", "LowOne"), ev(2, "High", "HighOne"),
+               ev(3, "Medium", "MedOne"), ev(4, "High", "HighTwo")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
+        self.assertEqual(len(msgs), 4)          # overview + High + Medium + Low
+        self.assertIn("Details below", msgs[0])
+        self.assertNotIn("HighOne", msgs[0])
+        self.assertIn("🔴 <b>HIGH IMPACT</b>  (2 events)", msgs[1])
+        self.assertIn("HighOne", msgs[1])
+        self.assertIn("HighTwo", msgs[1])
+        self.assertNotIn("MedOne", msgs[1])
+        self.assertNotIn("LowOne", msgs[1])
+        self.assertIn("🟠 <b>MEDIUM IMPACT</b>  (1 event)", msgs[2])
+        self.assertIn("MedOne", msgs[2])
+        self.assertIn("🟡 <b>LOW IMPACT</b>  (1 event)", msgs[3])
+        self.assertIn("LowOne", msgs[3])
+
+    def test_tomorrow_only_on_the_overview(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "High", "H"), ev(2, "Low", "L")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
+        self.assertIn("Tomorrow", msgs[0])
+        self.assertNotIn("Tomorrow", "".join(msgs[1:]))
+
+    def test_level_without_events_gets_no_message(self):
+        msgs = summary.build_messages(
+            summary.todays_events([ev(2, "High", "OnlyHigh")], NOW), NOW)
+        self.assertEqual(len(msgs), 2)
+        self.assertNotIn("MEDIUM", whole(msgs))
+        self.assertNotIn("LOW IMPACT", whole(msgs))
+
+    def test_every_level_uses_the_same_layout(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "High", "T1", previous="1%"), ev(2, "Medium", "T2", previous="1%"),
+               ev(3, "Low", "T3"), ev(4, "Holiday", "T4")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
+        for msg in msgs[1:]:
+            self.assertIn("Sunday, 25 Oct (IST)", msg)
+            self.assertRegex(msg, r"(🌅|☀️|🌆|🌃|🌙) <b>[A-Z ]+</b>\n")
+            self.assertRegex(msg, r"<b>\d+:\d\d [AP]M</b>  \S+ USD\n    <b>T\d</b>")
 
     # ----- sending -----
     def test_sent_once_per_day(self):
