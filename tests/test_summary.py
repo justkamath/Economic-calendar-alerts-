@@ -135,7 +135,7 @@ class SummaryTests(unittest.TestCase):
             [ev(30, "High", "T1"), ev(31, "Medium", "T2")],
             (NOW + timedelta(days=1)).astimezone(cfg.DISPLAY_TZ).date())
         text = whole(summary.build_messages(found, NOW, tom))
-        self.assertIn("Tomorrow:</b> 🔴 1 High  |  🟠 1 Medium", text)
+        self.assertIn("Tomorrow:</b>\n🔴 1 High  |  🟠 1 Medium", text)
         self.assertNotIn("2 events", text)
         self.assertIn("nothing scheduled",
                       whole(summary.build_messages(found, NOW, [])))
@@ -167,12 +167,12 @@ class SummaryTests(unittest.TestCase):
         self.assertIn("🟡 <b>LOW IMPACT</b>  (1 event)", msgs[3])
         self.assertIn("LowOne", msgs[3])
 
-    def test_tomorrow_line_is_a_single_short_line(self):
+    def test_tomorrow_is_a_heading_with_level_counts_below(self):
         found = summary.todays_events([ev(2)], NOW)
         tom = [("high", NOW, {})] * 4 + [("medium", NOW, {})] * 5 + [("low", NOW, {})] * 23
         text = whole(summary.build_messages(found, NOW, tom))
-        line = [l for l in text.splitlines() if l.startswith("👀")]
-        self.assertEqual(line, ["👀 <b>Tomorrow:</b> 🔴 4 High  |  🟠 5 Medium  |  🟡 23 Low"])
+        self.assertIn("👀 <b>Tomorrow:</b>\n🔴 4 High  |  🟠 5 Medium  |  🟡 23 Low", text)
+        self.assertNotIn("events", text.split("Tomorrow:")[1])
 
     def test_each_set_has_a_tagline_from_its_own_list(self):
         cfg.SUMMARY_MIN_IMPACT = "all"
@@ -215,7 +215,8 @@ class SummaryTests(unittest.TestCase):
                ev(3, "Low", "T3"), ev(4, "Holiday", "T4")]
         msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
         for msg in msgs[1:]:
-            self.assertIn("Sunday, 25 Oct (IST)", msg)
+            # heading, then the tagline directly underneath, then a blank line
+            self.assertRegex(msg, r"^\S+ <b>[A-Z ]+</b>  \(\d+ events?\)\n<i>[^\n]+</i>\n\n")
             self.assertRegex(msg, r"(🌅|☀️|🌆|🌃|🌙) <b>[A-Z ]+</b>\n")
             self.assertRegex(msg, r"<b>\d+:\d\d [AP]M</b>  \S+ USD\n    <b>T\d</b>")
 
