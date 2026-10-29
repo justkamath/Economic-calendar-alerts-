@@ -76,6 +76,23 @@ class SummaryTests(unittest.TestCase):
         self.assertIn("🔴 2 High   🟠 1 Medium", text)
         self.assertIn("🌍 In focus: 🇦🇺 AUD  🇬🇧 GBP", text)  # most High events first
 
+    def test_overview_layout_matches_the_agreed_design(self):
+        cal = [ev(7, "High", "A", country="USD"), ev(8, "Medium", "B", country="EUR")]
+        tom = [("high", NOW, {})] * 4 + [("medium", NOW, {})] * 5
+        overview = summary.build_messages(summary.todays_events(cal, NOW), NOW, tom)[0]
+        self.assertEqual(overview, (
+            "📅 <b>Sunday, 25 Oct 2026</b>\n"
+            "Good morning! Here's your day (IST)\n"
+            "\n"
+            "🔴 1 High   🟠 1 Medium\n"
+            "\n"
+            "🌍 In focus: 🇺🇸 USD  🇪🇺 EUR\n"
+            "\n"
+            "👀 <b>Tomorrow:</b>\n"
+            "🔴 4 High  |  🟠 5 Medium\n"
+            "\n"
+            "👇 Details below, one message per impact level"))
+
     def test_events_in_time_order_grouped_by_part_of_day(self):
         cal = [ev(13, "High", "Nightly"),       # 21:30 IST  -> NIGHT
                ev(10, "High", "Evening"),       # 18:30 IST  -> EVENING
