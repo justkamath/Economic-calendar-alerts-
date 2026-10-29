@@ -46,7 +46,9 @@ TAGLINES = {
         "No rating, but here anyway.",
     ),
 }
-TAG_ICON = {"high": "⚡", "medium": "🌊", "low": "🍃", "holiday": "🏖️", "na": "🔎"}
+# Tagline icon = the colour opposite the level's dot on the colour wheel:
+# red -> cyan, orange -> blue, yellow -> purple.
+TAG_ICON = {"high": "💠", "medium": "🌊", "low": "🔮", "holiday": "🏖️", "na": "🔎"}
 FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯🇵", "AUD": "🇦🇺",
          "NZD": "🇳🇿", "CAD": "🇨🇦", "CHF": "🇨🇭", "CNY": "🇨🇳"}
 
