@@ -13,6 +13,8 @@ MAX_CHARS = 3800  # Telegram's limit is 4096; leave headroom for markup
 RANK = {**cfg.IMPACT_RANK, "na": -1}   # "na" = no / unknown impact label
 ORDER = ("high", "medium", "low", "holiday", "na")
 NA_STYLE = ("⚫", "N/A")
+TITLES = {"high": "HIGH IMPACT", "medium": "MEDIUM IMPACT", "low": "LOW IMPACT",
+          "holiday": "BANK HOLIDAYS", "na": "UNRATED"}
 SHORT = {"high": "High", "medium": "Medium", "low": "Low",
          "holiday": "Holiday", "na": "Unrated"}
 FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯🇵", "AUD": "🇦🇺",
@@ -159,32 +161,50 @@ def _chunk(lines):
     return messages
 
 
+def _level_section(level, items, now):
+    """One impact level as its own message: title, date, then its events in
+    time order grouped by part of the day (same layout for every level)."""
+    emoji, _ = _style(level)
+    day = now.astimezone(cfg.DISPLAY_TZ).strftime("%A, %d %b")
+    lines = [f"{emoji} <b>{TITLES[level]}</b>  ({_events(len(items))})",
+             f"{day} ({cfg.DISPLAY_TZ_LABEL})", ""]
+    current = None
+    for when, event in sorted(items, key=lambda i: i[0]):
+        part = _part_of(when)
+        if part != current:
+            current = part
+            lines += [f"{part[0]} <b>{part[1]}</b>"]
+        lines += _event_lines(level, when, event)
+    return lines
+
+
 def build_messages(events, now, tomorrow=None):
-    """The day planner as a list of messages (normally just one).
-    `tomorrow` (optional) is tomorrow's event list, for the preview line."""
+    """The summary as a list of messages: a short overview first, then one
+    message per impact level (High, Medium, Low, ...), most important first.
+    `tomorrow` (optional) is tomorrow's event list, shown on the overview."""
     local = now.astimezone(cfg.DISPLAY_TZ)
-    lines = [f"📅 <b>{local.strftime('%A, %d %b %Y')}</b>"]
+    overview = [f"📅 <b>{local.strftime('%A, %d %b %Y')}</b>"]
+    sections = [overview]
 
     if not events:
-        lines.append(f"{_greeting(now)}! 😌 It's a quiet day, "
-                     "nothing on the calendar today.")
+        overview.append(f"{_greeting(now)}! 😌 It's a quiet day, "
+                        "nothing on the calendar today.")
     else:
-        lines += [f"{_greeting(now)}! Here's your day ({cfg.DISPLAY_TZ_LABEL})",
-                  "", _glance(events), f"🌍 In focus: {_focus(events)}", ""]
-        current = None
-        for level, when, event in sorted(
-                events, key=lambda i: (i[1], -RANK[i[0]])):
-            part = _part_of(when)
-            if part != current:
-                current = part
-                lines += [f"{part[0]} <b>{part[1]}</b>"]
-            lines += _event_lines(level, when, event)
-            # a part heading is followed directly by its first event
+        overview += [f"{_greeting(now)}! Here's your day ({cfg.DISPLAY_TZ_LABEL})",
+                     "", _glance(events), f"🌍 In focus: {_focus(events)}"]
+    if tomorrow is not None:
+        overview += [""] + _tomorrow_lines(tomorrow)
+    if events:
+        overview += ["", "👇 Details below, one message per impact level"]
+        for level in ORDER:
+            items = [(w, e) for lv, w, e in events if lv == level]
+            if items:
+                sections.append(_level_section(level, items, now))
 
-    tail = _tomorrow_lines(tomorrow)
-    if tail:
-        lines += ["", *tail]
-    return _chunk(lines)
+    messages = []
+    for section in sections:
+        messages += _chunk(section)
+    return messages
 
 
 # ---------- sending ----------
