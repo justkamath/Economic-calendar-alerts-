@@ -46,9 +46,10 @@ TAGLINES = {
         "No rating, but here anyway.",
     ),
 }
-# Tagline icon = the colour opposite the level's dot on the colour wheel:
-# red -> cyan, orange -> blue, yellow -> purple.
-TAG_ICON = {"high": "💠", "medium": "🌊", "low": "🔮", "holiday": "🏖️", "na": "🔎"}
+# Tagline accent square = the colour opposite the level's dot on the colour
+# wheel: red -> green, orange -> blue, yellow -> purple.
+# (Telegram colours its own quote bars, so we draw our own with an emoji.)
+TAG_ICON = {"high": "🟩", "medium": "🟦", "low": "🟪", "holiday": "⬜", "na": "⬜"}
 FLAGS = {"USD": "🇺🇸", "EUR": "🇪🇺", "GBP": "🇬🇧", "JPY": "🇯🇵", "AUD": "🇦🇺",
          "NZD": "🇳🇿", "CAD": "🇨🇦", "CHF": "🇨🇭", "CNY": "🇨🇳"}
 
@@ -193,8 +194,8 @@ def _chunk(lines):
 
 
 def _tagline_block(level, now):
-    """The tagline as a Telegram quote block (a coloured bar beside italic text)."""
-    return f"<blockquote>{TAG_ICON[level]} <i>{_tagline(level, now)}</i></blockquote>"
+    """The tagline: a coloured accent square beside italic text."""
+    return f"{TAG_ICON[level]} <i>{_tagline(level, now)}</i>"
 
 
 def _tagline(level, now):
