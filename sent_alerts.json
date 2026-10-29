@@ -180,13 +180,13 @@
     "detected": true
   },
   "EUR|Italian 10-y Bond Auction|2026-10-29T09:33:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
   "EUR|Italian Monthly Unemployment Rate|2026-10-29T09:00:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "EUR|Italian Prelim CPI m/m|2026-10-30T10:00:00+00:00": {
@@ -265,12 +265,12 @@
     "detected": true
   },
   "GBP|M4 Money Supply m/m|2026-10-29T09:30:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
   "GBP|Mortgage Approvals|2026-10-29T09:30:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
@@ -280,7 +280,7 @@
     "detected": true
   },
   "GBP|Net Lending to Individuals m/m|2026-10-29T09:30:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
