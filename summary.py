@@ -168,7 +168,7 @@ def _tomorrow_lines(tomorrow):
     if tomorrow is None:
         return []
     if tomorrow:
-        return [f"👀 <b>Tomorrow:</b> {_glance(tomorrow, '  |  ')}"]
+        return ["👀 <b>Tomorrow:</b>", _glance(tomorrow, "  |  ")]
     return ["👀 <b>Tomorrow:</b> nothing scheduled yet"]
 
 
@@ -195,13 +195,12 @@ def _tagline(level, now):
 
 
 def _level_section(level, items, now):
-    """One impact level as its own message: title, date, then its events in
-    time order grouped by part of the day (same layout for every level)."""
+    """One impact level as its own message: heading with a tagline right under
+    it, then its events in time order grouped by part of the day (same layout
+    for every level)."""
     emoji, _ = _style(level)
-    day = now.astimezone(cfg.DISPLAY_TZ).strftime("%A, %d %b")
     lines = [f"{emoji} <b>{TITLES[level]}</b>  ({_events(len(items))})",
-             f"<i>{_tagline(level, now)}</i>",
-             f"{day} ({cfg.DISPLAY_TZ_LABEL})", ""]
+             f"<i>{_tagline(level, now)}</i>", ""]
     current = None
     for when, event in sorted(items, key=lambda i: i[0]):
         part = _part_of(when)
