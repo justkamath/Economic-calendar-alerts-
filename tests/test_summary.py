@@ -206,6 +206,14 @@ class SummaryTests(unittest.TestCase):
             for line in lines:
                 self.assertLessEqual(len(line), 40, line)
 
+    def test_tagline_is_a_quote_block_with_a_level_icon(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "High", "H"), ev(2, "Medium", "M"), ev(3, "Low", "L")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
+        for msg, icon in zip(msgs[1:], ("⚡", "🌊", "🍃")):
+            self.assertIn(f"<blockquote>{icon} <i>", msg)
+            self.assertEqual(msg.count("<blockquote>"), msg.count("</blockquote>"))
+
     def test_tagline_is_stable_within_a_day_and_rotates_across_days(self):
         same = {summary._tagline("high", NOW + timedelta(hours=h)) for h in (0, 5, 10)}
         self.assertEqual(len(same), 1)
@@ -233,7 +241,8 @@ class SummaryTests(unittest.TestCase):
         msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
         for msg in msgs[1:]:
             # heading, then the tagline directly underneath, then a blank line
-            self.assertRegex(msg, r"^\S+ <b>[A-Z ]+</b>  \(\d+ events?\)\n<i>[^\n]+</i>\n\n")
+            self.assertRegex(msg, r"^\S+ <b>[A-Z ]+</b>  \(\d+ events?\)\n"
+                                  r"<blockquote>\S+ <i>[^\n]+</i></blockquote>\n\n")
             self.assertRegex(msg, r"(🌅|☀️|🌆|🌃|🌙) <b>[A-Z ]+</b>\n")
             self.assertRegex(msg, r"<b>\d+:\d\d [AP]M</b>  \S+ USD\n    <b>T\d</b>")
 
