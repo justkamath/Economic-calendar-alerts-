@@ -135,7 +135,8 @@ class SummaryTests(unittest.TestCase):
             [ev(30, "High", "T1"), ev(31, "Medium", "T2")],
             (NOW + timedelta(days=1)).astimezone(cfg.DISPLAY_TZ).date())
         text = whole(summary.build_messages(found, NOW, tom))
-        self.assertIn("Tomorrow:</b> 2 events", text)
+        self.assertIn("Tomorrow:</b> 🔴 1 High  |  🟠 1 Medium", text)
+        self.assertNotIn("2 events", text)
         self.assertIn("nothing scheduled",
                       whole(summary.build_messages(found, NOW, [])))
         self.assertIn("nothing scheduled", summary.build_messages([], NOW, [])[0])
@@ -165,6 +166,34 @@ class SummaryTests(unittest.TestCase):
         self.assertIn("MedOne", msgs[2])
         self.assertIn("🟡 <b>LOW IMPACT</b>  (1 event)", msgs[3])
         self.assertIn("LowOne", msgs[3])
+
+    def test_tomorrow_line_is_a_single_short_line(self):
+        found = summary.todays_events([ev(2)], NOW)
+        tom = [("high", NOW, {})] * 4 + [("medium", NOW, {})] * 5 + [("low", NOW, {})] * 23
+        text = whole(summary.build_messages(found, NOW, tom))
+        line = [l for l in text.splitlines() if l.startswith("👀")]
+        self.assertEqual(line, ["👀 <b>Tomorrow:</b> 🔴 4 High  |  🟠 5 Medium  |  🟡 23 Low"])
+
+    def test_each_set_has_a_tagline_from_its_own_list(self):
+        cfg.SUMMARY_MIN_IMPACT = "all"
+        cal = [ev(1, "High", "H"), ev(2, "Medium", "M"), ev(3, "Low", "L"),
+               ev(4, "Holiday", "X")]
+        msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
+        for msg, level in zip(msgs[1:], ("high", "medium", "low", "holiday")):
+            taglines = [f"<i>{x}</i>" for x in summary.TAGLINES[level]]
+            self.assertEqual(sum(x in msg for x in taglines), 1, level)
+        self.assertNotIn("<i>", msgs[0])        # overview has none
+
+    def test_taglines_are_short(self):
+        for level, lines in summary.TAGLINES.items():
+            for line in lines:
+                self.assertLessEqual(len(line), 40, line)
+
+    def test_tagline_is_stable_within_a_day_and_rotates_across_days(self):
+        same = {summary._tagline("high", NOW + timedelta(hours=h)) for h in (0, 5, 10)}
+        self.assertEqual(len(same), 1)
+        days = {summary._tagline("high", NOW + timedelta(days=d)) for d in range(5)}
+        self.assertEqual(len(days), len(summary.TAGLINES["high"]))
 
     def test_tomorrow_only_on_the_overview(self):
         cfg.SUMMARY_MIN_IMPACT = "all"
