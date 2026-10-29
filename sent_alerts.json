@@ -306,7 +306,7 @@
   },
   "JPY|Consumer Confidence|2026-10-29T05:00:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "JPY|Housing Starts y/y|2026-10-30T05:00:00+00:00": {
