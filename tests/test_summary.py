@@ -210,7 +210,7 @@ class SummaryTests(unittest.TestCase):
         cfg.SUMMARY_MIN_IMPACT = "all"
         cal = [ev(1, "High", "H"), ev(2, "Medium", "M"), ev(3, "Low", "L")]
         msgs = summary.build_messages(summary.todays_events(cal, NOW), NOW, [])
-        for msg, icon in zip(msgs[1:], ("⚡", "🌊", "🍃")):
+        for msg, icon in zip(msgs[1:], ("💠", "🌊", "🔮")):
             self.assertIn(f"<blockquote>{icon} <i>", msg)
             self.assertEqual(msg.count("<blockquote>"), msg.count("</blockquote>"))
 
