@@ -391,7 +391,7 @@
   },
   "USD|Chicago PMI|2026-10-30T13:45:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "USD|Core Durable Goods Orders m/m|2026-10-27T12:30:00+00:00": {
@@ -507,6 +507,9 @@
     "sent": true
   },
   "summary|daily|2026-10-29T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-10-30T00:00:00+00:00": {
     "sent": true
   }
 }
