@@ -106,12 +106,12 @@
   },
   "CNY|Manufacturing PMI|2026-10-31T01:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CNY|Non-Manufacturing PMI|2026-10-31T01:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "EUR|ECB Press Conference|2026-10-29T13:45:00+00:00": {
