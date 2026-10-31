@@ -9,9 +9,11 @@ import urllib.error
 import urllib.request
 
 import config as cfg
+from sources.base import CalendarSource, events_from_calendar
 
 
-class ForexFactorySource:
+class ForexFactorySource(CalendarSource):
+    source_id = "forex_factory"
     name = cfg.SOURCE_NAME
 
     def __init__(self, urls=None, user_agent=None, retries=None, timeout=None):
@@ -60,3 +62,13 @@ class ForexFactorySource:
                 seen.add(ident)
                 merged.append(event)
         return merged if got_any else None
+
+    def fetch_events(self):
+        """The same data as fetch_calendar(), as Event objects; None if every feed failed."""
+        raw = self.fetch_calendar()
+        if raw is None:
+            return None
+        events, skipped = events_from_calendar(raw, self.source_id)
+        if skipped:
+            print(f"{self.name}: skipped {skipped} events without a valid time")
+        return events
