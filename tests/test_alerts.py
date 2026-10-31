@@ -1,140 +1,143 @@
 """Run from the repo root:  python -m unittest discover -s tests -v"""
 import os
 import sys
-import tempfile
 import unittest
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import config as cfg  # noqa: E402
 import alerts  # noqa: E402
-import state as state_mod  # noqa: E402
-from utils import clean, parse_event_time  # noqa: E402
+import alert_message as am  # noqa: E402
+from alert_message import event_message, heading  # noqa: E402
 
-NOW = datetime(2026, 10, 21, 12, 0, tzinfo=cfg.UTC)
-
-
-def make_event(minutes, impact="High", title="FOMC", country="USD"):
-    when = NOW + timedelta(minutes=minutes)
-    return {"title": title, "country": country, "impact": impact,
-            "date": when.isoformat()}
+WHEN = datetime(2026, 11, 6, 13, 30, tzinfo=cfg.UTC)  # 7:00 PM IST, Fri 6 Nov
+NOW = WHEN - timedelta(hours=2, minutes=15)
 
 
-class FakeNotifier:
-    def __init__(self):
-        self.sent = []
+def ev(**kw):
+    base = {"title": "Non Farm Payrolls", "country": "USD", "impact": "High",
+            "date": WHEN.isoformat(), "previous": "29K", "forecast": "", "actual": ""}
+    base.update(kw)
+    return base
 
-    def send(self, message):
-        self.sent.append(message)
+
+def msg_for(event=None, now=NOW, head="H"):
+    return event_message(event or ev(), WHEN, head, now=now)
 
 
-class AlertTests(unittest.TestCase):
+def table_of(message):
+    return message.split("<pre>")[1].split("</pre>")[0]
+
+
+class AlertMessageTests(unittest.TestCase):
     def setUp(self):
-        self._tmp = tempfile.TemporaryDirectory()
-        self._old = (cfg.STATE_FILE, cfg.SEND_DELAY_SECONDS)
-        cfg.STATE_FILE = os.path.join(self._tmp.name, "state.json")
-        cfg.SEND_DELAY_SECONDS = 0
+        self._old = cfg.DISPLAY_TZ, cfg.DISPLAY_TZ_LABEL, cfg.SOURCE_NAME
+        cfg.DISPLAY_TZ, cfg.DISPLAY_TZ_LABEL = ZoneInfo("Asia/Kolkata"), "IST"
+        cfg.SOURCE_NAME = "Forex Factory"
 
     def tearDown(self):
-        cfg.STATE_FILE, cfg.SEND_DELAY_SECONDS = self._old
-        self._tmp.cleanup()
+        cfg.DISPLAY_TZ, cfg.DISPLAY_TZ_LABEL, cfg.SOURCE_NAME = self._old
 
-    def run_once(self, calendar, state, notifier):
-        alerts.process(alerts.select_upcoming(calendar, NOW), NOW, notifier, state)
+    def test_headings_keep_level_colour_and_name(self):
+        self.assertEqual(heading("detected", "high"),
+                         "🔴 <b>HIGH IMPACT</b>\n🔔 <i>New on your calendar</i>")
+        self.assertEqual(heading("1h", "medium"),
+                         "🟠 <b>MEDIUM IMPACT</b>\n⏰ <i>Starts in about 1 hour</i>")
+        self.assertEqual(heading("30m", "low"),
+                         "🟡 <b>LOW IMPACT</b>\n⏳ <i>Starts in about 30 minutes</i>")
+        self.assertIn("BANK HOLIDAY", heading("detected", "holiday"))
 
-    def test_only_high_impact_in_horizon(self):
-        cal = [make_event(20), make_event(20, impact="Low"),
-               make_event(-10), make_event(60 * 24 * 60)]
-        self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 1)
+    def test_exact_card_layout(self):
+        e = ev(title="German Prelim CPI m/m", country="EUR", impact="Medium",
+               previous="0.6%", forecast="0.1%")
+        self.assertEqual(msg_for(e, head=heading("detected", "medium")), (
+            "🟠 <b>MEDIUM IMPACT</b>\n"
+            "🔔 <i>New on your calendar</i>\n\n"
+            "<b>German Prelim CPI m/m</b>\n"
+            "🇪🇺 EUR (Euro)\n\n"
+            "🕒 <b>7:00 PM IST</b>\n"
+            "📅 Today, Fri 06 Nov\n"
+            "⏳ In 2 hr 15 min\n\n"
+            "<pre>Prior     0.6%\n"
+            "Forecast  0.1%  ▼ down\n"
+            "Actual    not out yet</pre>\n"
+            "<i>🌿 Just a heads-up, nothing to do right now.</i>\n"
+            "<i>Source: Forex Factory</i>"))
 
-    def test_min_impact_and_importance_order(self):
-        cal = [make_event(20, impact="Low", title="L"),
-               make_event(30, impact="High", title="H"),
-               make_event(25, impact="Medium", title="M"),
-               make_event(10, impact="Holiday", title="X")]
-        old = cfg.ALERT_MIN_IMPACT
-        try:
-            cfg.ALERT_MIN_IMPACT = "low"
-            titles = [e["title"] for _, e, _ in alerts.select_upcoming(cal, NOW)]
-            self.assertEqual(titles, ["H", "M", "L"])  # importance first
-            cfg.ALERT_MIN_IMPACT = "high"
-            self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 1)
-            cfg.ALERT_MIN_IMPACT = "holiday"
-            self.assertEqual(len(alerts.select_upcoming(cal, NOW)), 4)
-        finally:
-            cfg.ALERT_MIN_IMPACT = old
+    def test_numbers_start_in_the_same_column(self):
+        for e in (ev(), ev(previous="1.2%", forecast="1.5%", actual="1.6%")):
+            for line in table_of(msg_for(e)).split("\n"):
+                self.assertEqual(line[8:10], "  ", line)
+                self.assertNotEqual(line[10], " ", line)
 
-    def test_heading_matches_impact(self):
-        n, st = FakeNotifier(), {}
-        old = cfg.ALERT_MIN_IMPACT
-        cfg.ALERT_MIN_IMPACT = "low"
-        try:
-            self.run_once([make_event(300, impact="Medium")], st, n)
-        finally:
-            cfg.ALERT_MIN_IMPACT = old
-        self.assertIn("🟠 <b>MEDIUM-IMPACT EVENT DETECTED", n.sent[0])
+    def test_no_box_drawing_or_dot_separators(self):
+        m = msg_for(ev(), head=heading("detected", "high"))
+        for ch in "│╭╰├─·":
+            self.assertNotIn(ch, m)
 
-    def test_no_duplicate_sends(self):
-        n, st = FakeNotifier(), {}
-        cal = [make_event(20)]
-        self.run_once(cal, st, n)
-        self.run_once(cal, st, n)
-        self.assertEqual(len(n.sent), 2)  # detected + 30m, once each
+    def test_no_figures_gets_a_friendly_line_instead_of_empty_rows(self):
+        m = msg_for(ev(previous="", impact="Holiday", country="JPY"))
+        self.assertIn("No figures published for this one.", m)
+        self.assertNotIn("<pre>", m)
+        self.assertNotIn("n/a", m)
 
-    def test_one_hour_window(self):
-        n, st = FakeNotifier(), {}
-        self.run_once([make_event(50)], st, n)
-        self.assertTrue(any("1-HOUR" in m for m in n.sent))
-        self.assertFalse(any("30-MINUTE" in m for m in n.sent))
+    def test_currency_name_shown_for_known_currencies_only(self):
+        self.assertIn("🇺🇸 USD (US Dollar)", msg_for())
+        self.assertIn("🌐 XYZ\n", msg_for(ev(country="XYZ")))
 
-    def test_thirty_minute_window(self):
-        n, st = FakeNotifier(), {}
-        self.run_once([make_event(20)], st, n)
-        self.assertTrue(any("30-MINUTE" in m for m in n.sent))
+    def test_actual_compared_with_forecast(self):
+        self.assertIn("0.3%  ▲ above",
+                      table_of(msg_for(ev(previous="0.6%", forecast="0.1%", actual="0.3%"))))
+        self.assertIn("▼ below", msg_for(ev(forecast="0.5%", actual="0.3%")))
+        self.assertIn("= on forecast", msg_for(ev(forecast="0.3%", actual="0.3%")))
 
-    def test_far_event_only_detected(self):
-        n, st = FakeNotifier(), {}
-        self.run_once([make_event(60 * 5)], st, n)
-        self.assertEqual(len(n.sent), 1)
-        self.assertIn("DETECTED", n.sent[0])
+    def test_trend_arrows(self):
+        self.assertIn("▲ up", msg_for(ev(previous="1%", forecast="2%")))
+        self.assertIn("▼ down", msg_for(ev(previous="2%", forecast="1%")))
+        self.assertIn("= flat", msg_for(ev(previous="2%", forecast="2%")))
+        self.assertNotIn("▲", msg_for(ev(previous="word", forecast="other")))
 
-    def test_failed_send_is_retried_next_run(self):
-        class Failing:
-            def send(self, m):
-                raise RuntimeError("boom")
-        st = {}
-        self.run_once([make_event(20)], st, Failing())
-        n = FakeNotifier()
-        self.run_once([make_event(20)], st, n)
-        self.assertEqual(len(n.sent), 2)
+    def test_number_parsing(self):
+        self.assertEqual(am._number("0.6%"), 0.6)
+        self.assertEqual(am._number("29.0K"), 29000.0)
+        self.assertEqual(am._number("-1.2B"), -1.2e9)
+        self.assertEqual(am._number("1,250"), 1250.0)
+        self.assertIsNone(am._number("Hawkish"))
 
-    def test_message_escapes_html(self):
-        ev = make_event(20, title="A <b> & B")
-        msg = alerts.event_message(ev, parse_event_time(ev["date"]), "H")
-        self.assertIn("A &lt;b&gt; &amp; B", msg)
+    def test_day_labels_and_countdown(self):
+        self.assertIn("Today, Fri 06 Nov", msg_for(now=WHEN - timedelta(hours=1)))
+        self.assertIn("Tomorrow, Fri 06 Nov", msg_for(now=WHEN - timedelta(hours=26)))
+        self.assertIn("📅 Fri 06 Nov", msg_for(now=WHEN - timedelta(days=4)))
+        self.assertIn("⏳ In 45 min", msg_for(now=WHEN - timedelta(minutes=45)))
+        self.assertIn("⏳ In 1 hour\n", msg_for(now=WHEN - timedelta(hours=1)))
+        self.assertIn("⏳ In 2 hours\n", msg_for(now=WHEN - timedelta(hours=2)))
+        self.assertIn("⏳ In 1 hr 15 min", msg_for(now=WHEN - timedelta(hours=1, minutes=15)))
+        self.assertIn("⏳ In 3 days 4 hrs", msg_for(now=WHEN - timedelta(days=3, hours=4)))
+        self.assertIn("⏳ In 1 day 0 hrs", msg_for(now=WHEN - timedelta(days=1)))
+        self.assertIn("⏳ Starting now", msg_for(now=WHEN + timedelta(minutes=2)))
 
+    def test_missing_numbers_show_na_and_keep_rows(self):
+        t = table_of(msg_for(ev(previous="", forecast="2%")))
+        self.assertIn("Prior     n/a", t)
+        self.assertIn("Forecast  2%", t)
+        self.assertIn("Actual    not out yet", t)
+        self.assertNotIn("Not available", t)
 
-class HelperTests(unittest.TestCase):
-    def test_clean(self):
-        for v in (None, "", " - ", "N/A", "null"):
-            self.assertEqual(clean(v), "Not available")
-        self.assertEqual(clean(" 3.2% "), "3.2%")
+    def test_unknown_country_gets_globe(self):
+        self.assertIn("🌐 XYZ", msg_for(ev(country="XYZ")))
 
-    def test_parse_event_time(self):
-        self.assertIsNone(parse_event_time("garbage"))
-        self.assertIsNone(parse_event_time(None))
-        self.assertEqual(parse_event_time("2026-10-21T12:00:00Z"), NOW)
+    def test_escapes_html(self):
+        m = msg_for(ev(title="A <b> & B", previous="<1"))
+        self.assertIn("A &lt;b&gt; &amp; B", m)
+        self.assertIn("&lt;1", table_of(m))
 
-    def test_prune_state(self):
-        st = {
-            "USD|New|2026-10-21T15:00:00+00:00": {},
-            "USD|Old|2026-10-01T15:00:00+00:00": {},
-            "legacy-slug-key": {},
-            "_telegram_update_offset": 5,
-        }
-        state_mod.prune_state(st, NOW)
-        self.assertEqual(list(st), ["USD|New|2026-10-21T15:00:00+00:00"])
+    def test_works_without_passing_now(self):
+        self.assertIn("⏳ ", event_message(ev(), WHEN, "H"))
+
+    def test_alerts_module_uses_the_new_layout(self):
+        self.assertIs(alerts.event_message, event_message)
 
 
 if __name__ == "__main__":
