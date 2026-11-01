@@ -3,15 +3,14 @@ from datetime import datetime
 
 import config as cfg
 from alerts import process, select_upcoming
+from calendar_service import fetch_calendar
 from notifiers import TelegramNotifier
-from sources import ForexFactorySource
 from state import load_state
 from summary import maybe_send_summary
 
 
 def main():
     # ---- initialisation ----
-    source = ForexFactorySource()
     notifier = TelegramNotifier()
     notifier.validate()  # fail fast if secrets are missing
     state = load_state()
@@ -21,7 +20,7 @@ def main():
     print("Resend detection mode:", cfg.RESEND_DETECTION)
 
     # ---- run ----
-    calendar = source.fetch_calendar()
+    calendar = fetch_calendar(now)
     if calendar is None:
         print("Could not fetch calendar this run. Exiting cleanly.")
         return
@@ -31,7 +30,7 @@ def main():
     print(f"Upcoming events (min impact: {cfg.ALERT_MIN_IMPACT}):", len(upcoming))
 
     process(upcoming, now, notifier, state)
-    maybe_send_summary(calendar, now, notifier, state)  # once a day
+    maybe_send_summary(calendar, now, notifier, state)
     print("Calendar check completed.")
 
 
