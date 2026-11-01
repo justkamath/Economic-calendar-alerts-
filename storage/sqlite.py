@@ -55,6 +55,9 @@ class SqliteStorage(Storage):
                 self._db.execute(f"PRAGMA user_version = {number + 1}")
 
     def upsert(self, events):
+        # Rows that would not change are left untouched, so a run that learns
+        # nothing new leaves the database file byte-for-byte the same (and the
+        # workflow has nothing to commit). fetched_at = when a row last changed.
         now = datetime.now(timezone.utc).strftime(_STAMP)
         rows = [(e.source, e.key, e.title, e.country, _stamp(e.time), e.impact,
                  e.previous, e.forecast, e.actual, now) for e in events]
@@ -71,6 +74,10 @@ class SqliteStorage(Storage):
                     forecast   = COALESCE(excluded.forecast, events.forecast),
                     actual     = COALESCE(excluded.actual, events.actual),
                     fetched_at = excluded.fetched_at
+                WHERE (excluded.impact != '' AND excluded.impact != events.impact)
+                   OR (excluded.previous IS NOT NULL AND excluded.previous IS NOT events.previous)
+                   OR (excluded.forecast IS NOT NULL AND excluded.forecast IS NOT events.forecast)
+                   OR (excluded.actual IS NOT NULL AND excluded.actual IS NOT events.actual)
                 """, rows)
         return len(rows)
 
