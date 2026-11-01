@@ -8,6 +8,7 @@ fetch, nothing stored."""
 from datetime import datetime, timedelta, timezone
 
 import config as cfg
+import health
 from merge import merge
 from sources import ForexFactorySource
 from sources.registry import build_sources
@@ -62,10 +63,11 @@ def sync(sources, storage, now=None):
     return results
 
 
-def load_calendar(now, sources, storage, priority, keep_days, ahead_days):
+def load_calendar(now, sources, storage, priority, keep_days, ahead_days, notify=None):
     """Sync, tidy old rows, and return the merged calendar as feed-style dicts.
     None only when nothing could be fetched AND nothing is stored."""
     results = sync(sources, storage, now)
+    health.check(storage, results, now, notify)
     storage.prune(now - timedelta(days=keep_days))
     stored = storage.events_between(now - timedelta(days=LOOKBACK_DAYS),
                                     now + timedelta(days=ahead_days))
@@ -78,7 +80,7 @@ def load_calendar(now, sources, storage, priority, keep_days, ahead_days):
             for e in merge(stored, tuple(priority), gap_fill=GAP_FILL_SOURCES)]
 
 
-def fetch_calendar(now):
+def fetch_calendar(now, notifier=None):
     """The calendar for this run (list of dicts), or None if there is none."""
     if not cfg.USE_DATABASE:
         return ForexFactorySource().fetch_calendar()
@@ -87,6 +89,7 @@ def fetch_calendar(now):
     except StorageError as e:
         print(f"Database unavailable ({e}); falling back to a direct fetch.")
         return ForexFactorySource().fetch_calendar()
+    notify = health.owner_notifier(notifier)
     with storage:
         return load_calendar(now, build_sources(cfg.CALENDAR_SOURCES), storage,
-                             cfg.SOURCE_PRIORITY, cfg.DB_KEEP_DAYS, cfg.HORIZON_DAYS + 1)
+                             cfg.SOURCE_PRIORITY, cfg.DB_KEEP_DAYS, cfg.HORIZON_DAYS + 1, notify)
