@@ -9,6 +9,10 @@ Rules (kept simple on purpose, so they are easy to trust and to tune):
     slot (same currency, same minute) that nobody else claimed, they still match.
   * For each field, the highest-priority source that has a value wins; lower
     sources only fill gaps. Events nobody else reports stay as they are.
+  * Sources named in `gap_fill` rank last and only add their own events on days
+    where no other source has anything. (They still fill in numbers for events
+    the others report.) This keeps a differently-worded source from creating
+    duplicates on days the main sources already cover.
 
 If two names for one event are not recognised as the same, add them to ALIASES."""
 import re
@@ -103,14 +107,15 @@ def _combine(members):
 
 
 def merge(events, priority=DEFAULT_PRIORITY, tolerance=TIME_TOLERANCE,
-          threshold=THRESHOLD):
+          threshold=THRESHOLD, gap_fill=()):
     """Merge events from any number of sources. Returns Events sorted by time."""
+    gap_fill = set(gap_fill)
     by_source = {}
     for e in events:
         by_source.setdefault(e.source, []).append(e)
 
     groups = []   # each group is a list of Events, highest-priority source first
-    for source in sorted(by_source, key=lambda s: _rank(s, priority)):
+    for source in sorted(by_source, key=lambda s: (s in gap_fill, _rank(s, priority))):
         items = sorted(by_source[source], key=lambda e: (e.time, e.title))
         pairs = sorted(
             (-s, i, j)
@@ -138,6 +143,13 @@ def merge(events, priority=DEFAULT_PRIORITY, tolerance=TIME_TOLERANCE,
                 loose_groups.remove(same[0])
 
         groups += [[items[i]] for i in range(len(items)) if i not in taken_items]
+
+    if gap_fill:
+        covered = {g[0].time.date() for g in groups
+                   if any(m.source not in gap_fill for m in g)}
+        groups = [g for g in groups
+                  if any(m.source not in gap_fill for m in g)
+                  or g[0].time.date() not in covered]
 
     merged = [_combine(g) for g in groups]
     return sorted(merged, key=lambda e: (e.time, e.title, e.source))
