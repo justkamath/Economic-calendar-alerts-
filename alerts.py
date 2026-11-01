@@ -23,7 +23,19 @@ def impact_of(event):
     return level if level in cfg.IMPACT_RANK else None
 
 
-def select_upcoming(calendar, now, min_rank=None):
+def _state_key(event, event_time, state):
+    """The key an event is tracked under. A merged event can carry the keys of
+    every source's version ("ids"); if one of them already has alert history,
+    keep using it, so a slower source never causes a repeat alert."""
+    ids = event.get("ids")
+    if state and isinstance(ids, list):
+        for candidate in ids:
+            if candidate in state:
+                return candidate
+    return event_key(event, event_time)
+
+
+def select_upcoming(calendar, now, min_rank=None, state=None):
     """Events at or above ALERT_MIN_IMPACT in the next HORIZON_DAYS,
     most important first, then by time."""
     if min_rank is None:
@@ -39,7 +51,7 @@ def select_upcoming(calendar, now, min_rank=None):
         event_time = parse_event_time(event.get("date"))
         if event_time is None or not (now < event_time <= end):
             continue
-        upcoming.append((event_key(event, event_time), event, event_time))
+        upcoming.append((_state_key(event, event_time, state), event, event_time))
     return sorted(
         upcoming, key=lambda i: (-cfg.IMPACT_RANK[impact_of(i[1])], i[2])
     )
