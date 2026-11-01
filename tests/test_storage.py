@@ -157,7 +157,7 @@ class FactoryTests(unittest.TestCase):
             open_storage(url).close()
             with open_storage(url) as db:
                 version = db._db.execute("PRAGMA user_version").fetchone()[0]
-            self.assertEqual(version, 2)
+            self.assertEqual(version, 3)
 
     def test_unsupported_urls_give_a_clear_error(self):
         for bad in ("postgres://u:p@host/db", "", None, "nonsense"):
