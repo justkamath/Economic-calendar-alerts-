@@ -35,6 +35,22 @@ class Storage(ABC):
         """Remember that the source was asked for data at `when`."""
 
     @abstractmethod
+    def last_success(self, source):
+        """When the source last returned data (aware datetime), or None."""
+
+    @abstractmethod
+    def record_success(self, source, when):
+        """Remember that the source returned data at `when`."""
+
+    @abstractmethod
+    def warned_at(self, source):
+        """When the owner was told this source is down, or None."""
+
+    @abstractmethod
+    def set_warned(self, source, when):
+        """Remember the 'source is down' warning (`when`), or clear it with None."""
+
+    @abstractmethod
     def close(self):
         pass
 
