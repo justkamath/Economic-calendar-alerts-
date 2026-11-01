@@ -20,7 +20,7 @@ def main():
     print("Resend detection mode:", cfg.RESEND_DETECTION)
 
     # ---- run ----
-    calendar = fetch_calendar(now)
+    calendar = fetch_calendar(now, notifier)
     if calendar is None:
         print("Could not fetch calendar this run. Exiting cleanly.")
         return
