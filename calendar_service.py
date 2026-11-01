@@ -18,7 +18,10 @@ THROTTLED = "throttled"
 
 # Minutes to wait between asks, per source. Sources with daily request limits
 # are asked rarely; Forex Factory's free copy is asked on every run.
-MIN_INTERVAL_MINUTES = {"trading_economics": 30, "fmp": 30, "finnhub": 30}
+MIN_INTERVAL_MINUTES = {"trading_economics": 30, "fmp": 30, "finnhub": 30, "biquote": 15}
+
+# Sources that only add their own events on days the other sources have nothing for.
+GAP_FILL_SOURCES = ("biquote",)
 
 
 def interval_for(source):
@@ -71,7 +74,8 @@ def load_calendar(now, sources, storage, priority, keep_days, ahead_days):
             return None
         print("No source reachable; using events stored by earlier runs.")
     print("Stored events by source:", storage.counts_by_source())
-    return [e.to_calendar_dict() for e in merge(stored, tuple(priority))]
+    return [e.to_calendar_dict()
+            for e in merge(stored, tuple(priority), gap_fill=GAP_FILL_SOURCES)]
 
 
 def fetch_calendar(now):
