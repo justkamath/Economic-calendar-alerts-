@@ -1,45 +1,27 @@
-"""What every storage backend must offer. Nothing else in the bot touches a
-database directly, so changing the backend means adding one file here."""
+"""What every calendar source must offer, so sources can be added or swapped
+without touching the rest of the bot."""
 from abc import ABC, abstractmethod
 
-
-class StorageError(Exception):
-    pass
+from models import Event
 
 
-class Storage(ABC):
-    @abstractmethod
-    def upsert(self, events):
-        """Insert or update events (one row per source + event key). Empty
-        values never erase a value we already have. Returns how many were written."""
+class CalendarSource(ABC):
+    source_id = "unknown"   # short stable name stored with every event, e.g. "fmp"
 
     @abstractmethod
-    def events_between(self, start, end, sources=None):
-        """Events with start <= time < end (aware datetimes), optionally only
-        from the given sources, ordered by time. Returns Event objects."""
+    def fetch_events(self):
+        """Return a list of Event objects, or None if the source could not be
+        reached (so 'no data' is never confused with 'no events')."""
 
-    @abstractmethod
-    def prune(self, before):
-        """Delete events older than `before`. Returns how many were removed."""
 
-    @abstractmethod
-    def counts_by_source(self):
-        """{source: number of stored events}, for logs and diagnostics."""
-
-    @abstractmethod
-    def last_attempt(self, source):
-        """When the source was last asked for data (aware datetime), or None."""
-
-    @abstractmethod
-    def record_attempt(self, source, when):
-        """Remember that the source was asked for data at `when`."""
-
-    @abstractmethod
-    def close(self):
-        pass
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, *exc):
-        self.close()
+def events_from_calendar(raw, source_id):
+    """Convert feed-style dicts to Events. Returns (events, skipped_count);
+    entries without a usable time are skipped, never fatal."""
+    events, skipped = [], 0
+    for item in raw:
+        event = Event.from_calendar_dict(item, source_id)
+        if event is None:
+            skipped += 1
+        else:
+            events.append(event)
+    return events, skipped
