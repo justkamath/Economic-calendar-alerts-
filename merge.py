@@ -95,10 +95,11 @@ def _combine(members):
         return next((getattr(m, field) for m in members if getattr(m, field)), None)
 
     best = members[0]
+    aliases = tuple(m.key for m in members) if len(members) > 1 else ()
     return Event(source="+".join(m.source for m in members), title=best.title,
                  country=best.country, time=best.time, impact=first("impact") or "",
                  previous=first("previous"), forecast=first("forecast"),
-                 actual=first("actual"))
+                 actual=first("actual"), aliases=aliases)
 
 
 def merge(events, priority=DEFAULT_PRIORITY, tolerance=TIME_TOLERANCE,
