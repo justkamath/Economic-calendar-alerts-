@@ -135,6 +135,34 @@ class MergeTests(unittest.TestCase):
         d = out.to_calendar_dict()
         self.assertEqual((d["title"], d["impact"], d["forecast"]), ("CPI m/m", "High", "0.7%"))
 
+    # ----- gap-fill sources -----
+    def test_gap_fill_source_adds_events_only_on_days_nobody_else_covers(self):
+        ff_day = ev(FF, "CPI m/m", minutes=0)                       # day 1: FF has data
+        extra_same_day = ev("biquote", "Something Else", minutes=60)
+        next_day = ev("biquote", "Cash Rate", minutes=24 * 60)       # day 2: FF has nothing
+        out = mg.merge([ff_day, extra_same_day, next_day], gap_fill=("biquote",))
+        self.assertEqual([e.title for e in out], ["CPI m/m", "Cash Rate"])
+
+    def test_gap_fill_source_still_fills_numbers_for_matching_events(self):
+        out = mg.merge([ev(FF, "CPI m/m", forecast="0.7%"),
+                        ev("biquote", "CPI MoM", previous="0.4%")], gap_fill=("biquote",))
+        self.assertEqual(len(out), 1)
+        self.assertEqual((out[0].source, out[0].forecast, out[0].previous),
+                         (f"{FF}+biquote", "0.7%", "0.4%"))
+
+    def test_gap_fill_source_ranks_below_everything_even_if_listed_first(self):
+        out = mg.merge([ev("biquote", "CPI MoM", forecast="9%"), ev(FF, "CPI m/m", forecast="1%")],
+                       priority=("biquote", FF), gap_fill=("biquote",))
+        self.assertEqual((out[0].title, out[0].forecast), ("CPI m/m", "1%"))
+
+    def test_gap_fill_alone_keeps_everything(self):
+        events = [ev("biquote", "A Event"), ev("biquote", "B Event", minutes=30)]
+        self.assertEqual(len(mg.merge(events, gap_fill=("biquote",))), 2)
+
+    def test_without_gap_fill_extra_events_are_kept(self):
+        out = mg.merge([ev(FF, "CPI m/m"), ev("biquote", "Something Else", minutes=60)])
+        self.assertEqual(len(out), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
