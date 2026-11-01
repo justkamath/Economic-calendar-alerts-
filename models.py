@@ -41,6 +41,9 @@ class Event:
     previous: Optional[str] = None
     forecast: Optional[str] = None
     actual: Optional[str] = None
+    # Keys of every source's version of this event, set only on merged events.
+    # Alerts use them to keep one stable identity if the winning title changes.
+    aliases: tuple = ()
 
     def __post_init__(self):
         time = to_utc(self.time)
@@ -55,6 +58,7 @@ class Event:
         set_(self, "impact", impact if impact in IMPACTS else "")
         for field in ("previous", "forecast", "actual"):
             set_(self, field, _text(getattr(self, field)))
+        set_(self, "aliases", tuple(self.aliases or ()))
 
     @property
     def key(self):
@@ -63,7 +67,7 @@ class Event:
 
     def to_calendar_dict(self):
         """The dict shape the alert and summary code already reads."""
-        return {
+        data = {
             "title": self.title,
             "country": self.country,
             "impact": self.impact.capitalize(),
@@ -72,6 +76,9 @@ class Event:
             "previous": self.previous or "",
             "actual": self.actual or "",
         }
+        if self.aliases:
+            data["ids"] = list(self.aliases)
+        return data
 
     @classmethod
     def from_calendar_dict(cls, data, source):
