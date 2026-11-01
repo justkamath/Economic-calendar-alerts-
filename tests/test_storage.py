@@ -98,6 +98,25 @@ class StorageTests(unittest.TestCase):
         self.db.upsert([ev(forecast="1.1%")])                           # revised
         self.assertEqual(self.between()[0].forecast, "1.1%")
 
+    def test_identical_upserts_leave_the_file_unchanged(self):
+        def read(p):
+            with open(p, "rb") as f:
+                return f.read()
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = f"{tmp}/c.db"
+            with open_storage(f"sqlite:///{path}") as db:
+                db.upsert([ev(impact="high", forecast="1%")])
+            before = read(path)
+            with open_storage(f"sqlite:///{path}") as db:
+                db.upsert([ev(impact="high", forecast="1%")])   # nothing new
+                db.upsert([ev(forecast=None)])                   # empty never changes
+                db.prune(T0 - timedelta(days=30))                # nothing to remove
+            self.assertEqual(read(path), before)
+            with open_storage(f"sqlite:///{path}") as db:
+                db.upsert([ev(impact="high", forecast="2%")])   # real change
+            self.assertNotEqual(read(path), before)
+
     def test_prune_removes_only_old_events(self):
         self.db.upsert([ev(-120, title="old"), ev(0, title="new")])
         self.assertEqual(self.db.prune(T0 - timedelta(minutes=60)), 1)
