@@ -109,4 +109,14 @@ SUMMARY_MIN_IMPACT = _smin if (_smin in IMPACT_RANK or _smin == "all") else "all
 # even if it was already sent or it is before SUMMARY_HOUR.
 RESEND_SUMMARY = os.environ.get("RESEND_SUMMARY", "false").strip().lower() == "true"
 
+# ---- Calendar database & multiple sources ----
+def _csv(name, default):
+    return tuple(s.strip().lower() for s in os.environ.get(name, default).split(",") if s.strip())
+
+
+USE_DATABASE = os.environ.get("USE_DATABASE", "false").strip().lower() == "true"
+DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///" + str(BASE_DIR / "data" / "calendar.db"))
+CALENDAR_SOURCES = _csv("CALENDAR_SOURCES", "forex_factory")
+SOURCE_PRIORITY = _csv("SOURCE_PRIORITY", "forex_factory,trading_economics,fmp,finnhub")
+DB_KEEP_DAYS = 14
 
