@@ -27,6 +27,14 @@ class Storage(ABC):
         """{source: number of stored events}, for logs and diagnostics."""
 
     @abstractmethod
+    def last_attempt(self, source):
+        """When the source was last asked for data (aware datetime), or None."""
+
+    @abstractmethod
+    def record_attempt(self, source, when):
+        """Remember that the source was asked for data at `when`."""
+
+    @abstractmethod
     def close(self):
         pass
 
