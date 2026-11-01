@@ -54,6 +54,8 @@ jobs:
           USE_DATABASE: ${{ vars.USE_DATABASE || 'false' }}
           CALENDAR_SOURCES: ${{ vars.CALENDAR_SOURCES || 'forex_factory' }}
           TRADING_ECONOMICS_KEY: ${{ secrets.TRADING_ECONOMICS_KEY }}
+          FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
+          FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
 
       - name: Save sent alert history and calendar database
         if: always()
