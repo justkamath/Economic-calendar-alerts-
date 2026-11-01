@@ -1,4 +1,14 @@
 {
+  "AUD|ANZ Job Advertisements m/m|2026-11-02T00:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|Building Approvals m/m|2026-11-02T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "AUD|CPI m/m|2026-10-28T00:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -9,7 +19,32 @@
     "30m": false,
     "detected": true
   },
+  "AUD|Cash Rate|2026-11-03T03:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|Commodity Prices y/y|2026-11-02T05:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|Goods Trade Balance|2026-11-05T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|Household Spending m/m|2026-11-04T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "AUD|Import Prices q/q|2026-10-29T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|MI Inflation Gauge m/m|2026-11-02T00:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -29,12 +64,47 @@
     "30m": false,
     "detected": true
   },
+  "AUD|RBA Deputy Gov Hauser Speaks|2026-11-05T06:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "AUD|RBA Gov Bullock Speaks|2026-10-28T00:15:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
+  "AUD|RBA Monetary Policy Statement|2026-11-03T03:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|RBA Press Conference|2026-11-03T04:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "AUD|RBA Rate Statement|2026-11-03T03:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "AUD|Trimmed Mean CPI m/m|2026-10-28T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|Annual Budget Release|2026-11-05T21:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|BOC Gov Macklem Speaks|2026-11-03T16:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|BOC Gov Macklem Speaks|2026-11-05T15:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -50,6 +120,11 @@
     "detected": true
   },
   "CAD|BOC Rate Statement|2026-10-28T13:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|Employment Change|2026-11-06T13:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -79,7 +154,37 @@
     "30m": false,
     "detected": true
   },
+  "CAD|Ivey PMI|2026-11-06T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|Manufacturing PMI|2026-11-02T14:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "CAD|Overnight Rate|2026-10-28T13:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|Trade Balance|2026-11-04T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CAD|Unemployment Rate|2026-11-06T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CHF|CPI m/m|2026-11-03T07:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CHF|Foreign Currency Reserves|2026-11-06T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -89,12 +194,42 @@
     "30m": true,
     "detected": true
   },
+  "CHF|Gov Board Member Tschudin Speaks|2026-11-06T11:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "CHF|KOF Economic Barometer|2026-10-30T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
+  "CHF|Manufacturing PMI|2026-11-02T08:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CHF|Retail Sales y/y|2026-11-02T07:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CHF|SECO Consumer Climate|2026-11-06T08:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CHF|SNB Chairman Schlegel Speaks|2026-11-05T12:40:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "CHF|UBS Economic Expectations|2026-10-28T09:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CHF|Unemployment Rate|2026-11-05T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -114,7 +249,47 @@
     "30m": true,
     "detected": true
   },
+  "CNY|RatingDog Manufacturing PMI|2026-11-02T01:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CNY|RatingDog Services PMI|2026-11-04T01:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|CPI Flash Estimate y/y|2026-11-04T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Core CPI Flash Estimate y/y|2026-11-04T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|ECB President Lagarde Speaks|2026-11-05T18:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|ECB Press Conference|2026-10-29T13:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Final Manufacturing PMI|2026-11-02T09:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Final Services PMI|2026-11-04T09:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|French 10-y Bond Auction|2026-11-05T10:18:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -124,7 +299,27 @@
     "30m": false,
     "detected": true
   },
+  "EUR|French Final Manufacturing PMI|2026-11-02T08:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|French Final Services PMI|2026-11-04T08:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|French Flash GDP q/q|2026-10-30T06:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|French Gov Budget Balance|2026-11-03T07:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|French Industrial Production m/m|2026-11-05T07:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -139,7 +334,42 @@
     "30m": false,
     "detected": true
   },
+  "EUR|French Trade Balance|2026-11-06T07:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|German 10-y Bond Auction|2026-10-28T09:42:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Buba President Nagel Speaks|2026-11-02T12:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Buba President Nagel Speaks|2026-11-03T17:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Buba President Nagel Speaks|2026-11-05T17:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Factory Orders m/m|2026-11-05T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Final Manufacturing PMI|2026-11-02T08:55:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Final Services PMI|2026-11-04T08:55:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -150,6 +380,11 @@
     "detected": true
   },
   "EUR|German Import Prices m/m|2026-10-30T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|German Industrial Production m/m|2026-11-06T07:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -169,6 +404,11 @@
     "30m": false,
     "detected": true
   },
+  "EUR|German Retail Sales m/m|2026-11-02T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|German Unemployment Change|2026-10-30T08:55:00+00:00": {
     "1h": false,
     "30m": false,
@@ -184,6 +424,11 @@
     "30m": false,
     "detected": true
   },
+  "EUR|Italian Manufacturing PMI|2026-11-02T08:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|Italian Monthly Unemployment Rate|2026-10-29T09:00:00+00:00": {
     "1h": false,
     "30m": true,
@@ -195,6 +440,16 @@
     "detected": true
   },
   "EUR|Italian Prelim GDP q/q|2026-10-30T09:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Italian Retail Sales m/m|2026-11-05T09:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Italian Services PMI|2026-11-04T08:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -214,12 +469,27 @@
     "30m": false,
     "detected": true
   },
+  "EUR|PPI m/m|2026-11-05T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|Prelim Flash GDP q/q|2026-10-30T10:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
   "EUR|Private Loans y/y|2026-10-27T09:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Retail Sales m/m|2026-11-06T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Spanish 10-y Bond Auction|2026-11-05T10:03:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -234,12 +504,32 @@
     "30m": false,
     "detected": true
   },
+  "EUR|Spanish Manufacturing PMI|2026-11-02T08:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Spanish Services PMI|2026-11-04T08:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|Spanish Unemployment Change|2026-11-04T08:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|Spanish Unemployment Rate|2026-10-27T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
   "EUR|Unemployment Rate|2026-10-30T10:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|10-y Bond Auction|2026-11-03T10:33:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -254,6 +544,16 @@
     "30m": false,
     "detected": true
   },
+  "GBP|BOE Gov Bailey Speaks|2026-11-05T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|BOE Monetary Policy Report|2026-11-05T12:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "GBP|BRC Shop Price Index y/y|2026-10-27T00:01:00+00:00": {
     "1h": false,
     "30m": false,
@@ -264,8 +564,43 @@
     "30m": false,
     "detected": true
   },
+  "GBP|Construction PMI|2026-11-05T09:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|Final Manufacturing PMI|2026-11-02T09:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|Final Services PMI|2026-11-04T09:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|Lloyds HPI m/m|2026-11-06T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "GBP|M4 Money Supply m/m|2026-10-29T09:30:00+00:00": {
     "1h": true,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|MPC Member Pill Speaks|2026-11-06T12:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|MPC Official Bank Rate Votes|2026-11-05T12:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|Monetary Policy Summary|2026-11-05T12:00:00+00:00": {
+    "1h": false,
     "30m": false,
     "detected": true
   },
@@ -284,7 +619,27 @@
     "30m": false,
     "detected": true
   },
+  "GBP|Official Bank Rate|2026-11-05T12:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|10-y Bond Auction|2026-11-05T03:35:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Average Cash Earnings y/y|2026-11-05T23:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "JPY|BOJ Core CPI y/y|2026-10-27T05:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|BOJ Gov Ueda Speaks|2026-11-06T16:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -309,7 +664,22 @@
     "30m": true,
     "detected": true
   },
+  "JPY|Final Manufacturing PMI|2026-11-02T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "JPY|Housing Starts y/y|2026-10-30T05:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Monetary Base y/y|2026-11-03T23:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Monetary Policy Meeting Minutes|2026-11-04T23:50:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -349,7 +719,37 @@
     "30m": false,
     "detected": true
   },
+  "NZD|ANZ Commodity Prices m/m|2026-11-04T00:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "NZD|Building Consents m/m|2026-11-02T21:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "NZD|Employment Change q/q|2026-11-03T21:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "NZD|GDT Price Index|2026-11-03T15:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "NZD|Labor Cost Index q/q|2026-11-03T21:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "NZD|Official Cash Rate|2026-10-28T01:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "NZD|Parliamentary Elections|2026-11-06T21:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -364,12 +764,27 @@
     "30m": false,
     "detected": true
   },
+  "NZD|Unemployment Rate|2026-11-03T21:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|ADP Non-Farm Employment Change|2026-11-04T13:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|ADP Weekly Employment Change|2026-10-27T12:15:00+00:00": {
     "1h": true,
     "30m": false,
     "detected": true
   },
   "USD|API Weekly Statistical Bulletin|2026-10-27T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|API Weekly Statistical Bulletin|2026-11-03T21:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -384,7 +799,17 @@
     "30m": false,
     "detected": true
   },
+  "USD|Average Hourly Earnings m/m|2026-11-06T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|CB Consumer Confidence|2026-10-27T14:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Challenger Job Cuts y/y|2026-11-05T10:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -392,6 +817,21 @@
   "USD|Chicago PMI|2026-10-30T13:45:00+00:00": {
     "1h": false,
     "30m": true,
+    "detected": true
+  },
+  "USD|Congressional Elections|2026-11-03T15:16:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Construction Spending m/m|2026-11-02T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Consumer Credit m/m|2026-11-06T20:00:00+00:00": {
+    "1h": false,
+    "30m": false,
     "detected": true
   },
   "USD|Core Durable Goods Orders m/m|2026-10-27T12:30:00+00:00": {
@@ -409,6 +849,11 @@
     "30m": true,
     "detected": true
   },
+  "USD|Crude Oil Inventories|2026-11-04T15:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|Durable Goods Orders m/m|2026-10-27T12:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -419,12 +864,37 @@
     "30m": false,
     "detected": true
   },
+  "USD|FOMC Member Barkin Speaks|2026-11-05T14:10:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|FOMC Member Bowman Speaks|2026-11-06T17:15:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|FOMC Member Daly Speaks|2026-10-30T16:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
+  "USD|FOMC Member Hammack Speaks|2026-11-05T13:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|FOMC Member Musalem Speaks|2026-10-30T16:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|FOMC Member Musalem Speaks|2026-11-06T14:10:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|FOMC Member Williams Speaks|2026-11-06T09:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -439,7 +909,22 @@
     "30m": false,
     "detected": true
   },
+  "USD|Factory Orders m/m|2026-11-03T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|Federal Funds Rate|2026-10-28T18:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Final Manufacturing PMI|2026-11-02T14:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Final Services PMI|2026-11-04T14:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -454,12 +939,52 @@
     "30m": true,
     "detected": true
   },
+  "USD|ISM Manufacturing PMI|2026-11-02T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|ISM Manufacturing Prices|2026-11-02T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|ISM Services PMI|2026-11-04T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|JOLTS Job Openings|2026-11-03T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Loan Officer Survey|2026-11-02T19:03:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|Natural Gas Storage|2026-10-29T14:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
+  "USD|Natural Gas Storage|2026-11-05T15:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|New Home Sales|2026-10-27T14:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Non-Farm Employment Change|2026-11-06T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Omdia Total Vehicle Sales|2026-11-03T15:15:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -474,7 +999,32 @@
     "30m": false,
     "detected": true
   },
+  "USD|Prelim Nonfarm Productivity q/q|2026-11-05T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Prelim Unit Labor Costs q/q|2026-11-05T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Prelim UoM Consumer Sentiment|2026-11-06T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Prelim UoM Inflation Expectations|2026-11-06T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|Prelim Wholesale Inventories m/m|2026-10-28T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|RCM/TIPP Economic Optimism|2026-11-03T15:10:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -489,7 +1039,22 @@
     "30m": true,
     "detected": true
   },
+  "USD|Trade Balance|2026-11-04T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|Unemployment Claims|2026-10-29T12:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Unemployment Claims|2026-11-05T13:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Unemployment Rate|2026-11-06T13:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
