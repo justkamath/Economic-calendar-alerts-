@@ -138,6 +138,7 @@ def event_message(event, event_time, heading_text, now=None):
         "⏳ Starting now" if left == "now" else f"⏳ In {left}",
         "",
         *_numbers_lines(event),
+        "",
         f"<i>{CALM_NOTE}</i>",
         f"<i>Source: {html.escape(cfg.SOURCE_NAME)}</i>",
     ])
