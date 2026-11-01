@@ -53,6 +53,7 @@ jobs:
           ALERT_MIN_IMPACT: ${{ vars.ALERT_MIN_IMPACT || 'high' }}
           USE_DATABASE: ${{ vars.USE_DATABASE || 'false' }}
           CALENDAR_SOURCES: ${{ vars.CALENDAR_SOURCES || 'forex_factory' }}
+          TRADING_ECONOMICS_KEY: ${{ secrets.TRADING_ECONOMICS_KEY }}
 
       - name: Save sent alert history and calendar database
         if: always()
