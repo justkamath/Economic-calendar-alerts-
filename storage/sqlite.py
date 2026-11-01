@@ -26,6 +26,12 @@ _MIGRATIONS = (
     );
     CREATE INDEX events_time ON events (time_utc);
     """,
+    """
+    CREATE TABLE fetch_log (
+        source       TEXT PRIMARY KEY,
+        last_attempt TEXT NOT NULL
+    );
+    """,
 )
 
 
@@ -102,6 +108,18 @@ class SqliteStorage(Storage):
     def counts_by_source(self):
         return {r["source"]: r["n"] for r in self._db.execute(
             "SELECT source, COUNT(*) AS n FROM events GROUP BY source")}
+
+    def last_attempt(self, source):
+        row = self._db.execute("SELECT last_attempt FROM fetch_log WHERE source = ?",
+                               (source,)).fetchone()
+        return to_utc(row["last_attempt"]) if row else None
+
+    def record_attempt(self, source, when):
+        with self._db:
+            self._db.execute(
+                "INSERT INTO fetch_log (source, last_attempt) VALUES (?, ?) "
+                "ON CONFLICT (source) DO UPDATE SET last_attempt = excluded.last_attempt",
+                (source, _stamp(when)))
 
     def close(self):
         self._db.close()
