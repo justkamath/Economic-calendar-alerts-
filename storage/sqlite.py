@@ -32,6 +32,10 @@ _MIGRATIONS = (
         last_attempt TEXT NOT NULL
     );
     """,
+    """
+    ALTER TABLE fetch_log ADD COLUMN last_success TEXT;
+    ALTER TABLE fetch_log ADD COLUMN warned_at TEXT;
+    """,
 )
 
 
@@ -120,6 +124,32 @@ class SqliteStorage(Storage):
                 "INSERT INTO fetch_log (source, last_attempt) VALUES (?, ?) "
                 "ON CONFLICT (source) DO UPDATE SET last_attempt = excluded.last_attempt",
                 (source, _stamp(when)))
+
+    def last_success(self, source):
+        row = self._db.execute("SELECT last_success FROM fetch_log WHERE source = ?",
+                               (source,)).fetchone()
+        return to_utc(row["last_success"]) if row and row["last_success"] else None
+
+    def record_success(self, source, when):
+        with self._db:
+            self._db.execute(
+                "INSERT INTO fetch_log (source, last_attempt, last_success) VALUES (?, ?, ?) "
+                "ON CONFLICT (source) DO UPDATE SET last_success = excluded.last_success",
+                (source, _stamp(when), _stamp(when)))
+
+    def warned_at(self, source):
+        row = self._db.execute("SELECT warned_at FROM fetch_log WHERE source = ?",
+                               (source,)).fetchone()
+        return to_utc(row["warned_at"]) if row and row["warned_at"] else None
+
+    def set_warned(self, source, when):
+        """Remember that the owner was told the source is down (None = cleared)."""
+        with self._db:
+            self._db.execute(
+                "INSERT INTO fetch_log (source, last_attempt, warned_at) VALUES (?, ?, ?) "
+                "ON CONFLICT (source) DO UPDATE SET warned_at = excluded.warned_at",
+                (source, _stamp(when or datetime.now(timezone.utc)),
+                 _stamp(when) if when else None))
 
     def close(self):
         self._db.close()
