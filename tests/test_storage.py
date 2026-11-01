@@ -117,6 +117,14 @@ class StorageTests(unittest.TestCase):
                 db.upsert([ev(impact="high", forecast="2%")])   # real change
             self.assertNotEqual(read(path), before)
 
+    def test_fetch_attempts_are_remembered(self):
+        self.assertIsNone(self.db.last_attempt("fmp"))
+        self.db.record_attempt("fmp", T0)
+        self.db.record_attempt("fmp", T0 + timedelta(minutes=30))
+        self.db.record_attempt("finnhub", T0)
+        self.assertEqual(self.db.last_attempt("fmp"), T0 + timedelta(minutes=30))
+        self.assertEqual(self.db.last_attempt("finnhub"), T0)
+
     def test_prune_removes_only_old_events(self):
         self.db.upsert([ev(-120, title="old"), ev(0, title="new")])
         self.assertEqual(self.db.prune(T0 - timedelta(minutes=60)), 1)
@@ -149,7 +157,7 @@ class FactoryTests(unittest.TestCase):
             open_storage(url).close()
             with open_storage(url) as db:
                 version = db._db.execute("PRAGMA user_version").fetchone()[0]
-            self.assertEqual(version, 1)
+            self.assertEqual(version, 2)
 
     def test_unsupported_urls_give_a_clear_error(self):
         for bad in ("postgres://u:p@host/db", "", None, "nonsense"):
