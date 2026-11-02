@@ -549,11 +549,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|CBI Realized Sales|2026-10-26T11:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "GBP|Construction PMI|2026-11-05T09:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -931,7 +926,7 @@
   },
   "USD|ISM Manufacturing PMI|2026-11-02T15:00:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "USD|ISM Manufacturing Prices|2026-11-02T15:00:00+00:00": {
