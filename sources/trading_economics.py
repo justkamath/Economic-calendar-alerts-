@@ -80,7 +80,7 @@ class TradingEconomicsSource(CalendarSource):
     def _url(self):
         now = self._clock()
         start = (now - timedelta(days=LOOKBACK_DAYS)).date()
-        end = (now + timedelta(days=cfg.HORIZON_DAYS)).date()
+        end = (now + timedelta(days=cfg.STORE_AHEAD_DAYS)).date()
         key = urllib.parse.quote(self.api_key, safe=":")
         return f"{BASE_URL}/{start}/{end}?c={key}&f=json"
 
