@@ -1054,9 +1054,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-10-26T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-10-27T00:00:00+00:00": {
     "sent": true
   },
@@ -1073,6 +1070,9 @@
     "sent": true
   },
   "summary|daily|2026-11-01T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-02T00:00:00+00:00": {
     "sent": true
   }
 }
