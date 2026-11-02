@@ -60,7 +60,7 @@ class FmpSource(CalendarSource):
     def _urls(self):
         now = self._clock()
         start = (now - timedelta(days=LOOKBACK_DAYS)).date()
-        end = (now + timedelta(days=min(cfg.HORIZON_DAYS, MAX_RANGE_DAYS))).date()
+        end = (now + timedelta(days=min(cfg.STORE_AHEAD_DAYS, MAX_RANGE_DAYS))).date()
         key = quote(self.api_key, safe="")
         return [f"{base}?from={start}&to={end}&apikey={key}" for base in ENDPOINTS]
 
