@@ -18,7 +18,7 @@ from sources.http import get_json
 
 URL = "https://biquote.io/api/calendar"
 LOOKBACK_DAYS = 2
-MAX_RANGE_DAYS = 90        # the service keeps about 90 days either side
+MAX_RANGE_DAYS = 90        # longest range the service asks for in one request
 _MULTIPLIER = {"thousand": "K", "thousands": "K", "million": "M", "millions": "M",
                "billion": "B", "billions": "B", "trillion": "T", "trillions": "T"}
 _PERCENT = {"percent", "percentage", "%", "pct"}
@@ -72,7 +72,7 @@ class BiquoteSource(CalendarSource):
     def _url(self):
         now = self._clock()
         start = (now - timedelta(days=LOOKBACK_DAYS)).date()
-        end = (now + timedelta(days=min(cfg.HORIZON_DAYS, MAX_RANGE_DAYS))).date()
+        end = (now + timedelta(days=min(cfg.STORE_AHEAD_DAYS, MAX_RANGE_DAYS))).date()
         return f"{URL}?from={start}&to={end}"
 
     def fetch_events(self):
