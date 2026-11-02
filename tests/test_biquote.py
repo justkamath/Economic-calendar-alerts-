@@ -104,7 +104,7 @@ class SourceTests(unittest.TestCase):
 
     def test_url_has_the_date_range(self):
         _, _, op = fetch([])
-        end = (NOW + timedelta(days=min(cfg.HORIZON_DAYS, 90))).date()
+        end = (NOW + timedelta(days=min(cfg.STORE_AHEAD_DAYS, 90))).date()
         self.assertEqual(op.call_args[0][0].full_url,
                          f"https://biquote.io/api/calendar?from=2026-11-01&to={end}")
 
