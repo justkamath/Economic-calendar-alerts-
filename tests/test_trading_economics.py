@@ -122,7 +122,7 @@ class SourceTests(unittest.TestCase):
 
     def test_request_url_has_dates_key_and_format(self):
         _, _, op = self.fetch([])
-        end = (NOW + timedelta(days=cfg.HORIZON_DAYS)).date()
+        end = (NOW + timedelta(days=cfg.STORE_AHEAD_DAYS)).date()
         self.assertEqual(
             op.call_args[0][0].full_url,
             f"https://api.tradingeconomics.com/calendar/country/All/2026-11-01/{end}"
