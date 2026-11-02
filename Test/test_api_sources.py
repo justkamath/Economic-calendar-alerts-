@@ -120,7 +120,7 @@ class FmpTests(unittest.TestCase):
         self.assertIn(f"&apikey={KEY}", url)
 
     def test_range_never_exceeds_the_90_day_limit(self):
-        with mock.patch.object(cfg, "HORIZON_DAYS", 400):
+        with mock.patch.object(cfg, "STORE_AHEAD_DAYS", 400):
             urls = self.src()._urls()
         self.assertIn("to=2027-02-01&", urls[0])      # 2026-11-03 + 90 days
 
