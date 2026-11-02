@@ -53,6 +53,9 @@ jobs:
           ALERT_MIN_IMPACT: ${{ vars.ALERT_MIN_IMPACT || 'high' }}
           USE_DATABASE: ${{ vars.USE_DATABASE || 'false' }}
           CALENDAR_SOURCES: ${{ vars.CALENDAR_SOURCES || 'forex_factory' }}
+          ALERT_WEEKS: ${{ vars.ALERT_WEEKS || '1' }}
+          STORE_AHEAD_DAYS: ${{ vars.STORE_AHEAD_DAYS || '90' }}
+          DB_KEEP_DAYS: ${{ vars.DB_KEEP_DAYS || '365' }}
           TRADING_ECONOMICS_KEY: ${{ secrets.TRADING_ECONOMICS_KEY }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
