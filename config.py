@@ -118,5 +118,18 @@ USE_DATABASE = os.environ.get("USE_DATABASE", "false").strip().lower() == "true"
 DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///" + str(BASE_DIR / "data" / "calendar.db"))
 CALENDAR_SOURCES = _csv("CALENDAR_SOURCES", "forex_factory")
 SOURCE_PRIORITY = _csv("SOURCE_PRIORITY", "forex_factory,trading_economics,fmp,finnhub")
-DB_KEEP_DAYS = 14
+
+# ---------- How much we STORE vs how much we ALERT ----------
+def _whole(name, default, low, high):
+    try:
+        value = int(os.environ.get(name, "").strip() or default)
+    except ValueError:
+        value = default
+    return max(low, min(high, value))
+
+
+STORE_AHEAD_DAYS = _whole("STORE_AHEAD_DAYS", 90, 7, 365)   # fetch + save this far ahead
+DB_KEEP_DAYS = _whole("DB_KEEP_DAYS", 365, 14, 730)         # keep history this long
+ALERT_WEEKS = _whole("ALERT_WEEKS", 1, 1, 2)                # alert window: 1 or 2 weeks
+HORIZON_DAYS = 7 * ALERT_WEEKS                              # alerts and summary only look this far
 
