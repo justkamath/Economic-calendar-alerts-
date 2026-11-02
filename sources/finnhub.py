@@ -59,7 +59,7 @@ class FinnhubSource(CalendarSource):
             return None
         now = self._clock()
         start = now - timedelta(days=LOOKBACK_DAYS)
-        end = now + timedelta(days=cfg.HORIZON_DAYS)
+        end = now + timedelta(days=cfg.STORE_AHEAD_DAYS)
         events = []
         for event in map(to_event, records):
             if event is not None and start <= to_utc(event.time) <= end:
