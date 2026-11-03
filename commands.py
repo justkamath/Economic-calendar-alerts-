@@ -17,20 +17,29 @@ MAX_BATCHES = 5   # up to 500 new messages handled per run
 ORDER = ("USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY")
 
 LEVEL_TEXT = {
-    "high": "🔥 High (big moves only)",
-    "medium": "⚡ Medium (medium + high)",
-    "low": "🫧 Low (all of it)",
+    "high": "🎯 Sharp (big moves only)",
+    "medium": "⚡ Core (medium + big moves)",
+    "low": "🌊 Flood (everything)",
 }
-LEVEL_ICON = {"high": "🔥", "medium": "⚡", "low": "🫧"}
-LEVEL_NAME = {"high": "High", "medium": "Medium", "low": "Low"}
+LEVEL_ICON = {"high": "🎯", "medium": "⚡", "low": "🌊"}
+LEVEL_NAME = {"high": "Sharp", "medium": "Core", "low": "Flood"}
 # words people may tap or type (older button labels still work)
-LEVEL_WORDS = {"high": ("high", "big moves"), "medium": ("medium", "balanced"),
-               "low": ("low", "all of it")}
+LEVEL_WORDS = {"high": ("high", "sharp", "big moves"), "medium": ("medium", "core", "balanced"),
+               "low": ("low", "flood", "all of it")}
 TICK = " ✓"
 
-BTN_CURRENCIES, BTN_SETTINGS = "💸 Currencies", "🎯 My setup"
+BTN_CURRENCIES, BTN_SETTINGS = "💸 Currencies", "🧭 My setup"
 BTN_HELP, BTN_PAUSE, BTN_START = "🧠 How it works", "😴 Pause", "▶️ Start"
 BTN_ALL, BTN_BACK = "🌍 All currencies", "⬅️ Back"
+
+MENU_VERSION = 1   # bump when BOT_COMMANDS changes, so Telegram's Menu list is refreshed
+BOT_COMMANDS = [
+    ("start", "Start or restart"),
+    ("menu", "Open the buttons"),
+    ("setup", "See your setup"),
+    ("help", "How it works"),
+    ("stop", "Pause alerts"),
+]
 
 REMINDERS = ("👀 A heads-up when it hits the calendar\n"
              "⏰ A nudge 1 hour before\n"
@@ -40,20 +49,24 @@ HELP = (
     "<b>🧠 How it works</b>\n"
     "<i>Market news, zero noise.</i>\n\n"
     "<b>🚦 Pick your vibe</b>\n"
-    "🔥 <b>High</b>: Only the big market movers\n"
-    "⚡ <b>Medium</b>: The sweet spot (most people pick this)\n"
-    "🫧 <b>Low</b>: Every release, even the small ones\n\n"
+    "🎯 <b>Sharp</b>: Only the big market movers\n"
+    "⚡ <b>Core</b>: The sweet spot (most people pick this)\n"
+    "🌊 <b>Flood</b>: Every release, even the small ones\n\n"
     "<b>💸 Pick your currencies</b>\n"
     "Tap <b>Currencies</b>, then tap the ones you follow. "
     "A ✓ shows what you picked. Tap again to drop one. "
     "None picked = you get everything.\n\n"
     "<b>🔔 How we ping you</b>\n"
     f"{REMINDERS}\n\n"
+    "🧩 <b>Buttons gone?</b>\n"
+    "Tap <b>Menu</b> next to the message box, then <b>/menu</b>.\n"
+    "Or tap the little keyboard icon.\n\n"
     "✍️ <b>Prefer typing?</b>\n\n"
     "<b>Impact</b>\n"
     "/level high\n"
     "/level medium\n"
-    "/level low\n\n"
+    "/level low\n"
+    "<i>(high = Sharp, medium = Core, low = Flood)</i>\n\n"
     "<b>Currencies</b> (any mix, spaces or commas)\n"
     "/currencies USD EUR\n"
     "<i>Only the ones you list</i>\n"
@@ -93,7 +106,7 @@ def _subscribed(audience, chat_id):
     return chat_id in audience.entries() or chat_id in audience.owner_ids
 
 
-def _card(level, cur, title="🎯 Your setup"):
+def _card(level, cur, title="🧭 Your setup"):
     return (f"<b>{title}</b>\n\n"
             f"<b>🚦 Your vibe</b>\n{_level_text(level)}\n\n"
             f"<b>💸 Your currencies</b>\n{_currencies_text(cur)}\n\n"
@@ -109,7 +122,7 @@ def main_keyboard(level=None):
         [button("high"), button("medium"), button("low")],
         [{"text": BTN_CURRENCIES}, {"text": BTN_SETTINGS}],
         [{"text": BTN_HELP}, {"text": BTN_PAUSE}],
-    ], "resize_keyboard": True, "is_persistent": True}
+    ], "resize_keyboard": True, "one_time_keyboard": True}
 
 
 def currency_keyboard(cur):
@@ -132,7 +145,8 @@ def parse(text):
     raw = (text or "").strip()
     if raw.startswith("/"):
         parts = raw.replace(",", " ").split()
-        return parts[0].split("@")[0].lower(), parts[1:]
+        cmd = parts[0].split("@")[0].lower()
+        return {"/setup": "/status", "/pause": "/stop"}.get(cmd, cmd), parts[1:]
     plain = raw.replace("✓", "").replace("✅", "").strip()
     low = plain.lower()
     if "all currencies" in low:
@@ -167,6 +181,8 @@ def respond(chat_id, text, audience):
     entry = _entry(audience, chat_id)
 
     def keys(kind="main"):
+        if kind == "none":
+            return None            # no keyboard attached: the bar stays as the person left it
         now = _entry(audience, chat_id)
         if now is None:
             return START_KEYBOARD
@@ -188,12 +204,12 @@ def respond(chat_id, text, audience):
         level, cur = _entry(audience, chat_id)
         return (f"<b>You're in ✨</b>\n"
                 "<i>Market news, zero noise. We ping, you chill.</i>\n\n"
-                f"{_card(level, cur, '🎯 Your setup')}\n\n"
+                f"{_card(level, cur, '🧭 Your setup')}\n\n"
                 "Tap the buttons below to make it yours 👇\n"
                 "<i>Changes kick in within 5 min.</i>"), keys()
 
     if cmd == "/help":
-        return HELP, keys()
+        return HELP, keys("none")
 
     if not _subscribed(audience, chat_id) and (store is None or chat_id not in store.subs):
         if cmd is None and not (text or "").startswith("/"):
@@ -245,10 +261,16 @@ def respond(chat_id, text, audience):
         return (f"{note}\n\nRight now: {_currencies_text(current or None)}\n\n"
                 "<i>Kicks in within 5 min.</i>"), keys("currencies")
 
-    if cmd in ("/status", "/back"):
+    if cmd == "/menu":
+        return "🧰 Here are your buttons 👇", keys()
+
+    if cmd == "/back":
+        return "🧰 Back to the main buttons 👇", keys()
+
+    if cmd == "/status":
         if entry is None:
             return "😴 <b>You're on pause</b>\nTap <b>▶️ Start</b> when you're back.", START_KEYBOARD
-        return _card(entry[0], entry[1]), keys()
+        return _card(entry[0], entry[1]), keys("none")
 
     if cmd == "/stop":
         if chat_id in audience.owner_ids:
@@ -259,8 +281,8 @@ def respond(chat_id, text, audience):
                 "We've gone quiet. Tap <b>▶️ Start</b> whenever you want back in."), START_KEYBOARD
 
     if (text or "").startswith("/"):
-        return "🤷 Not a command I know.\n\n" + HELP, keys()
-    return "Tap a button below 👇 or hit <b>🧠 How it works</b>.", keys()
+        return "🤷 Not a command I know.\n\n" + HELP, keys("none")
+    return "Tap /menu to open the buttons, or send /help.", keys("none")
 
 
 def dispatch(chat_id, text, audience):
@@ -268,10 +290,23 @@ def dispatch(chat_id, text, audience):
     return respond(chat_id, text, audience)[0]
 
 
+def _publish_menu(notifier, store):
+    """Fill Telegram's Menu list (next to the message box) once, and again only
+    when BOT_COMMANDS changes."""
+    if store.menu_version == MENU_VERSION or not hasattr(notifier, "set_commands"):
+        return
+    try:
+        notifier.set_commands(BOT_COMMANDS)
+        store.set_menu_version(MENU_VERSION)
+    except Exception as e:
+        print("Could not update the bot's Menu list:", e)
+
+
 def handle_updates(notifier, audience):
     """Read new messages sent to the bot and apply them. Never prints chat IDs."""
     store = audience.store
     handled = 0
+    _publish_menu(notifier, store)
     for _ in range(MAX_BATCHES):
         try:
             updates = notifier.get_updates(store.offset)
