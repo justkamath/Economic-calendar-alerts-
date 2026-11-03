@@ -108,4 +108,16 @@ def process(upcoming, now, notifier, state, audience=None):
                 continue    # nobody wants this one (yet): leave it unmarked
             extra = {"recipients": recipients, "on_blocked": audience.remove}
 
-        send_once(notifier, state,
+        send_once(notifier, state, key, "detected",
+                  event_message(event, event_time, heading("detected", level)),
+                  force=cfg.RESEND_DETECTION, **extra)
+
+        if h_lo < minutes_left <= h_hi:
+            send_once(notifier, state, key, "1h",
+                      event_message(event, event_time, heading("1h", level)), **extra)
+        elif m_lo < minutes_left <= m_hi:
+            send_once(notifier, state, key, "30m",
+                      event_message(event, event_time, heading("30m", level)), **extra)
+
+    prune_state(state, now)
+    save_state(state)
