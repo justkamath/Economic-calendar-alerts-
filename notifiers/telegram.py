@@ -92,6 +92,11 @@ class TelegramNotifier:
         if len(targets) > 1:
             print(f"Delivered to {delivered} of {len(targets)} chats")
 
+    def set_commands(self, commands):
+        """Fill the bot's Menu list. `commands` is [(name, description), ...]."""
+        self._call("setMyCommands", {"commands": json.dumps(
+            [{"command": name, "description": text} for name, text in commands])})
+
     def get_updates(self, offset=0, limit=100):
         """Fetch new messages sent to the bot (no long-polling)."""
         return self._call("getUpdates", {
