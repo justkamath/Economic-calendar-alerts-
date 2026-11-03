@@ -17,32 +17,35 @@ MAX_BATCHES = 5   # up to 500 new messages handled per run
 ORDER = ("USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY")
 
 LEVEL_TEXT = {
-    "high": "🔴 High impact only",
-    "medium": "🟠 Medium and High",
-    "low": "🟡 Low, Medium and High",
+    "high": "🔥 Big moves only (high impact)",
+    "medium": "⚡ Balanced (medium + high)",
+    "low": "🫧 All of it (low, medium + high)",
 }
-LEVEL_BUTTON = {"high": "🔴 High", "medium": "🟠 Medium", "low": "🟡 Low"}
+LEVEL_BUTTON = {"high": "🔥 Big moves", "medium": "⚡ Balanced", "low": "🫧 All of it"}
 
 TICK = " ✓"
-BTN_CURRENCIES, BTN_SETTINGS = "💱 Currencies", "📊 My settings"
-BTN_HELP, BTN_PAUSE, BTN_START = "ℹ️ How it works", "🔕 Pause", "▶️ Start"
+BTN_CURRENCIES, BTN_SETTINGS = "💸 Currencies", "🎯 My setup"
+BTN_HELP, BTN_PAUSE, BTN_START = "🧠 How it works", "😴 Pause", "▶️ Start"
 BTN_ALL, BTN_BACK = "🌍 All currencies", "⬅️ Back"
 
-REMINDERS = "A first heads-up, then reminders 1 hour and 30 minutes before."
+REMINDERS = ("👀 a heads-up when it hits the calendar\n"
+             "⏰ a nudge 1 hour before\n"
+             "⏳ a last call 30 min before")
 
 HELP = (
-    "<b>How it works</b>\n\n"
-    "🎚 <b>Impact</b>\n"
-    "🔴 <b>High</b>: the big market movers\n"
-    "🟠 <b>Medium</b>: the sweet spot for most people\n"
-    "🟡 <b>Low</b>: everything, even the small releases\n\n"
-    "💱 <b>Currencies</b>\n"
-    "Tap <b>Currencies</b>, then tap the ones you follow. "
-    "Tap again to remove one.\n\n"
-    "🔔 <b>Reminders</b>\n"
+    "<b>🧠 how it works</b>\n"
+    "<i>market news, zero noise.</i>\n\n"
+    "<b>🎨 pick your vibe</b>\n"
+    "🔥 <b>Big moves</b>: only the market shakers\n"
+    "⚡ <b>Balanced</b>: the sweet spot (most people pick this)\n"
+    "🫧 <b>All of it</b>: every release, even the small ones\n\n"
+    "<b>💸 pick your currencies</b>\n"
+    "tap <b>Currencies</b>, then tap the flags you follow. "
+    "tap again to drop one. none picked = you get everything.\n\n"
+    "<b>🔔 how we ping you</b>\n"
     f"{REMINDERS}\n\n"
-    "<i>Prefer typing? /level, /currencies, /status and /stop all work too.\n"
-    "Changes apply within 5 minutes.</i>"
+    "<i>prefer typing? /level, /currencies, /status and /stop all work.\n"
+    "changes kick in within 5 min.</i>"
 )
 
 
@@ -52,7 +55,7 @@ def _flag_codes(cur):
 
 
 def _currencies_text(cur):
-    return "🌍 All currencies" if not cur else _flag_codes(cur)
+    return "🌍 all of them" if not cur else _flag_codes(cur)
 
 
 def _level_text(level):
@@ -67,11 +70,11 @@ def _subscribed(audience, chat_id):
     return chat_id in audience.entries() or chat_id in audience.owner_ids
 
 
-def _card(level, cur, title="⚙️ Your alerts"):
+def _card(level, cur, title="🎯 your setup"):
     return (f"<b>{title}</b>\n\n"
-            f"🎚 <b>Impact</b>\n{_level_text(level)}\n\n"
-            f"💱 <b>Currencies</b>\n{_currencies_text(cur)}\n\n"
-            f"🔔 <b>Reminders</b>\n{REMINDERS}")
+            f"<b>🎨 your vibe</b>\n{_level_text(level)}\n\n"
+            f"<b>💸 your currencies</b>\n{_currencies_text(cur)}\n\n"
+            f"<b>🔔 how we ping you</b>\n{REMINDERS}")
 
 
 # ---------- keyboards ----------
@@ -115,7 +118,7 @@ def parse(text):
         return "/currencies", ["all"]
     if "currencies" in low:
         return "/currencies", []
-    if "my settings" in low:
+    if "my setup" in low or "my settings" in low:
         return "/status", []
     if "how it works" in low or low == "help":
         return "/help", []
@@ -149,78 +152,78 @@ def respond(chat_id, text, audience):
         if not _subscribed(audience, chat_id):
             code = getattr(cfg, "SIGNUP_CODE", "")
             if code and (not args or args[0] != code):
-                return ("🔒 <b>This bot is invite-only</b>\n\n"
-                        "Send <code>/start</code> followed by your invite code.", START_KEYBOARD)
+                return ("🔒 <b>invite only</b>\n"
+                        "got a code? send <code>/start</code> then your code.", START_KEYBOARD)
             if not store.update(chat_id, level="high", currencies=None):
-                return "Sorry, the subscriber limit has been reached.", START_KEYBOARD
+                return "😅 we're full right now, the subscriber limit has been reached.", START_KEYBOARD
         elif entry is None:                                        # resume after /stop
             if chat_id in audience.owner_ids:
                 store.remove(chat_id)                              # back to the owner default
             else:
                 store.update(chat_id, level="high", currencies=None)
         level, cur = _entry(audience, chat_id)
-        return (f"✅ <b>You're in</b>\n"
-                "<i>Calm, clear alerts for the events that move markets.</i>\n\n"
-                f"{_card(level, cur, '⚙️ Your alerts')}\n\n"
-                "Tap a button below to change anything.\n"
-                "<i>Changes apply within 5 minutes.</i>"), keys()
+        return (f"<b>you're in ✨</b>\n"
+                "<i>market news, zero noise. we ping, you chill.</i>\n\n"
+                f"{_card(level, cur, '🎯 your setup')}\n\n"
+                "tap the buttons below to make it yours 👇\n"
+                "<i>changes kick in within 5 min.</i>"), keys()
 
     if cmd == "/help":
         return HELP, keys()
 
     if not _subscribed(audience, chat_id) and (store is None or chat_id not in store.subs):
         if cmd is None and not (text or "").startswith("/"):
-            return "👋 Tap <b>Start</b> to get your alerts.", START_KEYBOARD
-        return "Send /start first to subscribe.", START_KEYBOARD
+            return "👋 hey! tap <b>▶️ Start</b> to get your alerts.", START_KEYBOARD
+        return "👋 send /start first (or tap ▶️ Start) to join.", START_KEYBOARD
 
     if cmd == "/level":
         level = args[0].lower() if args else ""
         if level not in LEVEL_TEXT:
-            return "Please choose a level with the buttons below.", keys()
+            return "pick a vibe with the buttons below 👇", keys()
         store.update(chat_id, level=level)
-        return (f"✅ <b>Saved</b>\n{_level_text(level)}\n\n"
-                "<i>Applies within 5 minutes.</i>"), keys()
+        return (f"<b>locked in ✅</b>\n{_level_text(level)}\n\n"
+                "<i>kicks in within 5 min.</i>"), keys()
 
     if cmd == "/currencies":
         if not args:
             cur = (entry or (None, None))[1]
-            return ("💱 <b>Pick your currencies</b>\n\n"
-                    f"Now: {_currencies_text(cur)}\n\n"
-                    "Tap a currency to add it. Tap it again to remove it.\n"
-                    "<i>Choose none to get everything.</i>"), keys("currencies")
+            return ("<b>💸 pick your currencies</b>\n\n"
+                    f"right now: {_currencies_text(cur)}\n\n"
+                    "tap a flag to add it, tap again to drop it.\n"
+                    "<i>none picked = you get everything.</i>"), keys("currencies")
         if args[0].lower() == "all":
             store.update(chat_id, currencies=None)
-            return ("✅ <b>Saved</b>\n🌍 All currencies\n\n"
-                    "<i>Applies within 5 minutes.</i>"), keys("currencies")
+            return ("<b>locked in ✅</b>\n🌍 all currencies\n\n"
+                    "<i>kicks in within 5 min.</i>"), keys("currencies")
         picked = []
         for item in args:
             code = item.upper()
             if code not in KNOWN_CURRENCIES:
-                return ("Sorry, I don't know that currency.\n"
-                        f"Choose from: {', '.join(ORDER)}"), keys("currencies")
+                return ("🤔 don't know that currency.\n"
+                        f"pick from: {', '.join(ORDER)}"), keys("currencies")
             if code not in picked:
                 picked.append(code)
         store.update(chat_id, currencies=picked)
-        return (f"✅ <b>Saved</b>\n{_flag_codes(picked)}\n\n"
-                "<i>Applies within 5 minutes.</i>"), keys("currencies")
+        return (f"<b>locked in ✅</b>\n{_flag_codes(picked)}\n\n"
+                "<i>kicks in within 5 min.</i>"), keys("currencies")
 
     if cmd == "/toggle":
         code = args[0]
         current = list((entry or (None, None))[1] or [])
         if code in current:
             current.remove(code)
-            note = f"➖ {FLAGS.get(code, '🌐')} {code} removed"
+            note = f"➖ {FLAGS.get(code, '🌐')} {code} is out"
         else:
             current.append(code)
-            note = f"➕ {FLAGS.get(code, '🌐')} {code} added"
+            note = f"➕ {FLAGS.get(code, '🌐')} {code} is in"
         current.sort(key=ORDER.index)
         store.update(chat_id, currencies=current or None)
-        return (f"{note}\n\nNow: {_currencies_text(current or None)}\n\n"
-                "<i>Applies within 5 minutes.</i>"), keys("currencies")
+        return (f"{note}\n\nright now: {_currencies_text(current or None)}\n\n"
+                "<i>kicks in within 5 min.</i>"), keys("currencies")
 
     if cmd in ("/status", "/back"):
         if entry is None:
-            return "🔕 <b>Alerts are paused</b>\nTap <b>Start</b> to turn them back on.", START_KEYBOARD
+            return "😴 <b>you're on pause</b>\ntap <b>▶️ Start</b> when you're back.", START_KEYBOARD
         return _card(entry[0], entry[1]), keys()
 
     if cmd == "/stop":
@@ -228,12 +231,12 @@ def respond(chat_id, text, audience):
             store.update(chat_id, level="off")      # owner is paused, not deleted
         else:
             store.remove(chat_id)
-        return ("🔕 <b>Alerts paused</b>\n"
-                "Nothing more will be sent until you tap <b>Start</b>."), START_KEYBOARD
+        return ("😴 <b>paused</b>\n"
+                "we've gone quiet. tap <b>▶️ Start</b> whenever you want back in."), START_KEYBOARD
 
     if (text or "").startswith("/"):
-        return "Unknown command.\n\n" + HELP, keys()
-    return "Tap a button below, or choose <b>How it works</b>.", keys()
+        return "🤷 not a command i know.\n\n" + HELP, keys()
+    return "tap a button below 👇 or hit <b>🧠 How it works</b>.", keys()
 
 
 def dispatch(chat_id, text, audience):
