@@ -93,7 +93,12 @@ class TelegramNotifier:
             print(f"Delivered to {delivered} of {len(targets)} chats")
 
     def set_commands(self, commands):
-        """Fill the bot's Menu list. `commands` is [(name, description), ...]."""
+        """Fill the bot's Menu list from [(name, description), ...]. An empty
+        list removes it, and with it the blue Menu button."""
+        if not commands:
+            self._call("deleteMyCommands", {})
+            self._call("setChatMenuButton", {"menu_button": json.dumps({"type": "default"})})
+            return
         self._call("setMyCommands", {"commands": json.dumps(
             [{"command": name, "description": text} for name, text in commands])})
 
