@@ -80,7 +80,7 @@ def dispatch(chat_id, text, audience):
                 store.update(chat_id, level="high", currencies=None)
         return f"✅ You're in.\n\n{_status(audience, chat_id)}\n\n{HELP}"
 
-    if not _subscribed(audience, chat_id) and chat_id not in (store.subs if store else {}):
+    if not _subscribed(audience, chat_id) and chat_id not in (store.subs if store is not None else {}):
         return "Send /start first to subscribe."
 
     if cmd == "/level":
