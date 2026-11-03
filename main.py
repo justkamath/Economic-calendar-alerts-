@@ -17,6 +17,7 @@ def main():
     notifier.validate()  # fail fast if secrets are missing
     audience = build_audience(notifier.chat_ids)
     store = audience.store
+    enabled = store is not None   # (an empty list is still 'on')
     state = load_state()
     now = datetime.now(cfg.UTC)
 
@@ -24,7 +25,7 @@ def main():
     print("Resend detection mode:", cfg.RESEND_DETECTION)
 
     # ---- run ----
-    if store:
+    if enabled:
         handle_updates(notifier, audience)   # answer /start, /level, /currencies ...
         store.save()                         # remember them even if the calendar fails
     calendar = fetch_calendar(now, notifier)
@@ -33,12 +34,12 @@ def main():
         return
     print("Events received:", len(calendar))
 
-    min_rank = audience.min_rank() if store else None
+    min_rank = audience.min_rank() if enabled else None
     upcoming = select_upcoming(calendar, now, min_rank=min_rank, state=state)
     print(f"Upcoming events (min impact: {cfg.ALERT_MIN_IMPACT}):", len(upcoming))
 
-    process(upcoming, now, notifier, state, audience if store else None)
-    if store:
+    process(upcoming, now, notifier, state, audience if enabled else None)
+    if enabled:
         store.save()                         # e.g. someone who blocked the bot was removed
     maybe_send_summary(calendar, now, notifier, state)
     print("Calendar check completed.")
