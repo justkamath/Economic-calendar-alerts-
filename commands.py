@@ -32,14 +32,8 @@ BTN_CURRENCIES, BTN_SETTINGS = "💸 Currencies", "🧭 My setup"
 BTN_HELP, BTN_PAUSE, BTN_START = "🧠 How it works", "😴 Pause", "▶️ Start"
 BTN_ALL, BTN_BACK = "🌍 All currencies", "⬅️ Back"
 
-MENU_VERSION = 1   # bump when BOT_COMMANDS changes, so Telegram's Menu list is refreshed
-BOT_COMMANDS = [
-    ("start", "Start or restart"),
-    ("menu", "Open the buttons"),
-    ("setup", "See your setup"),
-    ("help", "How it works"),
-    ("stop", "Pause alerts"),
-]
+MENU_VERSION = 2   # bump when BOT_COMMANDS changes, so Telegram's list is refreshed
+BOT_COMMANDS = []  # empty = no blue "Menu" button; /menu still works when typed
 
 REMINDERS = ("👀 A heads-up when it hits the calendar\n"
              "⏰ A nudge 1 hour before\n"
@@ -47,7 +41,7 @@ REMINDERS = ("👀 A heads-up when it hits the calendar\n"
 
 HELP = (
     "<b>🧠 How it works</b>\n"
-    "<i>Market news, zero noise.</i>\n\n"
+    "<i>Your economic calendar, minus the noise.</i>\n\n"
     "<b>🚦 Pick your vibe</b>\n"
     "🎯 <b>Sharp</b>: Only the big market movers\n"
     "⚡ <b>Core</b>: The sweet spot (most people pick this)\n"
@@ -59,8 +53,8 @@ HELP = (
     "<b>🔔 How we ping you</b>\n"
     f"{REMINDERS}\n\n"
     "🧩 <b>Buttons gone?</b>\n"
-    "Tap <b>Menu</b> next to the message box, then <b>/menu</b>.\n"
-    "Or tap the little keyboard icon.\n\n"
+    "Tap the little keyboard icon next to the message box,\n"
+    "or send /menu.\n\n"
     "✍️ <b>Prefer typing?</b>\n\n"
     "<b>Impact</b>\n"
     "/level high\n"
@@ -203,7 +197,7 @@ def respond(chat_id, text, audience):
                 store.update(chat_id, level="high", currencies=None)
         level, cur = _entry(audience, chat_id)
         return (f"<b>You're in ✨</b>\n"
-                "<i>Market news, zero noise. We ping, you chill.</i>\n\n"
+                "<i>Your economic calendar, on autopilot. We ping, you chill.</i>\n\n"
                 f"{_card(level, cur, '🧭 Your setup')}\n\n"
                 "Tap the buttons below to make it yours 👇\n"
                 "<i>Changes kick in within 5 min.</i>"), keys()
@@ -291,8 +285,9 @@ def dispatch(chat_id, text, audience):
 
 
 def _publish_menu(notifier, store):
-    """Fill Telegram's Menu list (next to the message box) once, and again only
-    when BOT_COMMANDS changes."""
+    """Keep Telegram's command list (the blue Menu button) in step with
+    BOT_COMMANDS: once, and again only when MENU_VERSION changes. An empty list
+    removes the Menu button."""
     if store.menu_version == MENU_VERSION or not hasattr(notifier, "set_commands"):
         return
     try:
