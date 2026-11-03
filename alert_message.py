@@ -127,15 +127,16 @@ def event_message(event, event_time, heading_text, now=None):
     now_local = now.astimezone(cfg.DISPLAY_TZ)
     country = clean(event.get("country"))
     left = _countdown(event_time, now)
+    clock = f"{local.strftime('%I:%M %p').lstrip('0')} {cfg.DISPLAY_TZ_LABEL}"
     return "\n".join([
         heading_text,
         "",
         f"<b>{html.escape(clean(event.get('title')))}</b>",
         f"{FLAGS.get(country.upper(), '🌐')} {html.escape(_currency(country))}",
         "",
-        f"🕒 <b>{local.strftime('%I:%M %p').lstrip('0')} {cfg.DISPLAY_TZ_LABEL}</b>",
+        f"🕒 <b>{clock}</b>",
         f"📅 {_day_label(local, now_local)}",
-        "⏳ Starting now" if left == "now" else f"⏳ In {left}",
+        f"⏳ Starting now ({clock})" if left == "now" else f"⏳ In {left} ({clock})",
         "",
         *_numbers_lines(event),
         "",
