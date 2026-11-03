@@ -17,13 +17,17 @@ MAX_BATCHES = 5   # up to 500 new messages handled per run
 ORDER = ("USD", "EUR", "GBP", "JPY", "AUD", "NZD", "CAD", "CHF", "CNY")
 
 LEVEL_TEXT = {
-    "high": "🔥 Big moves only (high impact)",
-    "medium": "⚡ Balanced (medium + high)",
-    "low": "🫧 All of it (low, medium + high)",
+    "high": "🔥 High (big moves only)",
+    "medium": "⚡ Medium (medium + high)",
+    "low": "🫧 Low (all of it)",
 }
-LEVEL_BUTTON = {"high": "🔥 Big moves", "medium": "⚡ Balanced", "low": "🫧 All of it"}
-
+LEVEL_ICON = {"high": "🔥", "medium": "⚡", "low": "🫧"}
+LEVEL_NAME = {"high": "High", "medium": "Medium", "low": "Low"}
+# words people may tap or type (older button labels still work)
+LEVEL_WORDS = {"high": ("high", "big moves"), "medium": ("medium", "balanced"),
+               "low": ("low", "all of it")}
 TICK = " ✓"
+
 BTN_CURRENCIES, BTN_SETTINGS = "💸 Currencies", "🎯 My setup"
 BTN_HELP, BTN_PAUSE, BTN_START = "🧠 How it works", "😴 Pause", "▶️ Start"
 BTN_ALL, BTN_BACK = "🌍 All currencies", "⬅️ Back"
@@ -36,12 +40,13 @@ HELP = (
     "<b>🧠 How it works</b>\n"
     "<i>Market news, zero noise.</i>\n\n"
     "<b>🚦 Pick your vibe</b>\n"
-    "🔥 <b>Big moves</b>: Only the market shakers\n"
-    "⚡ <b>Balanced</b>: The sweet spot (most people pick this)\n"
-    "🫧 <b>All of it</b>: Every release, even the small ones\n\n"
+    "🔥 <b>High</b>: Only the big market movers\n"
+    "⚡ <b>Medium</b>: The sweet spot (most people pick this)\n"
+    "🫧 <b>Low</b>: Every release, even the small ones\n\n"
     "<b>💸 Pick your currencies</b>\n"
-    "Tap <b>Currencies</b>, then tap the flags you follow. "
-    "Tap again to drop one. None picked = you get everything.\n\n"
+    "Tap <b>Currencies</b>, then tap the ones you follow. "
+    "A ✓ shows what you picked. Tap again to drop one. "
+    "None picked = you get everything.\n\n"
     "<b>🔔 How we ping you</b>\n"
     f"{REMINDERS}\n\n"
     "✍️ <b>Prefer typing?</b>\n\n"
@@ -97,8 +102,11 @@ def _card(level, cur, title="🎯 Your setup"):
 
 # ---------- keyboards ----------
 def main_keyboard(level=None):
+    """The level you are on gets a ✓ after its name."""
+    def button(name):
+        return {"text": f"{LEVEL_ICON[name]} {LEVEL_NAME[name]}" + (TICK if name == level else "")}
     return {"keyboard": [
-        [{"text": LEVEL_BUTTON[name]} for name in ("high", "medium", "low")],
+        [button("high"), button("medium"), button("low")],
         [{"text": BTN_CURRENCIES}, {"text": BTN_SETTINGS}],
         [{"text": BTN_HELP}, {"text": BTN_PAUSE}],
     ], "resize_keyboard": True, "is_persistent": True}
@@ -125,11 +133,8 @@ def parse(text):
     if raw.startswith("/"):
         parts = raw.replace(",", " ").split()
         return parts[0].split("@")[0].lower(), parts[1:]
-    plain = raw.replace(TICK.strip(), "").replace("✅", "").strip()
+    plain = raw.replace("✓", "").replace("✅", "").strip()
     low = plain.lower()
-    for level, label in LEVEL_BUTTON.items():
-        if plain == label:
-            return "/level", [level]
     if "all currencies" in low:
         return "/currencies", ["all"]
     if "currencies" in low:
@@ -144,6 +149,9 @@ def parse(text):
         return "/back", []
     if low.endswith("start") or low == "start":
         return "/start", []
+    for level, words in LEVEL_WORDS.items():
+        if any(re.search(rf"\b{w}\b", low) for w in words):
+            return "/level", [level]
     match = re.search(r"\b([A-Z]{3})\b", plain)
     if match and match.group(1) in KNOWN_CURRENCIES:
         return "/toggle", [match.group(1)]
