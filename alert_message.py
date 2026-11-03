@@ -128,6 +128,7 @@ def event_message(event, event_time, heading_text, now=None):
     country = clean(event.get("country"))
     left = _countdown(event_time, now)
     clock = f"{local.strftime('%I:%M %p').lstrip('0')} {cfg.DISPLAY_TZ_LABEL}"
+    utc_clock = f"{event_time.astimezone(cfg.UTC).strftime('%H:%M')} UTC"
     return "\n".join([
         heading_text,
         "",
@@ -136,7 +137,7 @@ def event_message(event, event_time, heading_text, now=None):
         "",
         f"🕒 <b>{clock}</b>",
         f"📅 {_day_label(local, now_local)}",
-        f"⏳ Starting now ({clock})" if left == "now" else f"⏳ In {left} ({clock})",
+        f"⏳ Starting now ({utc_clock})" if left == "now" else f"⏳ In {left} ({utc_clock})",
         "",
         *_numbers_lines(event),
         "",
