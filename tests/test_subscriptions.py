@@ -229,6 +229,95 @@ class CommandTests(unittest.TestCase):
         self.assertIn("Unknown command", self.say(7, "/dance"))
 
 
+class ButtonTests(unittest.TestCase):
+    def setUp(self):
+        self.store = SubscriberStore("x", KEY, 5)
+        self.aud = Audience(["100"], self.store, default_level="medium")
+
+    def tap(self, text, chat=7):
+        return commands.respond(chat, text, self.aud)
+
+    def texts(self, keyboard):
+        return [b["text"] for row in keyboard["keyboard"] for b in row]
+
+    def test_every_button_is_understood(self):
+        self.tap("/start")
+        for kb in (commands.main_keyboard("medium"), commands.currency_keyboard(["USD"]),
+                   commands.currency_keyboard(None), commands.START_KEYBOARD):
+            for label in self.texts(kb):
+                self.assertIsNotNone(commands.parse(label)[0], label)
+
+    def test_start_button_subscribes(self):
+        reply, keyboard = self.tap("▶️ Start")
+        self.assertIn("You're in", reply)
+        self.assertIn("🔴 High ✓", self.texts(keyboard))
+
+    def test_level_buttons_save_and_move_the_tick(self):
+        self.tap("/start")
+        reply, keyboard = self.tap("🟠 Medium")
+        self.assertEqual(self.store.get("7")["level"], "medium")
+        self.assertIn("🟠 Medium ✓", self.texts(keyboard))
+        self.assertNotIn("🔴 High ✓", self.texts(keyboard))
+        self.tap("🟡 Low ✓")                       # tapping the ticked label also works
+        self.assertEqual(self.store.get("7")["level"], "low")
+
+    def test_currency_buttons_toggle(self):
+        self.tap("/start")
+        reply, keyboard = self.tap("💱 Currencies")
+        self.assertIn("🌍 All currencies ✓", self.texts(keyboard))
+        self.tap("🇺🇸 USD")
+        reply, keyboard = self.tap("🇪🇺 EUR")
+        self.assertEqual(self.store.get("7")["cur"], ["USD", "EUR"])
+        self.assertIn("🇺🇸 USD ✓", self.texts(keyboard))
+        self.assertIn("🇪🇺 EUR ✓", self.texts(keyboard))
+        self.assertIn("removed", self.tap("🇺🇸 USD ✓")[0])
+        self.assertEqual(self.store.get("7")["cur"], ["EUR"])
+        self.tap("🇪🇺 EUR ✓")                      # removing the last one means "all"
+        self.assertIsNone(self.store.get("7")["cur"])
+
+    def test_all_currencies_and_back(self):
+        self.tap("/start")
+        self.tap("🇬🇧 GBP")
+        self.tap("🌍 All currencies")
+        self.assertIsNone(self.store.get("7")["cur"])
+        reply, keyboard = self.tap("⬅️ Back")
+        self.assertIn("Your alerts", reply)
+        self.assertIn("📊 My settings", self.texts(keyboard))
+
+    def test_pause_then_start_again(self):
+        self.tap("/start")
+        reply, keyboard = self.tap("🔕 Pause")
+        self.assertIn("paused", reply)
+        self.assertEqual(self.texts(keyboard), ["▶️ Start"])
+        self.assertIsNone(self.store.get("7"))
+        self.assertIn("You're in", self.tap("▶️ Start")[0])
+
+    def test_settings_card_shows_flags_and_reminders(self):
+        self.tap("/start")
+        self.tap("🇯🇵 JPY")
+        reply, _ = self.tap("📊 My settings")
+        for part in ("🇯🇵 JPY", "Impact", "Currencies", "1 hour and 30 minutes"):
+            self.assertIn(part, reply)
+
+    def test_help_and_unknown_text(self):
+        self.tap("/start")
+        self.assertIn("How it works", self.tap("ℹ️ How it works")[0])
+        self.assertIn("button", self.tap("random words")[0])
+
+    def test_messages_are_valid_telegram_html_and_short(self):
+        self.tap("/start")
+        for text in ("/start", "/help", "📊 My settings", "💱 Currencies", "🇺🇸 USD", "🔕 Pause"):
+            reply, _ = self.tap(text)
+            self.assertLess(len(reply), 1200)
+            for tag in ("b", "i"):
+                self.assertEqual(reply.count(f"<{tag}>"), reply.count(f"</{tag}>"), text)
+
+    def test_strangers_are_asked_to_start(self):
+        reply, keyboard = self.tap("🔕 Pause", chat=55)
+        self.assertIn("/start first", reply)
+        self.assertEqual(self.texts(keyboard), ["▶️ Start"])
+
+
 class FakeBot:
     def __init__(self, updates=()):
         self.updates, self.sent = list(updates), []
@@ -255,11 +344,14 @@ class HandleUpdatesTests(unittest.TestCase):
         self.assertEqual(store.get("7")["level"], "low")
         self.assertEqual([c for c, _ in bot.sent], ["7", "7"])
 
-    def test_groups_and_plain_text_are_ignored(self):
+    def test_groups_are_ignored_and_strangers_get_a_nudge(self):
         store = SubscriberStore("x", KEY, 10)
         bot = FakeBot([update(1, -5, "/start", "group"), update(2, 7, "hello")])
         quiet(commands.handle_updates, bot, Audience(["100"], store))
-        self.assertEqual((len(store), bot.sent, store.offset), (0, [], 3))
+        self.assertEqual(len(store), 0)
+        self.assertEqual([c for c, _ in bot.sent], ["7"])      # a gentle nudge, not silence
+        self.assertIn("Start", bot.sent[0][1])
+        self.assertEqual(store.offset, 3)
 
     def test_reading_failure_is_survived(self):
         class Broken(FakeBot):
