@@ -90,6 +90,13 @@ class MenuCommandTests(unittest.TestCase):
         self.assertIn('"command": "menu"', params["commands"])
         self.assertIn("Open the buttons", params["commands"])
 
+    def test_empty_list_removes_the_menu_button(self):
+        notifier = TelegramNotifier(token="T", chat_id="1")
+        with mock.patch.object(TelegramNotifier, "_call") as call:
+            notifier.set_commands([])
+        methods = [c.args[0] for c in call.call_args_list]
+        self.assertEqual(methods, ["deleteMyCommands", "setChatMenuButton"])
+
 
 if __name__ == "__main__":
     unittest.main()
