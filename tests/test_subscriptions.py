@@ -250,15 +250,16 @@ class ButtonTests(unittest.TestCase):
     def test_start_button_subscribes(self):
         reply, keyboard = self.tap("▶️ Start")
         self.assertIn("You're in", reply)
-        self.assertIn("🔥 Big moves", self.texts(keyboard))
+        self.assertIn("🔥 High ✓", self.texts(keyboard))
 
-    def test_level_buttons_save_without_ticks(self):
+    def test_level_buttons_save_and_show_the_tick(self):
         self.tap("/start")
-        reply, keyboard = self.tap("⚡ Balanced")
+        reply, keyboard = self.tap("⚡ Medium")
         self.assertEqual(self.store.get("7")["level"], "medium")
-        self.assertIn("⚡ Balanced", self.texts(keyboard))
-        self.assertFalse([x for x in self.texts(keyboard) if "✓" in x])   # no ticks on level buttons
-        self.tap("🫧 All of it ✓")                       # an old ticked label still works
+        self.assertIn("⚡ Medium ✓", self.texts(keyboard))
+        self.assertIn("🔥 High", self.texts(keyboard))
+        self.assertNotIn("🔥 High ✓", self.texts(keyboard))
+        self.tap("🫧 All of it ✓")                       # older button labels still work
         self.assertEqual(self.store.get("7")["level"], "low")
 
     def test_currency_buttons_toggle(self):
@@ -327,6 +328,12 @@ class ButtonTests(unittest.TestCase):
             body = reply.replace("<b>", "").replace("<i>", "")
             for word in ("you're in", "tap the", "right now", "kicks in", "paused"):
                 self.assertNotIn("\n" + word, "\n" + body, text)    # no lines starting lowercase
+
+    def test_ticks_live_on_the_buttons_not_in_messages(self):
+        self.tap("/start")
+        self.tap("🇺🇸 USD")
+        for text in ("🎯 My setup", "💸 Currencies"):
+            self.assertNotIn("✓", self.tap(text)[0])
 
     def test_strangers_are_asked_to_start(self):
         reply, keyboard = self.tap("😴 Pause", chat=55)
