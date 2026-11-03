@@ -80,5 +80,16 @@ class SendTests(unittest.TestCase):
         self.assertEqual([c.args[1]["chat_id"] for c in call.call_args_list], ["9"])
 
 
+class MenuCommandTests(unittest.TestCase):
+    def test_set_commands_sends_the_list(self):
+        notifier = TelegramNotifier(token="T", chat_id="1")
+        with mock.patch.object(TelegramNotifier, "_call") as call:
+            notifier.set_commands([("menu", "Open the buttons")])
+        method, params = call.call_args.args
+        self.assertEqual(method, "setMyCommands")
+        self.assertIn('"command": "menu"', params["commands"])
+        self.assertIn("Open the buttons", params["commands"])
+
+
 if __name__ == "__main__":
     unittest.main()
