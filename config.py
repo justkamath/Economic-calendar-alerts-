@@ -133,3 +133,11 @@ DB_KEEP_DAYS = _whole("DB_KEEP_DAYS", 365, 14, 730)         # keep history this 
 ALERT_WEEKS = _whole("ALERT_WEEKS", 1, 1, 2)                # alert window: 1 or 2 weeks
 HORIZON_DAYS = 7 * ALERT_WEEKS                              # alerts and summary only look this far
 
+# ---------- Subscribers (each person picks their own level and currencies) ----------
+# Turn on by adding a SUBSCRIBERS_KEY secret (any long random text, 24+ characters).
+# The list is saved ENCRYPTED in subscribers.enc, so it is safe in a public repo.
+SUBSCRIBERS_KEY = os.environ.get("SUBSCRIBERS_KEY", "").strip()
+SUBSCRIBERS_FILE = str(BASE_DIR / "subscribers.enc")
+MAX_SUBSCRIBERS = _whole("MAX_SUBSCRIBERS", 200, 1, 5000)
+SIGNUP_CODE = os.environ.get("SIGNUP_CODE", "").strip()   # optional: makes the bot invite-only
+
