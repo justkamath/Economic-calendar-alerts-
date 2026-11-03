@@ -729,11 +729,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|ADP Weekly Employment Change|2026-10-27T12:15:00+00:00": {
-    "1h": true,
-    "30m": false,
-    "detected": true
-  },
   "USD|API Weekly Statistical Bulletin|2026-10-27T20:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -755,11 +750,6 @@
     "detected": true
   },
   "USD|Average Hourly Earnings m/m|2026-11-06T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|CB Consumer Confidence|2026-10-27T14:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -789,11 +779,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Core Durable Goods Orders m/m|2026-10-27T12:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Core PCE Price Index m/m|2026-10-29T12:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -805,11 +790,6 @@
     "detected": true
   },
   "USD|Crude Oil Inventories|2026-11-04T15:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Durable Goods Orders m/m|2026-10-27T12:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -889,11 +869,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|HPI m/m|2026-10-27T13:00:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
   "USD|ISM Manufacturing PMI|2026-11-02T15:00:00+00:00": {
     "1h": false,
     "30m": true,
@@ -925,11 +900,6 @@
     "detected": true
   },
   "USD|Natural Gas Storage|2026-11-05T15:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|New Home Sales|2026-10-27T14:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -982,16 +952,6 @@
   "USD|RCM/TIPP Economic Optimism|2026-11-03T15:10:00+00:00": {
     "1h": false,
     "30m": false,
-    "detected": true
-  },
-  "USD|Richmond Manufacturing Index|2026-10-27T14:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|S&P/CS Composite-20 HPI y/y|2026-10-27T13:00:00+00:00": {
-    "1h": false,
-    "30m": true,
     "detected": true
   },
   "USD|Trade Balance|2026-11-04T13:30:00+00:00": {
