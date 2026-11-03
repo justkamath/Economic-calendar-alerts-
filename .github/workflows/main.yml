@@ -59,6 +59,9 @@ jobs:
           TRADING_ECONOMICS_KEY: ${{ secrets.TRADING_ECONOMICS_KEY }}
           FMP_API_KEY: ${{ secrets.FMP_API_KEY }}
           FINNHUB_API_KEY: ${{ secrets.FINNHUB_API_KEY }}
+          SUBSCRIBERS_KEY: ${{ secrets.SUBSCRIBERS_KEY }}
+          SIGNUP_CODE: ${{ secrets.SIGNUP_CODE }}
+          MAX_SUBSCRIBERS: ${{ vars.MAX_SUBSCRIBERS || '200' }}
 
       - name: Save sent alert history and calendar database
         if: always()
@@ -67,6 +70,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add sent_alerts.json
           if [ -f data/calendar.db ]; then git add data/calendar.db; fi
+          if [ -f subscribers.enc ]; then git add subscribers.enc; fi
           if ! git diff --cached --quiet; then
             git commit -m "Update alert history and calendar data"
             git push
