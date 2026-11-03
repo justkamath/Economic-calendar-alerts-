@@ -250,16 +250,16 @@ class ButtonTests(unittest.TestCase):
     def test_start_button_subscribes(self):
         reply, keyboard = self.tap("▶️ Start")
         self.assertIn("You're in", reply)
-        self.assertIn("🔥 High ✓", self.texts(keyboard))
+        self.assertIn("🎯 Sharp ✓", self.texts(keyboard))
 
     def test_level_buttons_save_and_show_the_tick(self):
         self.tap("/start")
-        reply, keyboard = self.tap("⚡ Medium")
+        reply, keyboard = self.tap("⚡ Core")
         self.assertEqual(self.store.get("7")["level"], "medium")
-        self.assertIn("⚡ Medium ✓", self.texts(keyboard))
-        self.assertIn("🔥 High", self.texts(keyboard))
-        self.assertNotIn("🔥 High ✓", self.texts(keyboard))
-        self.tap("🫧 All of it ✓")                       # older button labels still work
+        self.assertIn("⚡ Core ✓", self.texts(keyboard))
+        self.assertIn("🎯 Sharp", self.texts(keyboard))
+        self.assertNotIn("🎯 Sharp ✓", self.texts(keyboard))
+        self.tap("🌊 Flood ✓")                       # older button labels still work
         self.assertEqual(self.store.get("7")["level"], "low")
 
     def test_currency_buttons_toggle(self):
@@ -282,8 +282,8 @@ class ButtonTests(unittest.TestCase):
         self.tap("🌍 All currencies")
         self.assertIsNone(self.store.get("7")["cur"])
         reply, keyboard = self.tap("⬅️ Back")
-        self.assertIn("Your setup", reply)
-        self.assertIn("🎯 My setup", self.texts(keyboard))
+        self.assertIn("buttons", reply)
+        self.assertIn("🧭 My setup", self.texts(keyboard))
 
     def test_pause_then_start_again(self):
         self.tap("/start")
@@ -303,7 +303,7 @@ class ButtonTests(unittest.TestCase):
     def test_help_and_unknown_text(self):
         self.tap("/start")
         self.assertIn("How it works", self.tap("🧠 How it works")[0])
-        self.assertIn("Tap a button", self.tap("random words")[0])
+        self.assertIn("/menu", self.tap("random words")[0])
 
     def test_messages_are_valid_telegram_html_and_short(self):
         self.tap("/start")
@@ -334,6 +334,47 @@ class ButtonTests(unittest.TestCase):
         self.tap("🇺🇸 USD")
         for text in ("🎯 My setup", "💸 Currencies"):
             self.assertNotIn("✓", self.tap(text)[0])
+
+    def test_buttons_collapse_after_a_tap_but_currency_picking_stays_open(self):
+        _, keyboard = self.tap("/start")
+        self.assertTrue(keyboard.get("one_time_keyboard"))
+        _, picker = self.tap("💸 Currencies")
+        self.assertFalse(picker.get("one_time_keyboard"))
+        self.assertTrue(picker.get("is_persistent"))
+
+    def test_reading_replies_leave_the_bar_alone(self):
+        self.tap("/start")
+        for text in ("🧭 My setup", "🧠 How it works", "/status", "/help", "random words"):
+            self.assertIsNone(self.tap(text)[1], text)
+
+    def test_menu_command_brings_the_buttons_back_with_current_ticks(self):
+        self.tap("/start")
+        self.tap("🌊 Flood")
+        reply, keyboard = self.tap("/menu")
+        self.assertIn("buttons", reply)
+        self.assertIn("🌊 Flood ✓", self.texts(keyboard))
+
+    def test_setup_and_pause_are_aliases(self):
+        self.tap("/start")
+        self.assertIn("Your setup", self.tap("/setup")[0])
+        self.assertIn("Paused", self.tap("/pause")[0])
+
+    def test_old_level_names_still_work(self):
+        self.tap("/start")
+        for label, level in (("🔥 High", "high"), ("⚡ Balanced", "medium"), ("🫧 All of it", "low"),
+                             ("/level low", "low"), ("🎯 Sharp", "high")):
+            self.tap(label)
+            self.assertEqual(self.store.get("7")["level"], level, label)
+
+    def test_every_menu_command_is_valid_for_telegram(self):
+        for name, description in commands.BOT_COMMANDS:
+            self.assertRegex(name, r"^[a-z0-9_]{1,32}$")
+            self.assertTrue(1 <= len(description) <= 256)
+        for name, _ in commands.BOT_COMMANDS:
+            self.assertIsNotNone(commands.parse("/" + name)[0])
+
+    def test_help_explains_how_to_get_the_buttons_back(self):
+        self.assertIn("/menu", commands.HELP)
 
     def test_strangers_are_asked_to_start(self):
         reply, keyboard = self.tap("😴 Pause", chat=55)
@@ -381,6 +422,38 @@ class HandleUpdatesTests(unittest.TestCase):
             def get_updates(self, *a, **k):
                 raise RuntimeError("409 webhook")
         quiet(commands.handle_updates, Broken(), Audience(["100"], SubscriberStore("x", KEY, 3)))
+
+
+class MenuListTests(unittest.TestCase):
+    def test_menu_is_published_once_and_remembered(self):
+        class Bot(FakeBot):
+            published = []
+
+            def set_commands(self, items):
+                self.published.append(items)
+        store = SubscriberStore("x", KEY, 5)
+        aud = Audience(["100"], store)
+        bot = Bot()
+        quiet(commands.handle_updates, bot, aud)
+        quiet(commands.handle_updates, bot, aud)
+        self.assertEqual(len(bot.published), 1)
+        self.assertEqual(store.menu_version, commands.MENU_VERSION)
+
+    def test_version_is_saved_with_the_list(self):
+        with tempfile.TemporaryDirectory() as d:
+            path = os.path.join(d, "s.enc")
+            s = SubscriberStore.load(path, KEY, 5)
+            s.set_menu_version(3)
+            s.save()
+            self.assertEqual(SubscriberStore.load(path, KEY, 5).menu_version, 3)
+
+    def test_a_failed_publish_is_retried_next_run(self):
+        class Bot(FakeBot):
+            def set_commands(self, items):
+                raise RuntimeError("telegram down")
+        store = SubscriberStore("x", KEY, 5)
+        quiet(commands.handle_updates, Bot(), Audience(["100"], store))
+        self.assertEqual(store.menu_version, 0)
 
 
 class DeliveryTests(unittest.TestCase):
