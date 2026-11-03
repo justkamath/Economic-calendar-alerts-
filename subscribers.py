@@ -74,6 +74,7 @@ class SubscriberStore:
         _keys(secret)                 # fail early on a short key
         self.max_subscribers = max_subscribers
         self.offset = 0               # next Telegram update to read
+        self.menu_version = 0         # which version of the command Menu Telegram has
         self.subs = {}                # chat_id (str) -> {"level": str, "cur": [..] or None}
         self.dirty = False
 
@@ -90,6 +91,7 @@ class SubscriberStore:
         except (ValueError, UnicodeDecodeError):
             raise SubscriberError("Subscribers file is damaged.") from None
         store.offset = int(data.get("offset", 0))
+        store.menu_version = int(data.get("menu", 0))
         for chat_id, rec in (data.get("subs") or {}).items():
             if isinstance(rec, dict):
                 store.subs[str(chat_id)] = {"level": rec.get("level", "high"),
@@ -99,7 +101,8 @@ class SubscriberStore:
     def save(self):
         if not self.dirty:
             return
-        payload = json.dumps({"offset": self.offset, "subs": self.subs}, sort_keys=True)
+        payload = json.dumps({"offset": self.offset, "menu": self.menu_version,
+                              "subs": self.subs}, sort_keys=True)
         temp = self.path + ".tmp"
         with open(temp, "wb") as f:
             f.write(encrypt(self.secret, payload.encode("utf-8")))
@@ -137,6 +140,11 @@ class SubscriberStore:
             self.dirty = True
             return True
         return False
+
+    def set_menu_version(self, version):
+        if version != self.menu_version:
+            self.menu_version = version
+            self.dirty = True
 
     def set_offset(self, offset):
         if offset != self.offset:
