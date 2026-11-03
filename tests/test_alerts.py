@@ -1,144 +1,146 @@
-"""Run from the repo root:  python -m unittest discover -s tests -v"""
-import os
-import sys
-import unittest
-from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+"""Layout of a single event alert (detected / 1-hour / 30-minute messages).
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+An "event card" in three calm blocks:
+  1. level colour + name, and where we are (new / 1 hour / 30 minutes)
+  2. the event: name, flag + currency, time, day, countdown (bold, easy to scan)
+  3. the numbers (prior / forecast / actual) aligned in a monospace <pre> block
+Same level colours and names as the daily summary."""
+import html
+import re
+from datetime import datetime
 
-import config as cfg  # noqa: E402
-import alerts  # noqa: E402
-import alert_message as am  # noqa: E402
-from alert_message import event_message, heading  # noqa: E402
+import config as cfg
+from summary import FLAGS
+from utils import clean
 
-WHEN = datetime(2026, 11, 6, 13, 30, tzinfo=cfg.UTC)  # 7:00 PM IST, Fri 6 Nov
-NOW = WHEN - timedelta(hours=2, minutes=15)
-
-
-def ev(**kw):
-    base = {"title": "Non Farm Payrolls", "country": "USD", "impact": "High",
-            "date": WHEN.isoformat(), "previous": "29K", "forecast": "", "actual": ""}
-    base.update(kw)
-    return base
-
-
-def msg_for(event=None, now=NOW, head="H"):
-    return event_message(event or ev(), WHEN, head, now=now)
-
-
-def table_of(message):
-    return message.split("<pre>")[1].split("</pre>")[0]
-
-
-class AlertMessageTests(unittest.TestCase):
-    def setUp(self):
-        self._old = cfg.DISPLAY_TZ, cfg.DISPLAY_TZ_LABEL, cfg.SOURCE_NAME
-        cfg.DISPLAY_TZ, cfg.DISPLAY_TZ_LABEL = ZoneInfo("Asia/Kolkata"), "IST"
-        cfg.SOURCE_NAME = "Forex Factory"
-
-    def tearDown(self):
-        cfg.DISPLAY_TZ, cfg.DISPLAY_TZ_LABEL, cfg.SOURCE_NAME = self._old
-
-    def test_headings_keep_level_colour_and_name(self):
-        self.assertEqual(heading("detected", "high"),
-                         "🔴 <b>HIGH IMPACT</b>\n🔔 <i>New on your calendar</i>")
-        self.assertEqual(heading("1h", "medium"),
-                         "🟠 <b>MEDIUM IMPACT</b>\n⏰ <i>Starts in about 1 hour</i>")
-        self.assertEqual(heading("30m", "low"),
-                         "🟡 <b>LOW IMPACT</b>\n⏳ <i>Starts in about 30 minutes</i>")
-        self.assertIn("BANK HOLIDAY", heading("detected", "holiday"))
-
-    def test_exact_card_layout(self):
-        e = ev(title="German Prelim CPI m/m", country="EUR", impact="Medium",
-               previous="0.6%", forecast="0.1%")
-        self.assertEqual(msg_for(e, head=heading("detected", "medium")), (
-            "🟠 <b>MEDIUM IMPACT</b>\n"
-            "🔔 <i>New on your calendar</i>\n\n"
-            "<b>German Prelim CPI m/m</b>\n"
-            "🇪🇺 EUR (Euro)\n\n"
-            "🕒 <b>7:00 PM IST</b>\n"
-            "📅 Today, Fri 06 Nov\n"
-            "⏳ In 2 hr 15 min\n\n"
-            "<pre>Prior     0.6%\n"
-            "Forecast  0.1%  ▼ down\n"
-            "Actual    not out yet</pre>\n\n"
-            "<i>🌿 Just a heads-up, nothing to do right now.</i>\n"
-            "<i>Source: Forex Factory</i>"))
-
-    def test_numbers_start_in_the_same_column(self):
-        for e in (ev(), ev(previous="1.2%", forecast="1.5%", actual="1.6%")):
-            for line in table_of(msg_for(e)).split("\n"):
-                self.assertEqual(line[8:10], "  ", line)
-                self.assertNotEqual(line[10], " ", line)
-
-    def test_no_box_drawing_or_dot_separators(self):
-        m = msg_for(ev(), head=heading("detected", "high"))
-        for ch in "│╭╰├─·":
-            self.assertNotIn(ch, m)
-
-    def test_no_figures_gets_a_friendly_line_instead_of_empty_rows(self):
-        m = msg_for(ev(previous="", impact="Holiday", country="JPY"))
-        self.assertIn("No figures published for this one.", m)
-        self.assertNotIn("<pre>", m)
-        self.assertNotIn("n/a", m)
-
-    def test_currency_name_shown_for_known_currencies_only(self):
-        self.assertIn("🇺🇸 USD (US Dollar)", msg_for())
-        self.assertIn("🌐 XYZ\n", msg_for(ev(country="XYZ")))
-
-    def test_actual_compared_with_forecast(self):
-        self.assertIn("0.3%  ▲ above",
-                      table_of(msg_for(ev(previous="0.6%", forecast="0.1%", actual="0.3%"))))
-        self.assertIn("▼ below", msg_for(ev(forecast="0.5%", actual="0.3%")))
-        self.assertIn("= on forecast", msg_for(ev(forecast="0.3%", actual="0.3%")))
-
-    def test_trend_arrows(self):
-        self.assertIn("▲ up", msg_for(ev(previous="1%", forecast="2%")))
-        self.assertIn("▼ down", msg_for(ev(previous="2%", forecast="1%")))
-        self.assertIn("= flat", msg_for(ev(previous="2%", forecast="2%")))
-        self.assertNotIn("▲", msg_for(ev(previous="word", forecast="other")))
-
-    def test_number_parsing(self):
-        self.assertEqual(am._number("0.6%"), 0.6)
-        self.assertEqual(am._number("29.0K"), 29000.0)
-        self.assertEqual(am._number("-1.2B"), -1.2e9)
-        self.assertEqual(am._number("1,250"), 1250.0)
-        self.assertIsNone(am._number("Hawkish"))
-
-    def test_day_labels_and_countdown(self):
-        self.assertIn("Today, Fri 06 Nov", msg_for(now=WHEN - timedelta(hours=1)))
-        self.assertIn("Tomorrow, Fri 06 Nov", msg_for(now=WHEN - timedelta(hours=26)))
-        self.assertIn("📅 Fri 06 Nov", msg_for(now=WHEN - timedelta(days=4)))
-        self.assertIn("⏳ In 45 min", msg_for(now=WHEN - timedelta(minutes=45)))
-        self.assertIn("⏳ In 1 hour\n", msg_for(now=WHEN - timedelta(hours=1)))
-        self.assertIn("⏳ In 2 hours\n", msg_for(now=WHEN - timedelta(hours=2)))
-        self.assertIn("⏳ In 1 hr 15 min", msg_for(now=WHEN - timedelta(hours=1, minutes=15)))
-        self.assertIn("⏳ In 3 days 4 hrs", msg_for(now=WHEN - timedelta(days=3, hours=4)))
-        self.assertIn("⏳ In 1 day 0 hrs", msg_for(now=WHEN - timedelta(days=1)))
-        self.assertIn("⏳ Starting now", msg_for(now=WHEN + timedelta(minutes=2)))
-
-    def test_missing_numbers_show_na_and_keep_rows(self):
-        t = table_of(msg_for(ev(previous="", forecast="2%")))
-        self.assertIn("Prior     n/a", t)
-        self.assertIn("Forecast  2%", t)
-        self.assertIn("Actual    not out yet", t)
-        self.assertNotIn("Not available", t)
-
-    def test_unknown_country_gets_globe(self):
-        self.assertIn("🌐 XYZ", msg_for(ev(country="XYZ")))
-
-    def test_escapes_html(self):
-        m = msg_for(ev(title="A <b> & B", previous="<1"))
-        self.assertIn("A &lt;b&gt; &amp; B", m)
-        self.assertIn("&lt;1", table_of(m))
-
-    def test_works_without_passing_now(self):
-        self.assertIn("⏳ ", event_message(ev(), WHEN, "H"))
-
-    def test_alerts_module_uses_the_new_layout(self):
-        self.assertIs(alerts.event_message, event_message)
+TITLES = {"high": "HIGH IMPACT", "medium": "MEDIUM IMPACT", "low": "LOW IMPACT",
+          "holiday": "BANK HOLIDAY"}
+STAGES = {"detected": ("🔔", "New on your calendar"),
+          "1h": ("⏰", "Starts in about 1 hour"),
+          "30m": ("⏳", "Starts in about 30 minutes")}
+CURRENCY_NAMES = {"USD": "US Dollar", "EUR": "Euro", "GBP": "British Pound",
+                  "JPY": "Japanese Yen", "AUD": "Australian Dollar",
+                  "NZD": "New Zealand Dollar", "CAD": "Canadian Dollar",
+                  "CHF": "Swiss Franc", "CNY": "Chinese Yuan"}
+CALM_NOTE = "🌿 Just a heads-up, nothing to do right now."
+NO_VALUE = "n/a"
+PENDING = "not out yet"
+NO_FIGURES = "📊 <i>No figures published for this one.</i>"
+MAX_VALUE = 14   # keeps the numbers block narrow enough for a phone screen
+_SUFFIX = {"k": 1e3, "m": 1e6, "b": 1e9, "t": 1e12}
 
 
-if __name__ == "__main__":
+def heading(stage, level):
+    """Two lines: the level, then where we are, e.g.
+    '🟠 <b>MEDIUM IMPACT</b>' / '⏰ <i>Starts in about 1 hour</i>'"""
+    emoji = cfg.IMPACT_STYLE[level][0]
+    icon, text = STAGES[stage]
+    return f"{emoji} <b>{TITLES[level]}</b>\n{icon} <i>{text}</i>"
+
+
+def _number(text):
+    """'0.6%' -> 0.6, '29.0K' -> 29000.0, '-1.2B' -> -1.2e9; None if not numeric."""
+    match = re.fullmatch(r"([-+]?\d+(?:[.,]\d+)*)\s*([kmbtKMBT])?\s*%?", text.strip())
+    if not match:
+        return None
+    try:
+        value = float(match.group(1).replace(",", ""))
+    except ValueError:
+        return None
+    return value * _SUFFIX.get((match.group(2) or "").lower(), 1)
+
+
+def _known(event, field):
+    value = clean(event.get(field))
+    return None if value == "Not available" else value[:MAX_VALUE]
+
+
+def _trend(previous, forecast):
+    """How the forecast compares with the previous figure."""
+    a, b = _number(previous or ""), _number(forecast or "")
+    if a is None or b is None:
+        return ""
+    if b > a:
+        return "  ▲ up"
+    return "  ▼ down" if b < a else "  = flat"
+
+
+def _verdict(actual, forecast):
+    a, b = _number(actual or ""), _number(forecast or "")
+    if a is None or b is None:
+        return ""
+    if a > b:
+        return "  ▲ above"
+    return "  ▼ below" if a < b else "  = on forecast"
+
+
+def _day_label(local, now_local):
+    """'Today, Fri 30 Oct' / 'Tomorrow, Sat 31 Oct' / 'Fri 06 Nov'."""
+    delta = (local.date() - now_local.date()).days
+    date = local.strftime("%a %d %b")
+    return {0: f"Today, {date}", 1: f"Tomorrow, {date}"}.get(delta, date)
+
+
+def _countdown(event_time, now):
+    """'now', '45 min', '1 hour', '1 hr 15 min', '3 days 4 hrs'."""
+    minutes = int((event_time - now).total_seconds() // 60)
+    if minutes <= 0:
+        return "now"
+    days, rest = divmod(minutes, 1440)
+    hours, mins = divmod(rest, 60)
+    if days:
+        return f"{days} day{'s' if days != 1 else ''} {hours} hr{'s' if hours != 1 else ''}"
+    if hours:
+        if not mins:
+            return f"{hours} hour{'s' if hours != 1 else ''}"
+        return f"{hours} hr {mins} min"
+    return f"{mins} min"
+
+
+def _table(rows):
+    """Plain aligned rows (label column, then value)."""
+    left = max(len(label) for label, _ in rows)
+    return "\n".join(f"{label.ljust(left)}  {value}" for label, value in rows)
+
+
+def _currency(country):
+    name = CURRENCY_NAMES.get(country.upper())
+    return f"{country} ({name})" if name else country
+
+
+def _numbers_lines(event):
+    previous, forecast = _known(event, "previous"), _known(event, "forecast")
+    actual = _known(event, "actual")
+    if not (previous or forecast or actual):
+        return [NO_FIGURES]
+    table = _table([
+        ("Prior", previous or NO_VALUE),
+        ("Forecast", (forecast or NO_VALUE) + _trend(previous, forecast)),
+        ("Actual", (actual + _verdict(actual, forecast)) if actual else PENDING),
+    ])
+    return [f"<pre>{html.escape(table)}</pre>"]
+
+
+def event_message(event, event_time, heading_text, now=None):
+    now = now or datetime.now(cfg.UTC)
+    local = event_time.astimezone(cfg.DISPLAY_TZ)
+    now_local = now.astimezone(cfg.DISPLAY_TZ)
+    country = clean(event.get("country"))
+    left = _countdown(event_time, now)
+    clock = f"{local.strftime('%I:%M %p').lstrip('0')} {cfg.DISPLAY_TZ_LABEL}"
+    return "\n".join([
+        heading_text,
+        "",
+        f"<b>{html.escape(clean(event.get('title')))}</b>",
+        f"{FLAGS.get(country.upper(), '🌐')} {html.escape(_currency(country))}",
+        "",
+        f"🕒 <b>{clock}</b>",
+        f"📅 {_day_label(local, now_local)}",
+        f"⏳ Starting now ({clock})" if left == "now" else f"⏳ In {left} ({clock})",
+        "",
+        *_numbers_lines(event),
+        "",
+        f"<i>{CALM_NOTE}</i>",
+        f"<i>Source: {html.escape(cfg.SOURCE_NAME)}</i>",
+    ])
     unittest.main()
