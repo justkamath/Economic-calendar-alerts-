@@ -444,11 +444,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|M3 Money Supply y/y|2026-10-27T09:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|Main Refinancing Rate|2026-10-29T13:15:00+00:00": {
     "1h": false,
     "30m": false,
@@ -465,11 +460,6 @@
     "detected": true
   },
   "EUR|Prelim Flash GDP q/q|2026-10-30T10:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Private Loans y/y|2026-10-27T09:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
