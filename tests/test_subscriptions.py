@@ -173,21 +173,21 @@ class CommandTests(unittest.TestCase):
         return commands.dispatch(chat, text, self.aud)
 
     def test_start_subscribes_at_high_for_everything(self):
-        self.assertIn("you're in", self.say(7, "/start"))
+        self.assertIn("You're in", self.say(7, "/start"))
         self.assertEqual(self.store.get("7"), {"level": "high", "cur": None})
 
     def test_level_and_currencies(self):
         self.say(7, "/start")
-        self.assertIn("locked in", self.say(7, "/level medium"))
-        self.assertIn("locked in", self.say(7, "/currencies usd, eur"))
+        self.assertIn("Locked in", self.say(7, "/level medium"))
+        self.assertIn("Locked in", self.say(7, "/currencies usd, eur"))
         self.assertEqual(self.store.get("7"), {"level": "medium", "cur": ["USD", "EUR"]})
         self.say(7, "/currencies all")
         self.assertIsNone(self.store.get("7")["cur"])
 
     def test_bad_input_changes_nothing(self):
         self.say(7, "/start")
-        self.assertIn("pick a vibe", self.say(7, "/level banana"))
-        self.assertIn("don't know that currency", self.say(7, "/currencies USD XYZ"))
+        self.assertIn("Pick a vibe", self.say(7, "/level banana"))
+        self.assertIn("Don't know that currency", self.say(7, "/currencies USD XYZ"))
         self.assertEqual(self.store.get("7"), {"level": "high", "cur": None})
 
     def test_commands_need_start_first(self):
@@ -196,9 +196,9 @@ class CommandTests(unittest.TestCase):
 
     def test_stop_removes_and_start_returns(self):
         self.say(7, "/start")
-        self.assertIn("paused", self.say(7, "/stop"))
+        self.assertIn("Paused", self.say(7, "/stop"))
         self.assertIsNone(self.store.get("7"))
-        self.assertIn("you're in", self.say(7, "/start"))
+        self.assertIn("You're in", self.say(7, "/start"))
 
     def test_owner_can_tune_pause_and_resume(self):
         self.say(100, "/level high")
@@ -215,18 +215,18 @@ class CommandTests(unittest.TestCase):
 
     def test_invite_code(self):
         with mock.patch.object(cfg, "SIGNUP_CODE", "sesame", create=True):
-            self.assertIn("invite only", self.say(7, "/start"))
-            self.assertIn("invite only", self.say(7, "/start wrong"))
+            self.assertIn("Invite only", self.say(7, "/start"))
+            self.assertIn("Invite only", self.say(7, "/start wrong"))
             self.assertIsNone(self.store.get("7"))
-            self.assertIn("you're in", self.say(7, "/start sesame"))
-            self.assertIn("you're in", self.say(100, "/start"))   # owner needs no code
+            self.assertIn("You're in", self.say(7, "/start sesame"))
+            self.assertIn("You're in", self.say(100, "/start"))   # owner needs no code
 
     def test_status_and_unknown_and_botname_suffix(self):
         self.say(7, "/start")
         self.say(7, "/currencies GBP")
         status = self.say(7, "/status@MyBot")
         self.assertIn("GBP", status)
-        self.assertIn("not a command", self.say(7, "/dance"))
+        self.assertIn("Not a command", self.say(7, "/dance"))
 
 
 class ButtonTests(unittest.TestCase):
@@ -249,16 +249,16 @@ class ButtonTests(unittest.TestCase):
 
     def test_start_button_subscribes(self):
         reply, keyboard = self.tap("▶️ Start")
-        self.assertIn("you're in", reply)
-        self.assertIn("🔥 Big moves ✓", self.texts(keyboard))
+        self.assertIn("You're in", reply)
+        self.assertIn("🔥 Big moves", self.texts(keyboard))
 
-    def test_level_buttons_save_and_move_the_tick(self):
+    def test_level_buttons_save_without_ticks(self):
         self.tap("/start")
         reply, keyboard = self.tap("⚡ Balanced")
         self.assertEqual(self.store.get("7")["level"], "medium")
-        self.assertIn("⚡ Balanced ✓", self.texts(keyboard))
-        self.assertNotIn("🔥 Big moves ✓", self.texts(keyboard))
-        self.tap("🫧 All of it ✓")                       # tapping the ticked label also works
+        self.assertIn("⚡ Balanced", self.texts(keyboard))
+        self.assertFalse([x for x in self.texts(keyboard) if "✓" in x])   # no ticks on level buttons
+        self.tap("🫧 All of it ✓")                       # an old ticked label still works
         self.assertEqual(self.store.get("7")["level"], "low")
 
     def test_currency_buttons_toggle(self):
@@ -281,28 +281,28 @@ class ButtonTests(unittest.TestCase):
         self.tap("🌍 All currencies")
         self.assertIsNone(self.store.get("7")["cur"])
         reply, keyboard = self.tap("⬅️ Back")
-        self.assertIn("your setup", reply)
+        self.assertIn("Your setup", reply)
         self.assertIn("🎯 My setup", self.texts(keyboard))
 
     def test_pause_then_start_again(self):
         self.tap("/start")
         reply, keyboard = self.tap("😴 Pause")
-        self.assertIn("paused", reply)
+        self.assertIn("Paused", reply)
         self.assertEqual(self.texts(keyboard), ["▶️ Start"])
         self.assertIsNone(self.store.get("7"))
-        self.assertIn("you're in", self.tap("▶️ Start")[0])
+        self.assertIn("You're in", self.tap("▶️ Start")[0])
 
     def test_settings_card_shows_flags_and_reminders(self):
         self.tap("/start")
         self.tap("🇯🇵 JPY")
         reply, _ = self.tap("🎯 My setup")
-        for part in ("🇯🇵 JPY", "your vibe", "your currencies", "1 hour before", "30 min before"):
+        for part in ("🇯🇵 JPY", "Your vibe", "Your currencies", "1 hour before", "30 min before"):
             self.assertIn(part, reply)
 
     def test_help_and_unknown_text(self):
         self.tap("/start")
-        self.assertIn("how it works", self.tap("🧠 How it works")[0])
-        self.assertIn("tap a button", self.tap("random words")[0])
+        self.assertIn("How it works", self.tap("🧠 How it works")[0])
+        self.assertIn("Tap a button", self.tap("random words")[0])
 
     def test_messages_are_valid_telegram_html_and_short(self):
         self.tap("/start")
@@ -311,6 +311,22 @@ class ButtonTests(unittest.TestCase):
             self.assertLess(len(reply), 1200)
             for tag in ("b", "i"):
                 self.assertEqual(reply.count(f"<{tag}>"), reply.count(f"</{tag}>"), text)
+
+    def test_sentence_case_and_typing_block(self):
+        self.tap("/start")
+        help_text = self.tap("🧠 How it works")[0]
+        self.assertIn("✍️ <b>Prefer typing?</b>", help_text)
+        lines = help_text.split("\n")
+        for command in ("/level high", "/level medium", "/level low", "/currencies USD EUR",
+                        "/currencies all", "/status", "/stop"):
+            self.assertIn(command, lines)             # each command sits alone on its line
+        self.assertIn("🇺🇸 USD  🇪🇺 EUR  🇬🇧 GBP", lines)
+        self.assertLess(len(help_text), 3000)
+        for text in ("/start", "💸 Currencies", "🇺🇸 USD", "😴 Pause"):
+            reply = self.tap(text)[0]
+            body = reply.replace("<b>", "").replace("<i>", "")
+            for word in ("you're in", "tap the", "right now", "kicks in", "paused"):
+                self.assertNotIn("\n" + word, "\n" + body, text)    # no lines starting lowercase
 
     def test_strangers_are_asked_to_start(self):
         reply, keyboard = self.tap("😴 Pause", chat=55)
