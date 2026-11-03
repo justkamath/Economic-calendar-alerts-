@@ -375,6 +375,14 @@ class ButtonTests(unittest.TestCase):
 
     def test_help_explains_how_to_get_the_buttons_back(self):
         self.assertIn("/menu", commands.HELP)
+        self.assertIn("keyboard icon", commands.HELP)
+        self.assertNotIn("Tap Menu", commands.HELP)
+
+    def test_wording_says_what_the_bot_gives(self):
+        self.assertIn("economic calendar", commands.HELP)
+        self.assertNotIn("Market news", commands.HELP)
+        self.assertIn("economic calendar", self.tap("/start")[0])
+        self.assertEqual(commands.BOT_COMMANDS, [])   # no blue Menu button
 
     def test_strangers_are_asked_to_start(self):
         reply, keyboard = self.tap("😴 Pause", chat=55)
