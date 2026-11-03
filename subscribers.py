@@ -162,7 +162,7 @@ class Audience:
     def entries(self):
         """chat_id -> (level, currencies or None) for everyone receiving alerts."""
         out = {cid: (self.default_level, None) for cid in self.owner_ids}
-        if self.store:
+        if self.store is not None:
             for cid, rec in self.store.subs.items():
                 out[cid] = (rec.get("level"), rec.get("cur"))
         return {c: (lvl, cur) for c, (lvl, cur) in out.items() if lvl in cfg.IMPACT_RANK}
@@ -179,7 +179,7 @@ class Audience:
 
     def remove(self, chat_id):
         """Drop a subscriber who blocked the bot. Owner chats are never removed."""
-        if self.store and str(chat_id) not in self.owner_ids:
+        if self.store is not None and str(chat_id) not in self.owner_ids:
             self.store.remove(chat_id)
 
 
