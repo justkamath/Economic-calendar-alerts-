@@ -84,21 +84,6 @@
     "30m": false,
     "detected": true
   },
-  "CAD|BOC Monetary Policy Report|2026-10-28T13:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|BOC Press Conference|2026-10-28T14:30:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
-  "CAD|BOC Rate Statement|2026-10-28T13:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CAD|Employment Change|2026-11-06T13:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -135,11 +120,6 @@
     "detected": true
   },
   "CAD|Manufacturing PMI|2026-11-02T14:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|Overnight Rate|2026-10-28T13:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -200,11 +180,6 @@
     "detected": true
   },
   "CHF|Unemployment Rate|2026-11-05T08:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CNY|CB Leading Index m/m|2026-10-28T13:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -474,16 +449,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|Annual Budget Release|2026-10-28T12:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "GBP|Autumn Forecast Statement|2026-10-28T12:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "GBP|BOE Gov Bailey Speaks|2026-11-05T12:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -729,11 +694,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Crude Oil Inventories|2026-10-28T14:30:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
   "USD|Crude Oil Inventories|2026-11-04T15:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -809,11 +769,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Goods Trade Balance|2026-10-28T12:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|ISM Manufacturing PMI|2026-11-02T15:00:00+00:00": {
     "1h": false,
     "30m": true,
@@ -885,11 +840,6 @@
     "detected": true
   },
   "USD|Prelim UoM Inflation Expectations|2026-11-06T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Prelim Wholesale Inventories m/m|2026-10-28T12:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
