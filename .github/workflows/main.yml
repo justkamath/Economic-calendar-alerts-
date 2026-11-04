@@ -73,5 +73,15 @@ jobs:
           if [ -f subscribers.enc ]; then git add subscribers.enc; fi
           if ! git diff --cached --quiet; then
             git commit -m "Update alert history and calendar data"
-            git push
+            # GitHub sometimes answers with a temporary server error: try again
+            for attempt in 1 2 3 4 5; do
+              if git push; then
+                exit 0
+              fi
+              echo "Push failed (attempt $attempt of 5), trying again..."
+              sleep $((attempt * 15))
+              git pull --rebase --autostash || git rebase --abort || true
+            done
+            echo "Could not save after 5 attempts"
+            exit 1
           fi
