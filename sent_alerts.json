@@ -199,11 +199,6 @@
     "30m": false,
     "detected": true
   },
-  "CHF|UBS Economic Expectations|2026-10-28T09:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CHF|Unemployment Rate|2026-11-05T08:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -314,11 +309,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|German 10-y Bond Auction|2026-10-28T09:42:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|German Buba President Nagel Speaks|2026-11-02T12:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -345,11 +335,6 @@
     "detected": true
   },
   "EUR|German Final Services PMI|2026-11-04T08:55:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|German GfK Consumer Climate|2026-10-28T07:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
