@@ -344,19 +344,9 @@
     "30m": false,
     "detected": true
   },
-  "EUR|Italian 10-y Bond Auction|2026-10-29T09:33:00+00:00": {
-    "1h": true,
-    "30m": false,
-    "detected": true
-  },
   "EUR|Italian Manufacturing PMI|2026-11-02T08:45:00+00:00": {
     "1h": false,
     "30m": false,
-    "detected": true
-  },
-  "EUR|Italian Monthly Unemployment Rate|2026-10-29T09:00:00+00:00": {
-    "1h": false,
-    "30m": true,
     "detected": true
   },
   "EUR|Italian Prelim CPI m/m|2026-10-30T10:00:00+00:00": {
@@ -474,11 +464,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|M4 Money Supply m/m|2026-10-29T09:30:00+00:00": {
-    "1h": true,
-    "30m": false,
-    "detected": true
-  },
   "GBP|MPC Member Pill Speaks|2026-11-06T12:15:00+00:00": {
     "1h": false,
     "30m": false,
@@ -494,18 +479,8 @@
     "30m": false,
     "detected": true
   },
-  "GBP|Mortgage Approvals|2026-10-29T09:30:00+00:00": {
-    "1h": true,
-    "30m": false,
-    "detected": true
-  },
   "GBP|Nationwide HPI m/m|2026-10-30T07:00:00+00:00": {
     "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "GBP|Net Lending to Individuals m/m|2026-10-29T09:30:00+00:00": {
-    "1h": true,
     "30m": false,
     "detected": true
   },
@@ -542,11 +517,6 @@
   "JPY|BOJ Press Conference|2026-10-30T05:30:00+00:00": {
     "1h": false,
     "30m": false,
-    "detected": true
-  },
-  "JPY|Consumer Confidence|2026-10-29T05:00:00+00:00": {
-    "1h": false,
-    "30m": true,
     "detected": true
   },
   "JPY|Final Manufacturing PMI|2026-11-02T00:30:00+00:00": {
