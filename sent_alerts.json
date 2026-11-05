@@ -29,11 +29,6 @@
     "30m": false,
     "detected": true
   },
-  "AUD|Import Prices q/q|2026-10-29T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|MI Inflation Gauge m/m|2026-11-02T00:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -599,11 +594,6 @@
     "30m": false,
     "detected": true
   },
-  "NZD|ANZ Business Confidence|2026-10-29T00:00:00+00:00": {
-    "1h": true,
-    "30m": false,
-    "detected": true
-  },
   "NZD|ANZ Commodity Prices m/m|2026-11-04T00:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -854,9 +844,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-10-29T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-10-30T00:00:00+00:00": {
     "sent": true
   },
@@ -873,6 +860,9 @@
     "sent": true
   },
   "summary|daily|2026-11-04T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-05T00:00:00+00:00": {
     "sent": true
   }
 }
