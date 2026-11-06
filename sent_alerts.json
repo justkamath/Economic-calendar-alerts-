@@ -249,32 +249,12 @@
     "30m": false,
     "detected": true
   },
-  "EUR|German Prelim GDP q/q|2026-10-30T09:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|German Retail Sales m/m|2026-11-02T07:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
-  "EUR|German Unemployment Change|2026-10-30T08:55:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|Italian Manufacturing PMI|2026-11-02T08:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Italian Prelim CPI m/m|2026-10-30T10:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Italian Prelim GDP q/q|2026-10-30T09:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -290,11 +270,6 @@
     "detected": true
   },
   "EUR|PPI m/m|2026-11-05T10:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Prelim Flash GDP q/q|2026-10-30T10:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -320,11 +295,6 @@
     "detected": true
   },
   "EUR|Spanish Unemployment Change|2026-11-04T08:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Unemployment Rate|2026-10-30T10:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
