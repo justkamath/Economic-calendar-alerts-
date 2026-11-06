@@ -114,11 +114,6 @@
     "30m": false,
     "detected": true
   },
-  "CHF|KOF Economic Barometer|2026-10-30T08:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CHF|Manufacturing PMI|2026-11-02T08:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -194,11 +189,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|French Consumer Spending m/m|2026-10-30T06:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|French Final Manufacturing PMI|2026-11-02T08:50:00+00:00": {
     "1h": false,
     "30m": false,
@@ -209,27 +199,12 @@
     "30m": false,
     "detected": true
   },
-  "EUR|French Flash GDP q/q|2026-10-30T06:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|French Gov Budget Balance|2026-11-03T07:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
   "EUR|French Industrial Production m/m|2026-11-05T07:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|French Prelim CPI m/m|2026-10-30T07:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|French Prelim Private Payrolls q/q|2026-10-30T07:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -269,22 +244,7 @@
     "30m": false,
     "detected": true
   },
-  "EUR|German Import Prices m/m|2026-10-30T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|German Industrial Production m/m|2026-11-06T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|German Prelim CPI m/m|2026-10-30T06:29:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|German Prelim CPI m/m|2026-10-30T07:29:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -345,16 +305,6 @@
     "detected": true
   },
   "EUR|Spanish 10-y Bond Auction|2026-11-05T10:03:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Spanish Flash CPI y/y|2026-10-30T08:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Spanish Flash GDP q/q|2026-10-30T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -429,11 +379,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|Nationwide HPI m/m|2026-10-30T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "GBP|Official Bank Rate|2026-11-05T12:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -454,17 +399,7 @@
     "30m": false,
     "detected": true
   },
-  "JPY|BOJ Press Conference|2026-10-30T05:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|Final Manufacturing PMI|2026-11-02T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Housing Starts y/y|2026-10-30T05:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
