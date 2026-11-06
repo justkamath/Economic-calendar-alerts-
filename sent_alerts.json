@@ -34,16 +34,6 @@
     "30m": false,
     "detected": true
   },
-  "AUD|PPI q/q|2026-10-30T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "AUD|Private Sector Credit m/m|2026-10-30T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|RBA Deputy Gov Hauser Speaks|2026-11-05T06:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -464,16 +454,6 @@
     "30m": false,
     "detected": true
   },
-  "JPY|BOJ Outlook Report|2026-10-30T02:31:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|BOJ Policy Rate|2026-10-30T02:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|BOJ Press Conference|2026-10-30T05:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -495,31 +475,6 @@
     "detected": true
   },
   "JPY|Monetary Policy Meeting Minutes|2026-11-04T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Monetary Policy Statement|2026-10-30T02:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Prelim Industrial Production m/m|2026-10-29T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Retail Sales y/y|2026-10-29T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Tokyo Core CPI y/y|2026-10-29T23:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Unemployment Rate|2026-10-29T23:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -739,9 +694,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-10-30T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-10-31T00:00:00+00:00": {
     "sent": true
   },
@@ -758,6 +710,9 @@
     "sent": true
   },
   "summary|daily|2026-11-05T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-06T00:00:00+00:00": {
     "sent": true
   }
 }
