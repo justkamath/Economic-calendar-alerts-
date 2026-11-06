@@ -74,11 +74,6 @@
     "30m": false,
     "detected": true
   },
-  "CAD|GDP m/m|2026-10-30T12:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CAD|Ivey PMI|2026-11-06T15:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -439,11 +434,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Chicago PMI|2026-10-30T13:45:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
   "USD|Congressional Elections|2026-11-03T15:16:00+00:00": {
     "1h": false,
     "30m": false,
@@ -464,11 +454,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Employment Cost Index q/q|2026-10-30T12:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|FOMC Member Barkin Speaks|2026-11-05T14:10:00+00:00": {
     "1h": false,
     "30m": false,
@@ -479,17 +464,7 @@
     "30m": false,
     "detected": true
   },
-  "USD|FOMC Member Daly Speaks|2026-10-30T16:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|FOMC Member Hammack Speaks|2026-11-05T13:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|FOMC Member Musalem Speaks|2026-10-30T16:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
