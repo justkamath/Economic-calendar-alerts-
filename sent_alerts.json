@@ -134,16 +134,6 @@
     "30m": false,
     "detected": true
   },
-  "CNY|Manufacturing PMI|2026-10-31T01:30:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
-  "CNY|Non-Manufacturing PMI|2026-10-31T01:30:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
   "CNY|RatingDog Manufacturing PMI|2026-11-02T01:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -573,9 +563,6 @@
     "1h": false,
     "30m": false,
     "detected": true
-  },
-  "summary|daily|2026-10-31T00:00:00+00:00": {
-    "sent": true
   },
   "summary|daily|2026-11-01T00:00:00+00:00": {
     "sent": true
