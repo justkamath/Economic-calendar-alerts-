@@ -134,6 +134,21 @@
     "30m": false,
     "detected": true
   },
+  "CNY|CPI m/m|2026-11-09T01:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CNY|CPI y/y|2026-11-09T01:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "CNY|PPI y/y|2026-11-09T01:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "CNY|RatingDog Manufacturing PMI|2026-11-02T01:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -284,6 +299,11 @@
     "30m": false,
     "detected": true
   },
+  "EUR|Trade Balance|2026-11-09T07:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "GBP|10-y Bond Auction|2026-11-03T10:33:00+00:00": {
     "1h": false,
     "30m": false,
@@ -295,6 +315,11 @@
     "detected": true
   },
   "GBP|BOE Monetary Policy Report|2026-11-05T12:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "GBP|BoE Governor Bailey Speech|2026-11-09T17:25:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -344,6 +369,11 @@
     "30m": false,
     "detected": true
   },
+  "JPY|Adjusted Current Account|2026-11-09T23:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "JPY|Average Cash Earnings y/y|2026-11-05T23:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -354,7 +384,27 @@
     "30m": false,
     "detected": true
   },
+  "JPY|BoJ Summary of Opinions|2026-11-09T23:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Current Account n.s.a.|2026-11-09T23:50:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "JPY|Final Manufacturing PMI|2026-11-02T00:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Household Spending m/m|2026-11-09T23:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "JPY|Household Spending y/y|2026-11-09T23:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -400,6 +450,11 @@
     "detected": true
   },
   "NZD|Unemployment Rate|2026-11-03T21:45:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|3-Year Note Auction|2026-11-09T18:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -470,6 +525,11 @@
     "detected": true
   },
   "USD|Factory Orders m/m|2026-11-03T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Fed Governor Bowman Speech|2026-11-09T13:40:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -563,9 +623,6 @@
     "1h": false,
     "30m": false,
     "detected": true
-  },
-  "summary|daily|2026-11-01T00:00:00+00:00": {
-    "sent": true
   },
   "summary|daily|2026-11-02T00:00:00+00:00": {
     "sent": true
