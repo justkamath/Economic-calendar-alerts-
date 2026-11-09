@@ -1,14 +1,4 @@
 {
-  "AUD|ANZ Job Advertisements m/m|2026-11-02T00:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "AUD|Building Approvals m/m|2026-11-02T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|Cash Rate|2026-11-03T03:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -25,11 +15,6 @@
     "detected": true
   },
   "AUD|Household Spending m/m|2026-11-04T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "AUD|MI Inflation Gauge m/m|2026-11-02T00:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -145,11 +130,6 @@
     "detected": true
   },
   "CNY|PPI y/y|2026-11-09T01:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CNY|RatingDog Manufacturing PMI|2026-11-02T01:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -409,11 +389,6 @@
     "30m": false,
     "detected": true
   },
-  "JPY|Final Manufacturing PMI|2026-11-02T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|Household Spending m/m|2026-11-09T23:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -669,9 +644,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-11-02T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-11-03T00:00:00+00:00": {
     "sent": true
   },
@@ -688,6 +660,9 @@
     "sent": true
   },
   "summary|daily|2026-11-08T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-09T00:00:00+00:00": {
     "sent": true
   }
 }
