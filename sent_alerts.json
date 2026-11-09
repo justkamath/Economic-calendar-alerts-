@@ -144,11 +144,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|Final Manufacturing PMI|2026-11-02T09:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|Final Services PMI|2026-11-04T09:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -195,11 +190,6 @@
     "detected": true
   },
   "EUR|German Factory Orders m/m|2026-11-05T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|German Final Manufacturing PMI|2026-11-02T08:55:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -275,11 +265,6 @@
     "detected": true
   },
   "GBP|Construction PMI|2026-11-05T09:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "GBP|Final Manufacturing PMI|2026-11-02T09:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
