@@ -4,11 +4,6 @@
     "30m": false,
     "detected": true
   },
-  "AUD|Commodity Prices y/y|2026-11-02T05:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|Goods Trade Balance|2026-11-05T00:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -94,16 +89,6 @@
     "30m": false,
     "detected": true
   },
-  "CHF|Manufacturing PMI|2026-11-02T08:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CHF|Retail Sales y/y|2026-11-02T07:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CHF|SECO Consumer Climate|2026-11-06T08:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -174,11 +159,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|French Final Manufacturing PMI|2026-11-02T08:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|French Final Services PMI|2026-11-04T08:50:00+00:00": {
     "1h": false,
     "30m": false,
@@ -234,16 +214,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|German Retail Sales m/m|2026-11-02T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Italian Manufacturing PMI|2026-11-02T08:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|Italian Retail Sales m/m|2026-11-05T09:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -265,11 +235,6 @@
     "detected": true
   },
   "EUR|Spanish 10-y Bond Auction|2026-11-05T10:03:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Spanish Manufacturing PMI|2026-11-02T08:15:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
