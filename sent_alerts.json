@@ -314,22 +314,7 @@
     "30m": false,
     "detected": true
   },
-  "NZD|Employment Change q/q|2026-11-03T21:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "NZD|Labor Cost Index q/q|2026-11-03T21:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "NZD|Parliamentary Elections|2026-11-06T21:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "NZD|Unemployment Rate|2026-11-03T21:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -340,11 +325,6 @@
     "detected": true
   },
   "USD|ADP Non-Farm Employment Change|2026-11-04T13:15:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|API Weekly Statistical Bulletin|2026-11-03T21:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
