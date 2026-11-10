@@ -5,6 +5,7 @@ import config as cfg
 from alerts import process, select_upcoming
 from calendar_service import fetch_calendar
 from commands import handle_updates
+from expiry_reminders import send_expiry_reminders
 from notifiers import TelegramNotifier
 from state import load_state
 from subscribers import build_audience
@@ -40,6 +41,12 @@ def main():
 
     process(upcoming, now, notifier, state, audience if enabled else None)
     if enabled:
+        try:
+            sent = send_expiry_reminders(notifier, audience, now)
+            if sent:
+                print("Expiry reminders sent:", sent)
+        except Exception as e:               # never let reminders break the calendar run
+            print("Expiry reminders failed:", type(e).__name__)
         store.save()                         # e.g. someone who blocked the bot was removed
     maybe_send_summary(calendar, now, notifier, state)
     print("Calendar check completed.")
