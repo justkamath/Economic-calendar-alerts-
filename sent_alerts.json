@@ -1,9 +1,4 @@
 {
-  "AUD|Cash Rate|2026-11-03T03:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|Goods Trade Balance|2026-11-05T00:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -15,21 +10,6 @@
     "detected": true
   },
   "AUD|RBA Deputy Gov Hauser Speaks|2026-11-05T06:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "AUD|RBA Monetary Policy Statement|2026-11-03T03:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "AUD|RBA Press Conference|2026-11-03T04:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "AUD|RBA Rate Statement|2026-11-03T03:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -66,11 +46,6 @@
   },
   "CAD|Unemployment Rate|2026-11-06T13:30:00+00:00": {
     "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CHF|CPI m/m|2026-11-03T07:30:00+00:00": {
-    "1h": true,
     "30m": false,
     "detected": true
   },
@@ -159,11 +134,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|French Gov Budget Balance|2026-11-03T07:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|French Industrial Production m/m|2026-11-05T07:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -235,11 +205,6 @@
     "detected": true
   },
   "EUR|Trade Balance|2026-11-09T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "GBP|10-y Bond Auction|2026-11-03T10:33:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
