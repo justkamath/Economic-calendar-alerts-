@@ -1,0 +1,17 @@
+{
+  "note": "Editable calendar for the expiry feature. Holidays move expiries, so update this when NSE/MCX publish a circular. Anything listed under mcx_expiries beats the built-in estimates.",
+  "holiday_years": [2026],
+  "nse_holidays": [
+    "2026-01-15", "2026-01-26", "2026-03-03", "2026-03-26", "2026-03-31",
+    "2026-04-03", "2026-04-14", "2026-05-01", "2026-05-28", "2026-06-26",
+    "2026-09-14", "2026-10-02", "2026-10-20", "2026-11-10", "2026-11-24",
+    "2026-12-25"
+  ],
+  "mcx_holidays": ["2026-01-26", "2026-04-03", "2026-10-02", "2026-12-25"],
+  "mcx_expiries": [
+    {"i": "crude",  "t": "Futures", "d": "2026-11-19", "listed": true},
+    {"i": "crude",  "t": "Futures", "d": "2026-12-18", "listed": true},
+    {"i": "natgas", "t": "Futures", "d": "2026-11-24", "listed": false},
+    {"i": "natgas", "t": "Futures", "d": "2026-12-28", "listed": false}
+  ]
+}
