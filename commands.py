@@ -8,8 +8,10 @@ Telegram bots on GitHub Actions can't listen all the time, so each run (every
 """
 import html
 import re
+from datetime import datetime
 
 import config as cfg
+import expiry
 from sources.common import KNOWN_CURRENCIES
 from summary import FLAGS
 
@@ -31,6 +33,7 @@ TICK = " ✓"
 BTN_CURRENCIES, BTN_SETTINGS = "💸 Currencies", "🧭 My setup"
 BTN_HELP, BTN_PAUSE, BTN_START = "🧠 How it works", "😴 Pause", "▶️ Start"
 BTN_ALL, BTN_BACK = "🌍 All currencies", "⬅️ Back"
+BTN_EXPIRY, BTN_EXPIRY_ALL = "📅 Expiries", "🌍 Show all expiries"
 
 MENU_VERSION = 2   # bump when BOT_COMMANDS changes, so Telegram's list is refreshed
 BOT_COMMANDS = []  # empty = no blue "Menu" button; /menu still works when typed
@@ -50,6 +53,10 @@ HELP = (
     "Tap <b>Currencies</b>, then tap the ones you follow. "
     "A ✓ shows what you picked. Tap again to drop one. "
     "None picked = you get everything.\n\n"
+    "<b>📅 Pick your expiries</b>\n"
+    "Tap <b>Expiries</b>, then tap the NSE or MCX instruments you trade. "
+    "You get the dates right away, plus a heads-up the evening before "
+    "and on the morning of expiry. Or just ask: <i>when is nifty expiry?</i>\n\n"
     "<b>🔔 How we ping you</b>\n"
     f"{REMINDERS}\n\n"
     "🧩 <b>Buttons gone?</b>\n"
@@ -66,6 +73,13 @@ HELP = (
     "<i>Only the ones you list</i>\n"
     "/currencies all\n"
     "<i>Every currency, no filter</i>\n\n"
+    "<b>Expiries</b>\n"
+    "/expiry\n"
+    "<i>Pick instruments, see their dates</i>\n"
+    "/expiry nifty gold\n"
+    "<i>Dates for just those</i>\n"
+    "/expiry all\n"
+    "<i>Every instrument</i>\n\n"
     "<b>Your account</b>\n"
     "/status\n"
     "<i>See your setup</i>\n"
@@ -100,10 +114,16 @@ def _subscribed(audience, chat_id):
     return chat_id in audience.entries() or chat_id in audience.owner_ids
 
 
-def _card(level, cur, title="🧭 Your setup"):
+def _expiry_names(picks):
+    return ("None picked yet" if not picks
+            else "\n".join(expiry.label(k) for k in picks if k in expiry.INSTRUMENTS))
+
+
+def _card(level, cur, title="🧭 Your setup", picks=None):
     return (f"<b>{title}</b>\n\n"
             f"<b>🚦 Your vibe</b>\n{_level_text(level)}\n\n"
             f"<b>💸 Your currencies</b>\n{_currencies_text(cur)}\n\n"
+            f"<b>📅 Your expiries</b>\n{_expiry_names(picks)}\n\n"
             f"<b>🔔 How we ping you</b>\n{REMINDERS}")
 
 
@@ -114,8 +134,9 @@ def main_keyboard(level=None):
         return {"text": f"{LEVEL_ICON[name]} {LEVEL_NAME[name]}" + (TICK if name == level else "")}
     return {"keyboard": [
         [button("high"), button("medium"), button("low")],
-        [{"text": BTN_CURRENCIES}, {"text": BTN_SETTINGS}],
-        [{"text": BTN_HELP}, {"text": BTN_PAUSE}],
+        [{"text": BTN_CURRENCIES}, {"text": BTN_EXPIRY}],
+        [{"text": BTN_SETTINGS}, {"text": BTN_HELP}],
+        [{"text": BTN_PAUSE}],
     ], "resize_keyboard": True, "one_time_keyboard": True}
 
 
@@ -126,6 +147,14 @@ def currency_keyboard(cur):
         return {"text": f"{FLAGS.get(code, '🌐')} {code}" + (TICK if code in chosen else "")}
     rows = [[button(c) for c in ORDER[i:i + 3]] for i in range(0, len(ORDER), 3)]
     rows.append([{"text": BTN_ALL + (TICK if not chosen else "")}, {"text": BTN_BACK}])
+    return {"keyboard": rows, "resize_keyboard": True, "is_persistent": True}
+
+
+def expiry_keyboard(picks):
+    chosen = set(picks or ())
+    names = [expiry.label(k) + (TICK if k in chosen else "") for k in expiry.ORDER]
+    rows = [[{"text": t} for t in names[i:i + 3]] for i in range(0, len(names), 3)]
+    rows.append([{"text": BTN_EXPIRY_ALL}, {"text": BTN_BACK}])
     return {"keyboard": rows, "resize_keyboard": True, "is_persistent": True}
 
 
@@ -140,9 +169,20 @@ def parse(text):
     if raw.startswith("/"):
         parts = raw.replace(",", " ").split()
         cmd = parts[0].split("@")[0].lower()
-        return {"/setup": "/status", "/pause": "/stop"}.get(cmd, cmd), parts[1:]
+        cmd = {"/setup": "/status", "/pause": "/stop", "/expiries": "/expiry"}.get(cmd, cmd)
+        if cmd == "/expiry":
+            rest = " ".join(parts[1:])
+            return cmd, (["all"] if rest.lower().strip() == "all" else expiry.find_instruments(rest))
+        return cmd, parts[1:]
     plain = raw.replace("✓", "").replace("✅", "").strip()
     low = plain.lower()
+    for key in expiry.ORDER:                      # a tapped instrument button
+        if plain == expiry.label(key):
+            return "/xtoggle", [key]
+    if "expir" in low:                            # the button, or a typed question
+        if "all expir" in low or "show all" in low:
+            return "/expiry", ["all"]
+        return "/expiry", expiry.find_instruments(plain)
     if "all currencies" in low:
         return "/currencies", ["all"]
     if "currencies" in low:
@@ -174,13 +214,21 @@ def respond(chat_id, text, audience):
     chat_id = str(chat_id)
     entry = _entry(audience, chat_id)
 
+    def _picks():
+        rec = store.get(chat_id) if store is not None else None
+        return list((rec or {}).get("exp") or [])
+
     def keys(kind="main"):
         if kind == "none":
             return None            # no keyboard attached: the bar stays as the person left it
         now = _entry(audience, chat_id)
         if now is None:
             return START_KEYBOARD
-        return currency_keyboard(now[1]) if kind == "currencies" else main_keyboard(now[0])
+        if kind == "currencies":
+            return currency_keyboard(now[1])
+        if kind == "expiry":
+            return expiry_keyboard(_picks())
+        return main_keyboard(now[0])
 
     if cmd == "/start":
         if not _subscribed(audience, chat_id):
@@ -198,7 +246,7 @@ def respond(chat_id, text, audience):
         level, cur = _entry(audience, chat_id)
         return (f"<b>You're in ✨</b>\n"
                 "<i>Your economic calendar, on autopilot. We ping, you chill.</i>\n\n"
-                f"{_card(level, cur, '🧭 Your setup')}\n\n"
+                f"{_card(level, cur, '🧭 Your setup', _picks())}\n\n"
                 "Tap the buttons below to make it yours 👇\n"
                 "<i>Changes kick in within 5 min.</i>"), keys()
 
@@ -255,6 +303,39 @@ def respond(chat_id, text, audience):
         return (f"{note}\n\nRight now: {_currencies_text(current or None)}\n\n"
                 "<i>Kicks in within 5 min.</i>"), keys("currencies")
 
+    if cmd == "/expiry":
+        today = expiry.today_ist(datetime.now(cfg.UTC))
+        if args == ["all"]:
+            return expiry.expiry_card(expiry.ORDER, today, count=2), keys("none")
+        if args:
+            return expiry.expiry_card(args, today), keys("none")
+        picks = _picks()
+        if not picks:
+            return ("<b>📅 Pick your expiries</b>\n\n"
+                    "Tap the instruments you trade. You'll get their dates here, "
+                    "plus a heads-up the evening before and on the morning of expiry.\n\n"
+                    "<i>Or ask: when is nifty expiry?</i>"), keys("expiry")
+        return (expiry.expiry_card(picks, today, title="📅 Your expiries")
+                + "\n\n<i>Tap an instrument to add or drop it.</i>"), keys("expiry")
+
+    if cmd == "/xtoggle":
+        key = args[0]
+        picks = _picks()
+        if chat_id in audience.owner_ids and store.get(chat_id) is None:
+            store.update(chat_id, level=audience.default_level, currencies=None)  # keep owner defaults
+        if key in picks:
+            picks.remove(key)
+            note = f"➖ {expiry.label(key)} is out"
+        else:
+            picks.append(key)
+            note = f"➕ {expiry.label(key)} is in"
+        picks.sort(key=expiry.ORDER.index)
+        store.update(chat_id, expiry=picks)
+        today = expiry.today_ist(datetime.now(cfg.UTC))
+        body = expiry.expiry_card([key], today, title="📅 Next dates") if key in picks else ""
+        return (f"{note}\n\n{body}\n\n" if body else f"{note}\n\n") + \
+            "<i>Reminders: the evening before and the morning of.</i>", keys("expiry")
+
     if cmd == "/menu":
         return "🧰 Here are your buttons 👇", keys()
 
@@ -264,7 +345,7 @@ def respond(chat_id, text, audience):
     if cmd == "/status":
         if entry is None:
             return "😴 <b>You're on pause</b>\nTap <b>▶️ Start</b> when you're back.", START_KEYBOARD
-        return _card(entry[0], entry[1]), keys("none")
+        return _card(entry[0], entry[1], picks=_picks()), keys("none")
 
     if cmd == "/stop":
         if chat_id in audience.owner_ids:
