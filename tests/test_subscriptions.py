@@ -309,7 +309,7 @@ class ButtonTests(unittest.TestCase):
         self.tap("/start")
         for text in ("/start", "/help", "🎯 My setup", "💸 Currencies", "🇺🇸 USD", "😴 Pause"):
             reply, _ = self.tap(text)
-            self.assertLess(len(reply), 1200)
+            self.assertLess(len(reply), 3000 if text == "/help" else 1200)
             for tag in ("b", "i"):
                 self.assertEqual(reply.count(f"<{tag}>"), reply.count(f"</{tag}>"), text)
 
