@@ -19,11 +19,6 @@
     "30m": false,
     "detected": true
   },
-  "CAD|BOC Gov Macklem Speaks|2026-11-03T16:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CAD|BOC Gov Macklem Speaks|2026-11-05T15:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -140,11 +135,6 @@
     "detected": true
   },
   "EUR|French Trade Balance|2026-11-06T07:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|German Buba President Nagel Speaks|2026-11-03T17:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -329,11 +319,6 @@
     "30m": false,
     "detected": true
   },
-  "NZD|GDT Price Index|2026-11-03T15:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "NZD|Labor Cost Index q/q|2026-11-03T21:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -375,11 +360,6 @@
     "detected": true
   },
   "USD|Challenger Job Cuts y/y|2026-11-05T10:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Congressional Elections|2026-11-03T15:16:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -434,11 +414,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Factory Orders m/m|2026-11-03T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Fed Governor Bowman Speech|2026-11-09T13:40:00+00:00": {
     "1h": false,
     "30m": false,
@@ -454,22 +429,12 @@
     "30m": false,
     "detected": true
   },
-  "USD|JOLTS Job Openings|2026-11-03T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Natural Gas Storage|2026-11-05T15:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
   "USD|Non-Farm Employment Change|2026-11-06T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Omdia Total Vehicle Sales|2026-11-03T15:15:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -495,11 +460,6 @@
     "detected": true
   },
   "USD|Prelim UoM Inflation Expectations|2026-11-06T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|RCM/TIPP Economic Optimism|2026-11-03T15:10:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
