@@ -94,8 +94,11 @@ class SubscriberStore:
         store.menu_version = int(data.get("menu", 0))
         for chat_id, rec in (data.get("subs") or {}).items():
             if isinstance(rec, dict):
-                store.subs[str(chat_id)] = {"level": rec.get("level", "high"),
-                                            "cur": rec.get("cur")}
+                kept = {"level": rec.get("level", "high"), "cur": rec.get("cur")}
+                for extra in ("exp", "xs"):          # expiry picks, expiry reminders already sent
+                    if rec.get(extra):
+                        kept[extra] = list(rec[extra])
+                store.subs[str(chat_id)] = kept
         return store
 
     def save(self):
@@ -115,9 +118,10 @@ class SubscriberStore:
     def get(self, chat_id):
         return self.subs.get(str(chat_id))
 
-    def update(self, chat_id, level=None, currencies="keep"):
+    def update(self, chat_id, level=None, currencies="keep", expiry="keep"):
         """Create or change a subscriber. `currencies`: a list, None (= all),
-        or "keep". Returns False only when the subscriber limit blocks a signup."""
+        or "keep". `expiry`: a list of instrument keys, None/[] (= none), or "keep".
+        Returns False only when the subscriber limit blocks a signup."""
         chat_id = str(chat_id)
         rec = self.subs.get(chat_id)
         if rec is None:
@@ -130,10 +134,35 @@ class SubscriberStore:
                 rec["level"] = level
             if currencies != "keep":
                 rec["cur"] = currencies
+        if expiry != "keep":
+            if expiry:
+                rec["exp"] = list(expiry)
+            else:
+                rec.pop("exp", None)
         if self.subs.get(chat_id) != rec:
             self.subs[chat_id] = rec
             self.dirty = True
         return True
+
+    def mark_expiry_sent(self, chat_id, token):
+        rec = self.subs.get(str(chat_id))
+        if rec is not None and token not in rec.get("xs", ()):
+            self.subs[str(chat_id)] = dict(rec, xs=list(rec.get("xs", ())) + [token])
+            self.dirty = True
+
+    def prune_expiry_sent(self, oldest_date):
+        """Forget reminder tokens ('key|YYYY-MM-DD|stage') for dates before oldest_date."""
+        for chat_id, rec in list(self.subs.items()):
+            old = rec.get("xs")
+            if not old:
+                continue
+            keep = [t for t in old if t.split("|")[1] >= oldest_date]
+            if keep != old:
+                new = {k: v for k, v in rec.items() if k != "xs"}
+                if keep:
+                    new["xs"] = keep
+                self.subs[chat_id] = new
+                self.dirty = True
 
     def remove(self, chat_id):
         if self.subs.pop(str(chat_id), None) is not None:
@@ -179,6 +208,14 @@ class Audience:
         currency = (currency or "").upper()
         return [cid for cid, (lvl, cur) in self.entries().items()
                 if rank >= cfg.IMPACT_RANK[lvl] and (not cur or currency in cur)]
+
+    def expiry_picks(self):
+        """chat_id -> instrument keys, for everyone who picked some and is not paused."""
+        if self.store is None:
+            return {}
+        live = self.entries()
+        return {cid: list(rec["exp"]) for cid, rec in self.store.subs.items()
+                if rec.get("exp") and cid in live}
 
     def min_rank(self):
         """Lowest rank anyone wants; above the top rank if nobody is subscribed."""
