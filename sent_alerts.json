@@ -4,11 +4,6 @@
     "30m": false,
     "detected": true
   },
-  "AUD|Household Spending m/m|2026-11-04T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|RBA Deputy Gov Hauser Speaks|2026-11-05T06:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -80,11 +75,6 @@
     "detected": true
   },
   "CNY|PPI y/y|2026-11-09T01:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CNY|RatingDog Services PMI|2026-11-04T01:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -299,17 +289,7 @@
     "30m": false,
     "detected": true
   },
-  "JPY|Monetary Base y/y|2026-11-03T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|Monetary Policy Meeting Minutes|2026-11-04T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "NZD|ANZ Commodity Prices m/m|2026-11-04T00:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -464,9 +444,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-11-04T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-11-05T00:00:00+00:00": {
     "sent": true
   },
@@ -483,6 +460,9 @@
     "sent": true
   },
   "summary|daily|2026-11-10T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-11T00:00:00+00:00": {
     "sent": true
   }
 }
