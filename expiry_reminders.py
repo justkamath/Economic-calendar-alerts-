@@ -1,49 +1,41 @@
-"""Expiry reminders: one message the evening before and one the morning of,
-only for the instruments each person picked. What was already sent is kept per
-person inside the encrypted subscribers file (never in the public repo)."""
+"""Expiry reminder: one message the evening before expiry (from 5 pm IST), only
+for the instruments each person picked, weekly and monthly kept apart. What was
+already sent is kept per person inside the encrypted subscribers file."""
 import time
-from datetime import datetime, time as clock, timedelta
+from datetime import time as clock, timedelta
 
 import config as cfg
 import expiry
 
-EVE_FROM = clock(17, 0)       # IST: the evening before
-MORNING_FROM = clock(8, 30)   # IST: the morning of expiry...
-MORNING_UNTIL = clock(15, 30)  # ...until the markets close
-
-
-def _stage(days_left, ist_time):
-    if days_left == 1 and ist_time >= EVE_FROM:
-        return "eve"
-    if days_left == 0 and MORNING_FROM <= ist_time <= MORNING_UNTIL:
-        return "day"
-    return None
+EVE_FROM = clock(17, 0)     # IST
 
 
 def due_for(keys, now):
-    """[(token, key, row, stage)] reminders that are due right now for these instruments."""
+    """[(token, key, row)] instruments expiring tomorrow, once it is past 5 pm IST."""
     ist = now.astimezone(expiry.IST)
+    if ist.time() < EVE_FROM:
+        return []
     today = ist.date()
     out = []
     for key in keys:
-        for row in expiry.upcoming(key, today, count=3):
-            stage = _stage((row["date"] - today).days, ist.time())
-            if stage:
-                out.append((f"{key}|{row['date'].isoformat()}|{stage}", key, row, stage))
+        for row in expiry.upcoming(key, today, count=8):
+            if (row["date"] - today).days == 1:
+                out.append((f"{key}|{row['date'].isoformat()}|eve", key, row))
     return out
 
 
-def _message(items, stage, today):
-    head = "⏰ <b>Expiry tomorrow</b>" if stage == "eve" else "🚨 <b>Expiry today</b>"
-    lines = [head, ""]
-    for _, key, row, _ in items:
-        mark = "~" if row["est"] else ""
-        lines.append(f"{expiry.label(key)}: {row['kind']}, <b>{mark}{expiry._day_text(row['date'])}</b>")
-    if any(expiry.INSTRUMENTS[k][3] == "MCX" for _, k, _, _ in items):
-        lines += ["", f"<i>{expiry.MCX_NOTE}</i>"]
-    if any(k in expiry.NSE_COMMODITY for _, k, _, _ in items):
-        lines += ["", f"<i>{expiry.NSE_NOTE}</i>"]
-    return "\n".join(lines)
+def _message(items):
+    day = min(r["date"] for _, _, r in items)
+    weekly = [(k, r) for _, k, r in items if r["kind"].startswith("Weekly")]
+    monthly = [(k, r) for _, k, r in items if not r["kind"].startswith("Weekly")]
+    parts = [f"⏰ <b>Expiry tomorrow</b>\n{expiry._day_text(day)}"]
+    for title, group in (("🗓 Weekly", weekly), ("🗓 Monthly", monthly)):
+        if group:
+            names = [expiry.label(k) + (" ~" if r["est"] else "") for k, r in group]
+            parts.append(f"<b>{title}</b>\n" + "\n".join(names))
+    if any(r["est"] for _, _, r in items):
+        parts.append(f"<i>{expiry.NOTE}</i>")
+    return "\n\n".join(parts)
 
 
 def send_expiry_reminders(notifier, audience, now):
@@ -55,22 +47,19 @@ def send_expiry_reminders(notifier, audience, now):
     sent = 0
     for chat_id, keys in audience.expiry_picks().items():
         done = set((store.get(chat_id) or {}).get("xs", ()))
-        due = [d for d in due_for(keys, now) if d[0] not in done]
-        for stage in ("eve", "day"):
-            items = [d for d in due if d[3] == stage]
-            if not items:
-                continue
-            try:
-                notifier.send(_message(items, stage, today), chat_id=chat_id)
-            except Exception as e:
-                print("EXPIRY REMINDER FAILED:", e)
-                if getattr(e, "code", None) == 403:
-                    audience.remove(chat_id)
-                    break
-                continue
-            for token, *_ in items:
-                store.mark_expiry_sent(chat_id, token)
-            sent += 1
-            time.sleep(cfg.SEND_DELAY_SECONDS)
+        items = [d for d in due_for(keys, now) if d[0] not in done]
+        if not items:
+            continue
+        try:
+            notifier.send(_message(items), chat_id=chat_id)
+        except Exception as e:
+            print("EXPIRY REMINDER FAILED:", e)
+            if getattr(e, "code", None) == 403:
+                audience.remove(chat_id)
+            continue
+        for token, *_ in items:
+            store.mark_expiry_sent(chat_id, token)
+        sent += 1
+        time.sleep(cfg.SEND_DELAY_SECONDS)
     store.prune_expiry_sent((today - timedelta(days=7)).isoformat())
     return sent
