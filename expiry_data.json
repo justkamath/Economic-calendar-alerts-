@@ -1,5 +1,5 @@
 {
-  "note": "Editable calendar for the expiry feature. Holidays move expiries, so update this when NSE/MCX publish a circular. Anything listed under mcx_expiries beats the built-in estimates. Nov 2026 MCX dates are from the MCXCCL delivery schedule. Nov 2026 MCX dates for silver mini come from the MCX Clearing delivery schedule for November 2026.",
+  "note": "Editable calendar for the expiry feature. Holidays move expiries, so update this when NSE/MCX publish a circular. Anything listed under mcx_expiries beats the built-in estimates. Nov 2026 MCX dates are from the MCXCCL delivery schedule. Nov 2026 MCX dates for silver mini come from the MCX Clearing delivery schedule for November 2026. Nov 2026 crude, crude mini, nat gas and options dates come from Groww's November 2026 expiry table.",
   "holiday_years": [
     2026
   ],
@@ -43,12 +43,6 @@
     {
       "i": "natgas",
       "t": "Futures",
-      "d": "2026-11-24",
-      "listed": false
-    },
-    {
-      "i": "natgas",
-      "t": "Futures",
       "d": "2026-12-28",
       "listed": false
     },
@@ -56,6 +50,60 @@
       "i": "silverm",
       "t": "Futures",
       "d": "2026-11-30",
+      "listed": true
+    },
+    {
+      "i": "natgas",
+      "t": "Futures",
+      "d": "2026-11-24",
+      "listed": true
+    },
+    {
+      "i": "crudem",
+      "t": "Futures",
+      "d": "2026-11-19",
+      "listed": true
+    },
+    {
+      "i": "crude",
+      "t": "Options",
+      "d": "2026-11-17",
+      "listed": true
+    },
+    {
+      "i": "crudem",
+      "t": "Options",
+      "d": "2026-11-17",
+      "listed": true
+    },
+    {
+      "i": "natgas",
+      "t": "Options",
+      "d": "2026-11-20",
+      "listed": true
+    },
+    {
+      "i": "silverm",
+      "t": "Options",
+      "d": "2026-11-23",
+      "listed": true
+    },
+    {
+      "i": "gold",
+      "t": "Options",
+      "d": "2026-11-27",
+      "listed": true
+    },
+    {
+      "i": "goldm",
+      "t": "Options",
+      "d": "2026-11-27",
+      "listed": true
+    },
+    {
+      "i": "silver",
+      "t": "Options",
+      "d": "2026-11-27",
       "listed": true
     }
   ]
