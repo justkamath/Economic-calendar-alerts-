@@ -134,12 +134,27 @@ class Layout(unittest.TestCase):
 
     def test_futures_and_options_are_shown_separately(self):
         card = expiry.expiry_card(["crude", "gold"], date(2026, 11, 11))
-        self.assertLess(card.index("Futures"), card.index("Options"))
+        self.assertLess(card.index("Monthly options"), card.index("Monthly futures"))
         self.assertIn("Tue 17 Nov", card)                   # crude options
         self.assertIn("Thu 19 Nov", card)                   # crude futures
         self.assertIn("Fri 27 Nov", card)                   # gold options
         self.assertEqual(expiry.next_expiries("natgas", date(2026, 11, 11))["Options"]["date"],
                          date(2026, 11, 20))
+
+    def test_two_sets_name_their_exchange(self):
+        card = expiry.expiry_card(expiry.ORDER, date(2026, 11, 11))
+        self.assertLess(card.index("Indices · NSE"), card.index("Commodities · MCX"))
+        index_part, commodity_part = card.split("Commodities · MCX")
+        self.assertIn("Weekly", index_part)
+        self.assertIn("Monthly", index_part)
+        self.assertNotIn("Crude", index_part)
+        self.assertNotIn("Nifty", commodity_part)
+        self.assertLess(len(card), 3000)
+
+    def test_urgent_dates_get_their_own_emoji(self):
+        today = date(2026, 11, 19)
+        self.assertIn("🚨", expiry.expiry_card(["crude"], today))     # expires today
+        self.assertIn("⏰", expiry.expiry_card(["crude"], date(2026, 11, 18)))
 
     def test_only_the_requested_commodities_exist(self):
         mcx = [k for k, v in expiry.INSTRUMENTS.items() if v[3] == "MCX"]
@@ -150,7 +165,7 @@ class Layout(unittest.TestCase):
         self.assertLessEqual(max(len(r) for r in rows), 3)
         self.assertIn("🥇 Gold ✓", [t for r in rows for t in r])
         for r in rows[:-1]:
-            groups = {"NSE" if ("Nifty" in t or t.startswith(("🌱", "🚀", "🎟"))) else "X" for t in r}
+            groups = {"NSE" if ("Nifty" in t or t.startswith(("🌱", "🚀", "🧾"))) else "X" for t in r}
             self.assertEqual(len(groups), 1, r)
 
 
@@ -311,20 +326,23 @@ class Reminders(unittest.TestCase):
         self.run_at(utc(2026, 11, 18, 17, 30))
         text = self.bot.sent[0][1]
         self.assertIn("Thu 19 Nov", text)
-        self.assertIn("Futures", text)
+        self.assertIn("Monthly futures", text)
+        self.assertIn("Commodities · MCX", text)
+        self.assertNotIn("Indices", text)
         self.assertNotIn("Weekly", text)
-        self.assertNotIn("Options", text)
+        self.assertNotIn("options", text)
         self.assertNotIn("~", text)                         # both dates are listed
         self.assertNotIn("Confirm", text)                   # exact dates: no disclaimer needed
         self.store.update("7", expiry=["nifty"])
         self.run_at(utc(2026, 11, 16, 17, 30))
         text = self.bot.sent[1][1]
+        self.assertIn("Indices · NSE", text)
         self.assertIn("Weekly", text)
-        self.assertNotIn("Futures", text)
+        self.assertNotIn("Commodities", text)
         self.assertLess(len(text), 200)
         self.store.update("7", expiry=["gold"])
         self.run_at(utc(2026, 11, 26, 17, 30))              # eve of the Gold options expiry
-        self.assertIn("Options", self.bot.sent[2][1])
+        self.assertIn("Monthly options", self.bot.sent[2][1])
 
     def test_failed_send_is_retried_and_blocked_users_are_removed(self):
         self.bot.fail = RuntimeError("boom")
