@@ -192,12 +192,12 @@ def _day_text(day):
     return f"{day.strftime('%a')} {day.day} {day.strftime('%b')}"
 
 
-# Two sets: indices (NSE) and commodities (MCX), each split by kind of expiry.
-SETS = (("📊 Indices", "NSE", ("Weekly", "Monthly")),
-        ("🪙 Commodities", "MCX", ("Weekly", "Options", "Futures")))
-HEADINGS = {"Weekly": "🔄 Weekly", "Monthly": "🗓️ Monthly",
-            "Options": "🎯 Monthly options", "Futures": "📦 Monthly futures"}
-CATEGORIES = tuple((name, HEADINGS[name]) for name in HEADINGS)
+# Two sets: indices and commodities. Each instrument is a small block with its
+# exchange tag and one arrow line per kind of expiry (same look as the daily summary).
+SETS = (("📊 Indices", "NSE"), ("🪙 Commodities", "MCX"))
+KINDS = ("Weekly", "Monthly", "Options", "Futures")
+HEADINGS = {name: name for name in KINDS}
+CATEGORIES = tuple((name, name) for name in KINDS)
 
 
 def category(kind):
@@ -215,36 +215,31 @@ def next_expiries(key, today, data=None):
     return out
 
 
-def _flag(day, today):
-    gap = (day - today).days
-    return "🚨" if gap == 0 else "⏰" if gap == 1 else "📅"
-
-
 def render_sets(pairs, today=None):
-    """pairs: [(key, row)]. With `today`, each date shows how far away it is;
-    without it (reminders) instruments are simply listed under their heading."""
+    """pairs: [(key, row)]. With `today`, each arrow shows the date and how far away
+    it is; without it (reminders) the arrows just name the kind of expiry."""
     parts = []
-    for title, exchange, categories in SETS:
+    for title, exchange in SETS:
         blocks = []
-        for name in categories:
-            items = [(k, r) for k, r in pairs
-                     if INSTRUMENTS[k][3] == exchange and category(r["kind"]) == name]
-            if not items:
+        for key in (k for k in ORDER if INSTRUMENTS[k][3] == exchange):
+            rows = sorted((r for k, r in pairs if k == key),
+                          key=lambda r: (r["date"], KINDS.index(category(r["kind"]))))
+            if not rows:
                 continue
-            if today is None:
-                body = "\n".join(label(k) + (" ~" if r["est"] else "")
-                                  for k, r in sorted(items, key=lambda it: ORDER.index(it[0])))
-            else:
-                groups = {}
-                for k, r in items:
-                    groups.setdefault((r["date"], r["est"]), []).append(k)
-                body = "\n\n".join(
-                    f"{_flag(day, today)} <b>{'~' if est else ''}{_day_text(day)}</b> ({_when(day, today)})\n"
-                    + ", ".join(label(k) for k in sorted(keys, key=ORDER.index))
-                    for (day, est), keys in sorted(groups.items(), key=lambda g: g[0]))
-            blocks.append(f"<b>{HEADINGS[name]}</b>\n{body}")
+            lines = [f"{INSTRUMENTS[key][0]} <b>{INSTRUMENTS[key][1]}</b>  <i>{exchange}</i>"]
+            for row in rows:
+                kind = category(row["kind"])
+                if today is None:
+                    lines.append(f"    ↳ {kind}" + (" ~" if row["est"] else ""))
+                else:
+                    gap = (row["date"] - today).days
+                    when = _when(row["date"], today)
+                    when = f"<b>{when}</b>" if gap <= 1 else when
+                    lines.append(f"    ↳ {kind}  <b>{'~' if row['est'] else ''}"
+                                 f"{_day_text(row['date'])}</b> ({when})")
+            blocks.append("\n".join(lines))
         if blocks:
-            parts.append(f"<b>{title} · {exchange}</b>\n\n" + "\n\n".join(blocks))
+            parts.append(f"<b>{title}</b>\n\n" + "\n\n".join(blocks))
     return parts
 
 
