@@ -38,15 +38,18 @@ INSTRUMENTS = {
     "zinc": ("🧱", "Zinc", "Zinc", "MCX"),
     "aluminium": ("🥫", "Aluminium", "Aluminium", "MCX"),
     "lead": ("🔋", "Lead", "Lead", "MCX"),
+    "nsecrude": ("🛢️", "NSE Crude", "NSE Crude oil (WTI)", "NSE"),
+    "nsenatgas": ("🔥", "NSE Nat Gas", "NSE Natural gas", "NSE"),
 }
 ORDER = tuple(INSTRUMENTS)
 MCX_NOTE = "Confirm MCX dates on mcxindia.com before you trade."
-NSE_COMMODITY = ("nsegold", "nsegoldm", "nsegold10", "nseguinea")
+NSE_COMMODITY = ("nsegold", "nsegoldm", "nsegold10", "nseguinea", "nsecrude", "nsenatgas")
 NSE_NOTE = "Confirm NSE commodity dates on nseindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
     ("nsegoldm", r"nse gold ?mini"), ("nsegold10", r"gold ?10"), ("nseguinea", r"guinea"),
     ("nsegold", r"nse gold"),
+    ("nsecrude", r"nse (wti|crude)( ?oil)?|\bwti\b"), ("nsenatgas", r"nse (natural ?gas|nat ?gas|natgas)"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
     ("next50", r"next ?50|nifty ?next"), ("stockfo", r"stocks?\b"),
     ("nifty", r"nifty"),
@@ -57,9 +60,11 @@ ALIASES = (
     ("copper", r"copper"), ("zinc", r"zinc"), ("aluminium", r"alumini?um"), ("lead", r"\blead\b"),
 )
 # MCX products with a steady monthly pattern (estimates when nothing is listed)
-MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "silverm": 5, "crude": 19, "crudem": 19}
+MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "crude": 19, "crudem": 19,
+                    "nsecrude": 19, "nsenatgas": 25}
+MCX_MONTHS = {"gold": {2, 4, 6, 8, 10, 12}, "silver": {3, 5, 7, 9, 12}}   # bi-monthly contracts
 MCX_FOLLOWS = {"crudem": "crude", "natgasm": "natgas"}   # mini uses the standard contract's dates (estimate)
-MCX_LAST_DAY = ("copper", "zinc", "aluminium", "lead", "nsegold10", "nseguinea")
+MCX_LAST_DAY = ("copper", "zinc", "aluminium", "lead", "silverm", "nsegold10", "nseguinea")
 MCX_DAY_OF_MONTH["nsegold"] = 5
 
 _cache = {}
@@ -178,8 +183,10 @@ def _mcx(key, today, data):
             out.append({"date": day, "kind": row.get("t", "Futures"),
                         "est": key in MCX_FOLLOWS or not row.get("listed", False)})
             taken.add((day.year, day.month))
-    for step in range(0, 4):
+    for step in range(0, 9):
         first = _month_start(today, step)
+        if first.month not in MCX_MONTHS.get(key, range(1, 13)):
+            continue
         if key in MCX_DAY_OF_MONTH:
             raw = date(first.year, first.month, MCX_DAY_OF_MONTH[key])
         elif key in MCX_LAST_DAY:
