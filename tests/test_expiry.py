@@ -72,8 +72,8 @@ class McxRules(unittest.TestCase):
         gold = expiry.upcoming("gold", date(2026, 11, 20), 2, DATA)
         self.assertEqual(gold[0]["date"], date(2026, 12, 4))      # 5th is a Saturday
         self.assertTrue(gold[0]["est"])
-        zinc = expiry.upcoming("zinc", date(2026, 12, 1), 1, DATA)
-        self.assertEqual(zinc[0]["date"], date(2026, 12, 31))
+        silver_mini = expiry.upcoming("silverm", date(2026, 12, 1), 1, DATA)
+        self.assertEqual(silver_mini[0]["date"], date(2026, 12, 31))
 
     def test_product_without_a_pattern_says_so(self):
         self.assertEqual(expiry.upcoming("natgas", date(2026, 11, 1), 3, DATA), [])
@@ -95,45 +95,12 @@ class McxRules(unittest.TestCase):
             date.fromisoformat(row["d"])
 
 
-class NseCommodity(unittest.TestCase):
-    def test_rules_per_product(self):
-        today = date(2026, 11, 10)
-        first = lambda key: expiry.upcoming(key, today, 2, DATA)
-        self.assertEqual([r["date"] for r in first("nsegold")], [date(2026, 12, 4), date(2027, 1, 5)])
-        self.assertEqual(first("nsegoldm")[0]["date"], date(2026, 11, 26))   # 3rd last business day
-        self.assertEqual(first("nsegold10")[0]["date"], date(2026, 11, 30))  # last day of month
-        self.assertEqual(first("nseguinea")[0]["date"], date(2026, 11, 30))
-        self.assertTrue(all(r["est"] for key in expiry.NSE_COMMODITY for r in first(key)))
-
-    def test_uses_nse_holidays_not_mcx_ones(self):
-        data = dict(DATA, nse_holidays=["2026-11-30"], mcx_holidays=[])
-        self.assertEqual(expiry.upcoming("nsegold10", date(2026, 11, 10), 1, data)[0]["date"],
-                         date(2026, 11, 27))
-
-    def test_typed_names_and_note(self):
-        self.assertEqual(expiry.find_instruments("nse gold mini, nse gold and gold 10g, guinea"),
-                         ["nsegold", "nsegoldm", "nsegold10", "nseguinea"])
-        self.assertEqual(expiry.find_instruments("gold"), ["gold"])
-        card = expiry.expiry_card(["nsegold"], date(2026, 11, 10), data=DATA)
-        self.assertIn("Confirm with the exchange", card)
-
-    def test_picker_button_and_reminder(self):
-        for key in expiry.NSE_COMMODITY:
-            self.assertEqual(commands.parse(expiry.label(key)), ("/xtoggle", [key]))
-        store = SubscriberStore("x", KEY, 5)
-        store.update("7", level="high", expiry=["nsegold10"])
-        bot = FakeBot()
-        reminders.send_expiry_reminders(bot, Audience([], store), utc(2026, 11, 29, 17, 30))
-        self.assertIn("NSE Gold 10g", bot.sent[0][1])
-        self.assertIn("Confirm with the exchange", bot.sent[0][1])
-
-
 class FromTheExchangeSchedule(unittest.TestCase):
     """Nov 2026 dates read from the MCXCCL delivery schedule the user supplied."""
     def test_listed_november_dates(self):
         data = expiry.load_data()
         today = date(2026, 11, 6)
-        for key in ("silverm", "copper", "zinc", "aluminium", "lead"):
+        for key in ("silverm",):
             row = expiry.upcoming(key, today, 1, data)[0]
             self.assertEqual((row["date"], row["est"]), (date(2026, 11, 30), False), key)
 
@@ -147,14 +114,6 @@ class FromTheExchangeSchedule(unittest.TestCase):
         silver = [r["date"].month for r in expiry.upcoming("silver", date(2026, 11, 1), 3, DATA)]
         self.assertEqual(silver, [12, 3, 5])
 
-    def test_nse_crude_and_nat_gas_are_estimates_near_the_19th_and_25th(self):
-        crude = expiry.upcoming("nsecrude", date(2026, 11, 1), 1, DATA)[0]
-        gas = expiry.upcoming("nsenatgas", date(2026, 11, 1), 1, DATA)[0]
-        self.assertEqual((crude["date"], crude["est"]), (date(2026, 11, 19), True))
-        self.assertEqual((gas["date"], gas["est"]), (date(2026, 11, 25), True))
-        self.assertEqual(expiry.find_instruments("nse wti and nse natural gas, crude"),
-                         ["crude", "nsecrude", "nsenatgas"])
-
 
 class Layout(unittest.TestCase):
     def test_same_date_instruments_are_grouped_and_sections_are_separate(self):
@@ -165,15 +124,17 @@ class Layout(unittest.TestCase):
         self.assertEqual(card.count("Weekly"), 1)
 
     def test_minis_exist_and_follow_their_parents(self):
-        for key in ("goldm", "silverm", "crudem", "natgasm"):
+        for key in ("goldm", "silverm", "crudem"):
             self.assertIn(key, expiry.INSTRUMENTS)
         self.assertEqual(expiry.find_instruments("crude mini silver micro gold mini"),
                          ["goldm", "silverm", "crudem"])
         self.assertEqual(expiry.find_instruments("crude")[0], "crude")
-        data = dict(DATA, mcx_expiries=DATA["mcx_expiries"] + [
-            {"i": "natgas", "t": "Futures", "d": "2026-11-24", "listed": False}])
-        mini = expiry.upcoming("natgasm", date(2026, 11, 1), 1, data)[0]
-        self.assertEqual((mini["date"], mini["est"]), (date(2026, 11, 24), True))
+        mini = expiry.upcoming("crudem", date(2026, 11, 1), 1, DATA)[0]
+        self.assertEqual((mini["date"], mini["est"]), (date(2026, 11, 19), True))   # follows crude
+
+    def test_only_the_requested_commodities_exist(self):
+        mcx = [k for k, v in expiry.INSTRUMENTS.items() if v[3] == "MCX"]
+        self.assertEqual(mcx, ["gold", "goldm", "silver", "silverm", "crude", "crudem", "natgas"])
 
     def test_picker_rows_stay_inside_one_group(self):
         rows = [[b["text"] for b in r] for r in commands.expiry_keyboard(["gold"])["keyboard"]]
@@ -247,8 +208,8 @@ class Bot(unittest.TestCase):
         self.assertNotIn("Gold", reply)
         self.assertIsNone(kb)                                    # the bar stays as it was
         self.assertIn("Gold", self.tap("/expiry gold crude")[0])
-        self.assertIn("Zinc", self.tap("/expiry all")[0])
-        self.assertIn("Zinc", self.tap(commands.BTN_EXPIRY_ALL)[0])
+        self.assertIn("Silver Mini", self.tap("/expiry all")[0])
+        self.assertIn("Silver Mini", self.tap(commands.BTN_EXPIRY_ALL)[0])
         self.assertIsNone(self.store.get("7").get("exp"))        # looking never saves a pick
 
     def test_status_card_lists_picks(self):
