@@ -95,7 +95,7 @@
     "detected": true
   },
   "EUR|ECB President Lagarde Speaks|2026-11-11T09:45:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
@@ -110,11 +110,6 @@
     "detected": true
   },
   "EUR|French 10-y Bond Auction|2026-11-05T10:18:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|French Final Services PMI|2026-11-04T08:50:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -154,11 +149,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|Italian Services PMI|2026-11-04T08:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|PPI m/m|2026-11-05T10:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -170,16 +160,6 @@
     "detected": true
   },
   "EUR|Spanish 10-y Bond Auction|2026-11-05T10:03:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Spanish Services PMI|2026-11-04T08:15:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Spanish Unemployment Change|2026-11-04T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
