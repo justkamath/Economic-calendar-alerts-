@@ -21,11 +21,11 @@ INSTRUMENTS = {
     "finnifty": ("💼", "Fin Nifty", "Fin Nifty", "NSE"),
     "midcap": ("🌱", "Midcap", "Midcap Nifty", "NSE"),
     "next50": ("🚀", "Next 50", "Nifty Next 50", "NSE"),
-    "stockfo": ("🎟️", "Stock F&O", "Stock futures & options", "NSE"),
+    "stockfo": ("🧾", "Stock F&O", "Stock futures & options", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
-    "goldm": ("🥇", "Gold Mini", "Gold Mini", "MCX"),
+    "goldm": ("🏅", "Gold Mini", "Gold Mini", "MCX"),
     "silver": ("🥈", "Silver", "Silver", "MCX"),
-    "silverm": ("🥈", "Silver Mini", "Silver Mini", "MCX"),
+    "silverm": ("🪙", "Silver Mini", "Silver Mini", "MCX"),
     "crude": ("🛢️", "Crude", "Crude oil", "MCX"),
     "crudem": ("🛢️", "Crude Mini", "Crude oil Mini", "MCX"),
     "natgas": ("🔥", "Nat Gas", "Natural gas", "MCX"),
@@ -192,12 +192,16 @@ def _day_text(day):
     return f"{day.strftime('%a')} {day.day} {day.strftime('%b')}"
 
 
-CATEGORIES = (("Weekly", "🗓 Weekly"), ("Monthly", "🗓 Monthly"),
-              ("Futures", "🗓 Futures"), ("Options", "🗓 Options"))
+# Two sets: indices (NSE) and commodities (MCX), each split by kind of expiry.
+SETS = (("📊 Indices", "NSE", ("Weekly", "Monthly")),
+        ("🪙 Commodities", "MCX", ("Weekly", "Options", "Futures")))
+HEADINGS = {"Weekly": "🔄 Weekly", "Monthly": "🗓️ Monthly",
+            "Options": "🎯 Monthly options", "Futures": "📦 Monthly futures"}
+CATEGORIES = tuple((name, HEADINGS[name]) for name in HEADINGS)
 
 
 def category(kind):
-    for name, _ in CATEGORIES:
+    for name in HEADINGS:
         if kind.startswith(name):
             return name
     return "Futures"
@@ -211,40 +215,51 @@ def next_expiries(key, today, data=None):
     return out
 
 
-def group_by_date(items, today=None):
-    """[(date, est, [keys])] soonest first."""
-    groups = {}
-    for key, row in items:
-        groups.setdefault((row["date"], row["est"]), []).append(key)
-    return [(day, est, sorted(keys, key=ORDER.index))
-            for (day, est), keys in sorted(groups.items(), key=lambda g: g[0])]
+def _flag(day, today):
+    gap = (day - today).days
+    return "🚨" if gap == 0 else "⏰" if gap == 1 else "📅"
 
 
-def _section(title, items, today):
-    blocks = []
-    for day, est, keys in group_by_date(items):
-        names = ", ".join(label(k) for k in keys)
-        blocks.append(f"<b>{'~' if est else ''}{_day_text(day)}</b> ({_when(day, today)})\n{names}")
-    return f"<b>{title}</b>\n" + "\n\n".join(blocks)
+def render_sets(pairs, today=None):
+    """pairs: [(key, row)]. With `today`, each date shows how far away it is;
+    without it (reminders) instruments are simply listed under their heading."""
+    parts = []
+    for title, exchange, categories in SETS:
+        blocks = []
+        for name in categories:
+            items = [(k, r) for k, r in pairs
+                     if INSTRUMENTS[k][3] == exchange and category(r["kind"]) == name]
+            if not items:
+                continue
+            if today is None:
+                body = "\n".join(label(k) + (" ~" if r["est"] else "")
+                                  for k, r in sorted(items, key=lambda it: ORDER.index(it[0])))
+            else:
+                groups = {}
+                for k, r in items:
+                    groups.setdefault((r["date"], r["est"]), []).append(k)
+                body = "\n\n".join(
+                    f"{_flag(day, today)} <b>{'~' if est else ''}{_day_text(day)}</b> ({_when(day, today)})\n"
+                    + ", ".join(label(k) for k in sorted(keys, key=ORDER.index))
+                    for (day, est), keys in sorted(groups.items(), key=lambda g: g[0]))
+            blocks.append(f"<b>{HEADINGS[name]}</b>\n{body}")
+        if blocks:
+            parts.append(f"<b>{title} · {exchange}</b>\n\n" + "\n\n".join(blocks))
+    return parts
 
 
 def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
-    """One section per kind of expiry, instruments sharing a date grouped, soonest first."""
-    found = {name: [] for name, _ in CATEGORIES}
-    missing = []
+    """Indices and commodities as two sets, soonest first, only the next date for each."""
+    pairs, missing = [], []
     for key in (k for k in ORDER if k in set(keys)):
         nxt = next_expiries(key, today, data)
-        for name, row in nxt.items():
-            found[name].append((key, row))
+        pairs += [(key, row) for row in nxt.values()]
         if not nxt:
             missing.append(label(key))
-    parts = [f"<b>{title}</b>"]
-    for name, heading in CATEGORIES:
-        if found[name]:
-            parts.append(_section(heading, found[name], today))
+    parts = [f"<b>{title}</b>"] + render_sets(pairs, today)
     if missing:
         parts.append("<b>🕓 Not loaded yet</b>\n" + "\n".join(missing))
-    if any(r["est"] for items in found.values() for _, r in items):
+    if any(r["est"] for _, r in pairs):
         parts.append(f"<i>{NOTE}</i>")
     return "\n\n".join(parts)
 
