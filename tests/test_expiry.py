@@ -128,6 +128,34 @@ class NseCommodity(unittest.TestCase):
         self.assertIn("Confirm with the exchange", bot.sent[0][1])
 
 
+class FromTheExchangeSchedule(unittest.TestCase):
+    """Nov 2026 dates read from the MCXCCL delivery schedule the user supplied."""
+    def test_listed_november_dates(self):
+        data = expiry.load_data()
+        today = date(2026, 11, 6)
+        for key in ("silverm", "copper", "zinc", "aluminium", "lead"):
+            row = expiry.upcoming(key, today, 1, data)[0]
+            self.assertEqual((row["date"], row["est"]), (date(2026, 11, 30), False), key)
+
+    def test_silver_mini_is_month_end_not_the_5th(self):
+        row = expiry.upcoming("silverm", date(2026, 12, 1), 1, DATA)[0]
+        self.assertEqual(row["date"], date(2026, 12, 31))
+
+    def test_big_gold_and_silver_only_in_their_contract_months(self):
+        gold = [r["date"].month for r in expiry.upcoming("gold", date(2026, 11, 1), 4, DATA)]
+        self.assertEqual(gold, [12, 2, 4, 6])
+        silver = [r["date"].month for r in expiry.upcoming("silver", date(2026, 11, 1), 3, DATA)]
+        self.assertEqual(silver, [12, 3, 5])
+
+    def test_nse_crude_and_nat_gas_are_estimates_near_the_19th_and_25th(self):
+        crude = expiry.upcoming("nsecrude", date(2026, 11, 1), 1, DATA)[0]
+        gas = expiry.upcoming("nsenatgas", date(2026, 11, 1), 1, DATA)[0]
+        self.assertEqual((crude["date"], crude["est"]), (date(2026, 11, 19), True))
+        self.assertEqual((gas["date"], gas["est"]), (date(2026, 11, 25), True))
+        self.assertEqual(expiry.find_instruments("nse wti and nse natural gas, crude"),
+                         ["crude", "nsecrude", "nsenatgas"])
+
+
 class Layout(unittest.TestCase):
     def test_same_date_instruments_are_grouped_and_sections_are_separate(self):
         card = expiry.expiry_card(["nifty", "banknifty", "midcap"], date(2026, 11, 11), data=DATA)
