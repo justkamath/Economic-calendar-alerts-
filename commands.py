@@ -55,8 +55,8 @@ HELP = (
     "None picked = you get everything.\n\n"
     "<b>📅 Pick your expiries</b>\n"
     "Tap <b>Expiries</b>, then tap the NSE or MCX instruments you trade. "
-    "You get the dates right away, plus a heads-up the evening before "
-    "and on the morning of expiry. Or just ask: <i>when is nifty expiry?</i>\n\n"
+    "You get the dates right away, plus one heads-up the evening before "
+    "each expiry. Or just ask: <i>when is nifty expiry?</i>\n\n"
     "<b>🔔 How we ping you</b>\n"
     f"{REMINDERS}\n\n"
     "🧩 <b>Buttons gone?</b>\n"
@@ -151,9 +151,15 @@ def currency_keyboard(cur):
 
 
 def expiry_keyboard(picks):
+    """Rows stay inside one group: NSE indices, NSE gold, then MCX."""
     chosen = set(picks or ())
-    names = [expiry.label(k) + (TICK if k in chosen else "") for k in expiry.ORDER]
-    rows = [[{"text": t} for t in names[i:i + 3]] for i in range(0, len(names), 3)]
+    groups = ([k for k in expiry.ORDER if expiry.INSTRUMENTS[k][3] == "NSE" and k not in expiry.NSE_COMMODITY],
+              list(expiry.NSE_COMMODITY),
+              [k for k in expiry.ORDER if expiry.INSTRUMENTS[k][3] == "MCX"])
+    rows = []
+    for keys, width in zip(groups, (3, 2, 2)):
+        names = [{"text": expiry.label(k) + (TICK if k in chosen else "")} for k in keys]
+        rows += [names[i:i + width] for i in range(0, len(names), width)]
     rows.append([{"text": BTN_EXPIRY_ALL}, {"text": BTN_BACK}])
     return {"keyboard": rows, "resize_keyboard": True, "is_persistent": True}
 
@@ -306,14 +312,14 @@ def respond(chat_id, text, audience):
     if cmd == "/expiry":
         today = expiry.today_ist(datetime.now(cfg.UTC))
         if args == ["all"]:
-            return expiry.expiry_card(expiry.ORDER, today, count=2), keys("none")
+            return expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries"), keys("none")
         if args:
             return expiry.expiry_card(args, today), keys("none")
         picks = _picks()
         if not picks:
             return ("<b>📅 Pick your expiries</b>\n\n"
                     "Tap the instruments you trade. You'll get their dates here, "
-                    "plus a heads-up the evening before and on the morning of expiry.\n\n"
+                    "plus one heads-up the evening before each expiry.\n\n"
                     "<i>Or ask: when is nifty expiry?</i>"), keys("expiry")
         return (expiry.expiry_card(picks, today, title="📅 Your expiries")
                 + "\n\n<i>Tap an instrument to add or drop it.</i>"), keys("expiry")
@@ -334,7 +340,7 @@ def respond(chat_id, text, audience):
         today = expiry.today_ist(datetime.now(cfg.UTC))
         body = expiry.expiry_card([key], today, title="📅 Next dates") if key in picks else ""
         return (f"{note}\n\n{body}\n\n" if body else f"{note}\n\n") + \
-            "<i>Reminders: the evening before and the morning of.</i>", keys("expiry")
+            "<i>You get a heads-up the evening before.</i>", keys("expiry")
 
     if cmd == "/menu":
         return "🧰 Here are your buttons 👇", keys()
