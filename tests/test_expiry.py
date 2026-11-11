@@ -148,9 +148,11 @@ class Layout(unittest.TestCase):
         self.assertNotIn("MCX", index_part)
         self.assertNotIn("Crude", index_part)
         self.assertNotIn("Nifty", commodity_part)
-        self.assertNotIn("NSE", commodity_part)
-        for key in expiry.ORDER:
-            self.assertEqual(card.count(f"<b>{expiry.INSTRUMENTS[key][1]}</b>"), 1, key)
+        self.assertIn("<i>NSE</i>", commodity_part)            # NSE and MCX commodities side by side,
+        self.assertIn("<i>MCX</i>", commodity_part)            # each block tagged with its exchange
+        self.assertLess(commodity_part.index("<i>NSE</i>"), commodity_part.index("<i>MCX</i>"))
+        blocks = card.count("<i>NSE</i>") + card.count("<i>MCX</i>")
+        self.assertEqual(blocks, len(expiry.ORDER))
         self.assertLess(len(card), 3500)
 
     def test_nearest_dates_are_called_out_in_bold(self):
@@ -161,6 +163,25 @@ class Layout(unittest.TestCase):
     def test_only_the_requested_commodities_exist(self):
         mcx = [k for k, v in expiry.INSTRUMENTS.items() if v[3] == "MCX"]
         self.assertEqual(mcx, ["gold", "goldm", "silver", "silverm", "crude", "crudem", "natgas"])
+        self.assertEqual(expiry.NSE_COMMODITY, ("nsegold", "nsegoldm", "nsecrude", "nsenatgas"))
+
+    def test_nse_commodities_use_nse_holidays_and_are_estimates(self):
+        today = date(2026, 11, 1)
+        first = lambda key: expiry.upcoming(key, today, 1, DATA)[0]
+        self.assertEqual(first("nsegold")["date"], date(2026, 11, 5))
+        self.assertEqual(first("nsegoldm")["date"], date(2026, 11, 26))      # 3rd last business day
+        self.assertEqual(first("nsecrude")["date"], date(2026, 11, 19))
+        self.assertEqual(first("nsenatgas")["date"], date(2026, 11, 25))
+        self.assertTrue(all(first(k)["est"] for k in expiry.NSE_COMMODITY))
+        data = dict(DATA, nse_holidays=["2026-11-05"], mcx_holidays=[])
+        self.assertEqual(expiry.upcoming("nsegold", today, 1, data)[0]["date"], date(2026, 11, 4))
+
+    def test_typed_nse_names_do_not_swallow_mcx_ones(self):
+        self.assertEqual(expiry.find_instruments("nse gold mini and gold"), ["nsegoldm", "gold"])
+        self.assertEqual(expiry.find_instruments("nse crude, crude mini, nse nat gas"),
+                         ["nsecrude", "nsenatgas", "crudem"])
+        for key in expiry.NSE_COMMODITY:
+            self.assertEqual(commands.parse(expiry.label(key)), ("/xtoggle", [key]))
 
     def test_picker_rows_stay_inside_one_group(self):
         rows = [[b["text"] for b in r] for r in commands.expiry_keyboard(["gold"])["keyboard"]]
