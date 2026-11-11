@@ -151,12 +151,12 @@ def currency_keyboard(cur):
 
 
 def expiry_keyboard(picks):
-    """NSE indices in rows of three, MCX commodities in rows of two."""
+    """Indices in rows of three; NSE and MCX commodities in rows of two."""
     chosen = set(picks or ())
-    groups = ([k for k in expiry.ORDER if expiry.INSTRUMENTS[k][3] == "NSE"],
+    groups = (list(expiry.INDEX_KEYS), list(expiry.NSE_COMMODITY),
               [k for k in expiry.ORDER if expiry.INSTRUMENTS[k][3] == "MCX"])
     rows = []
-    for keys, width in zip(groups, (3, 2)):
+    for keys, width in zip(groups, (3, 2, 2)):
         names = [{"text": expiry.label(k) + (TICK if k in chosen else "")} for k in keys]
         rows += [names[i:i + width] for i in range(0, len(names), width)]
     rows.append([{"text": BTN_EXPIRY_ALL}, {"text": BTN_BACK}])
