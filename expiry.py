@@ -22,10 +22,6 @@ INSTRUMENTS = {
     "midcap": ("🌱", "Midcap", "Midcap Nifty", "NSE"),
     "next50": ("🚀", "Next 50", "Nifty Next 50", "NSE"),
     "stockfo": ("🎟️", "Stock F&O", "Stock futures & options", "NSE"),
-    "nsegold": ("🪙", "NSE Gold", "NSE Gold (1 kg)", "NSE"),
-    "nsegoldm": ("💰", "NSE Gold Mini", "NSE Gold Mini", "NSE"),
-    "nsegold10": ("🏅", "NSE Gold 10g", "NSE Gold 10 grams", "NSE"),
-    "nseguinea": ("👑", "NSE Guinea", "NSE Gold Guinea", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
     "goldm": ("🥇", "Gold Mini", "Gold Mini", "MCX"),
     "silver": ("🥈", "Silver", "Silver", "MCX"),
@@ -33,39 +29,24 @@ INSTRUMENTS = {
     "crude": ("🛢️", "Crude", "Crude oil", "MCX"),
     "crudem": ("🛢️", "Crude Mini", "Crude oil Mini", "MCX"),
     "natgas": ("🔥", "Nat Gas", "Natural gas", "MCX"),
-    "natgasm": ("🔥", "Nat Gas Mini", "Natural gas Mini", "MCX"),
-    "copper": ("🟠", "Copper", "Copper", "MCX"),
-    "zinc": ("🧱", "Zinc", "Zinc", "MCX"),
-    "aluminium": ("🥫", "Aluminium", "Aluminium", "MCX"),
-    "lead": ("🔋", "Lead", "Lead", "MCX"),
-    "nsecrude": ("🛢️", "NSE Crude", "NSE Crude oil (WTI)", "NSE"),
-    "nsenatgas": ("🔥", "NSE Nat Gas", "NSE Natural gas", "NSE"),
 }
 ORDER = tuple(INSTRUMENTS)
 MCX_NOTE = "Confirm MCX dates on mcxindia.com before you trade."
-NSE_COMMODITY = ("nsegold", "nsegoldm", "nsegold10", "nseguinea", "nsecrude", "nsenatgas")
-NSE_NOTE = "Confirm NSE commodity dates on nseindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
-    ("nsegoldm", r"nse gold ?mini"), ("nsegold10", r"gold ?10"), ("nseguinea", r"guinea"),
-    ("nsegold", r"nse gold"),
-    ("nsecrude", r"nse (wti|crude)( ?oil)?|\bwti\b"), ("nsenatgas", r"nse (natural ?gas|nat ?gas|natgas)"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
     ("next50", r"next ?50|nifty ?next"), ("stockfo", r"stocks?\b"),
     ("nifty", r"nifty"),
     ("goldm", r"gold ?mini|goldm\b"), ("silverm", r"silver ?(mini|micro)|silverm\b"),
-    ("crudem", r"crude( ?oil)? ?mini|crudem\b"), ("natgasm", r"(natural ?gas|nat ?gas|natgas) ?mini|natgasm\b"),
+    ("crudem", r"crude( ?oil)? ?mini|crudem\b"),
     ("gold", r"gold"), ("silver", r"silver"),
     ("natgas", r"natural ?gas|nat ?gas|natgas"), ("crude", r"crude"),
-    ("copper", r"copper"), ("zinc", r"zinc"), ("aluminium", r"alumini?um"), ("lead", r"\blead\b"),
 )
-# MCX products with a steady monthly pattern (estimates when nothing is listed)
-MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "crude": 19, "crudem": 19,
-                    "nsecrude": 19, "nsenatgas": 25}
+# MCX products with a steady pattern (estimates when nothing is listed)
+MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "crude": 19, "crudem": 19}
 MCX_MONTHS = {"gold": {2, 4, 6, 8, 10, 12}, "silver": {3, 5, 7, 9, 12}}   # bi-monthly contracts
-MCX_FOLLOWS = {"crudem": "crude", "natgasm": "natgas"}   # mini uses the standard contract's dates (estimate)
-MCX_LAST_DAY = ("copper", "zinc", "aluminium", "lead", "silverm", "nsegold10", "nseguinea")
-MCX_DAY_OF_MONTH["nsegold"] = 5
+MCX_FOLLOWS = {"crudem": "crude"}   # crude mini uses crude's dates (estimate)
+MCX_LAST_DAY = ("silverm",)
 
 _cache = {}
 
@@ -156,20 +137,9 @@ def _nse(key, today, data):
     return sorted(out, key=lambda e: e["date"])
 
 
-def _third_last_business_day(first, holidays):
-    day = _month_start(first, 1) - timedelta(days=1)
-    count = 0
-    while True:
-        if day.weekday() < 5 and day not in holidays:
-            count += 1
-            if count == 3:
-                return day
-        day -= timedelta(days=1)
-
-
 def _mcx(key, today, data):
-    """MCX products, and NSE commodity products (which use the NSE holiday list)."""
-    holidays = _dates(data.get("nse_holidays" if key in NSE_COMMODITY else "mcx_holidays"))
+    """MCX commodities: listed dates first, then estimates from the usual pattern."""
+    holidays = _dates(data.get("mcx_holidays"))
     out, taken = [], set()
     source = MCX_FOLLOWS.get(key, key)
     for row in data.get("mcx_expiries") or ():
@@ -191,8 +161,6 @@ def _mcx(key, today, data):
             raw = date(first.year, first.month, MCX_DAY_OF_MONTH[key])
         elif key in MCX_LAST_DAY:
             raw = _month_start(first, 1) - timedelta(days=1)
-        elif key == "nsegoldm":
-            raw = _third_last_business_day(first, holidays)
         else:
             continue                      # no steady pattern: only listed dates
         day = previous_trading_day(raw, holidays)
@@ -205,8 +173,7 @@ def _mcx(key, today, data):
 def upcoming(key, today, count=3, data=None):
     """The next `count` expiries for an instrument: [{date, kind, est}]."""
     data = load_data() if data is None else data
-    equity = INSTRUMENTS[key][3] == "NSE" and key not in NSE_COMMODITY
-    rows = _nse(key, today, data) if equity else _mcx(key, today, data)
+    rows = _nse(key, today, data) if INSTRUMENTS[key][3] == "NSE" else _mcx(key, today, data)
     return rows[:count]
 
 
