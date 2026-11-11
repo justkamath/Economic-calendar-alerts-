@@ -22,6 +22,10 @@ INSTRUMENTS = {
     "midcap": ("🌱", "Midcap", "Midcap Nifty", "NSE"),
     "next50": ("🚀", "Next 50", "Nifty Next 50", "NSE"),
     "stockfo": ("🧾", "Stock F&O", "Stock futures & options", "NSE"),
+    "nsegold": ("🥇", "NSE Gold", "NSE Gold", "NSE"),
+    "nsegoldm": ("🏅", "NSE Gold Mini", "NSE Gold Mini", "NSE"),
+    "nsecrude": ("🛢️", "NSE Crude", "NSE Crude oil (WTI)", "NSE"),
+    "nsenatgas": ("🔥", "NSE Nat Gas", "NSE Natural gas", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
     "goldm": ("🏅", "Gold Mini", "Gold Mini", "MCX"),
     "silver": ("🥈", "Silver", "Silver", "MCX"),
@@ -31,9 +35,13 @@ INSTRUMENTS = {
     "natgas": ("🔥", "Nat Gas", "Natural gas", "MCX"),
 }
 ORDER = tuple(INSTRUMENTS)
+NSE_COMMODITY = ("nsegold", "nsegoldm", "nsecrude", "nsenatgas")
+INDEX_KEYS = tuple(k for k in ORDER if INSTRUMENTS[k][3] == "NSE" and k not in NSE_COMMODITY)
 MCX_NOTE = "Confirm MCX dates on mcxindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
+    ("nsegoldm", r"nse gold ?mini"), ("nsegold", r"nse gold"),
+    ("nsecrude", r"nse (wti )?crude( ?oil)?|\bwti\b"), ("nsenatgas", r"nse (natural ?gas|nat ?gas|natgas)"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
     ("next50", r"next ?50|nifty ?next"), ("stockfo", r"stocks?\b"),
     ("nifty", r"nifty"),
@@ -43,7 +51,8 @@ ALIASES = (
     ("natgas", r"natural ?gas|nat ?gas|natgas"), ("crude", r"crude"),
 )
 # MCX products with a steady pattern (estimates when nothing is listed)
-MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "crude": 19, "crudem": 19}
+MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "crude": 19, "crudem": 19,
+                    "nsegold": 5, "nsecrude": 19, "nsenatgas": 25}
 MCX_MONTHS = {"gold": {2, 4, 6, 8, 10, 12}, "silver": {3, 5, 7, 9, 12}}   # bi-monthly contracts
 MCX_LAST_DAY = ("silverm",)
 
@@ -136,9 +145,21 @@ def _nse(key, today, data):
     return sorted(out, key=lambda e: e["date"])
 
 
+def _third_last_business_day(first, holidays):
+    day = _month_start(first, 1) - timedelta(days=1)
+    count = 0
+    while True:
+        if day.weekday() < 5 and day not in holidays:
+            count += 1
+            if count == 3:
+                return day
+        day -= timedelta(days=1)
+
+
 def _mcx(key, today, data):
-    """MCX commodities: listed dates first, then estimates from the usual pattern."""
-    holidays = _dates(data.get("mcx_holidays"))
+    """Commodities: listed dates first, then estimates from the usual pattern.
+    NSE commodities follow the NSE holiday list, MCX ones the MCX list."""
+    holidays = _dates(data.get("nse_holidays" if key in NSE_COMMODITY else "mcx_holidays"))
     out, taken = [], set()
     for row in data.get("mcx_expiries") or ():
         if row.get("i") != key:
@@ -159,6 +180,8 @@ def _mcx(key, today, data):
             raw = date(first.year, first.month, MCX_DAY_OF_MONTH[key])
         elif key in MCX_LAST_DAY:
             raw = _month_start(first, 1) - timedelta(days=1)
+        elif key == "nsegoldm":
+            raw = _third_last_business_day(first, holidays)
         else:
             continue                      # no steady pattern: only listed dates
         day = previous_trading_day(raw, holidays)
@@ -171,7 +194,8 @@ def _mcx(key, today, data):
 def upcoming(key, today, count=3, data=None):
     """The next `count` expiries for an instrument: [{date, kind, est}]."""
     data = load_data() if data is None else data
-    rows = _nse(key, today, data) if INSTRUMENTS[key][3] == "NSE" else _mcx(key, today, data)
+    equity = key in INDEX_KEYS
+    rows = _nse(key, today, data) if equity else _mcx(key, today, data)
     return rows[:count]
 
 
@@ -194,7 +218,7 @@ def _day_text(day):
 
 # Two sets: indices and commodities. Each instrument is a small block with its
 # exchange tag and one arrow line per kind of expiry (same look as the daily summary).
-SETS = (("📊 Indices", "NSE"), ("🪙 Commodities", "MCX"))
+SETS = (("📊 Indices", INDEX_KEYS), ("🪙 Commodities", tuple(k for k in ORDER if k not in INDEX_KEYS)))
 KINDS = ("Weekly", "Monthly", "Options", "Futures")
 HEADINGS = {name: name for name in KINDS}
 CATEGORIES = tuple((name, name) for name in KINDS)
@@ -219,14 +243,15 @@ def render_sets(pairs, today=None):
     """pairs: [(key, row)]. With `today`, each arrow shows the date and how far away
     it is; without it (reminders) the arrows just name the kind of expiry."""
     parts = []
-    for title, exchange in SETS:
+    for title, members in SETS:
         blocks = []
-        for key in (k for k in ORDER if INSTRUMENTS[k][3] == exchange):
+        for key in members:
             rows = sorted((r for k, r in pairs if k == key),
                           key=lambda r: (r["date"], KINDS.index(category(r["kind"]))))
             if not rows:
                 continue
-            lines = [f"{INSTRUMENTS[key][0]} <b>{INSTRUMENTS[key][1]}</b>  <i>{exchange}</i>"]
+            name = INSTRUMENTS[key][1].replace("NSE ", "", 1)
+            lines = [f"{INSTRUMENTS[key][0]} <b>{name}</b>  <i>{INSTRUMENTS[key][3]}</i>"]
             for row in rows:
                 kind = category(row["kind"])
                 if today is None:
@@ -260,4 +285,4 @@ def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
 
 
 def today_ist(now):
-    return now.astimezone(IST).date()
+    return now.astimezo
