@@ -218,7 +218,9 @@ def _day_text(day):
 
 # Two sets: indices and commodities. Each instrument is a small block with its
 # exchange tag and one arrow line per kind of expiry (same look as the daily summary).
-SETS = (("📊 Indices", INDEX_KEYS), ("🪙 Commodities", tuple(k for k in ORDER if k not in INDEX_KEYS)))
+SETS = (("📊 Indices · NSE", INDEX_KEYS),
+        ("🪙 Commodities · NSE", NSE_COMMODITY),
+        ("🪙 Commodities · MCX", tuple(k for k in ORDER if INSTRUMENTS[k][3] == "MCX")))
 KINDS = ("Weekly", "Monthly", "Options", "Futures")
 HEADINGS = {name: name for name in KINDS}
 CATEGORIES = tuple((name, name) for name in KINDS)
@@ -245,13 +247,15 @@ def render_sets(pairs, today=None):
     parts = []
     for title, members in SETS:
         blocks = []
+        entries = []
         for key in members:
             rows = sorted((r for k, r in pairs if k == key),
                           key=lambda r: (r["date"], KINDS.index(category(r["kind"]))))
-            if not rows:
-                continue
+            if rows:
+                entries.append((rows[0]["date"], ORDER.index(key), key, rows))
+        for _, _, key, rows in sorted(entries):          # soonest expiry first
             name = INSTRUMENTS[key][1].replace("NSE ", "", 1)
-            lines = [f"{INSTRUMENTS[key][0]} <b>{name}</b>  <i>{INSTRUMENTS[key][3]}</i>"]
+            lines = [f"{INSTRUMENTS[key][0]} <b>{name}</b>"]
             for row in rows:
                 kind = category(row["kind"])
                 if today is None:
@@ -264,7 +268,7 @@ def render_sets(pairs, today=None):
                                  f"{_day_text(row['date'])}</b> ({when})")
             blocks.append("\n".join(lines))
         if blocks:
-            parts.append(f"<b>{title}</b>\n\n" + "\n\n".join(blocks))
+            parts.append(f"<blockquote><b>{title}</b></blockquote>\n" + "\n\n".join(blocks))
     return parts
 
 
@@ -276,7 +280,7 @@ def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
         pairs += [(key, row) for row in nxt.values()]
         if not nxt:
             missing.append(label(key))
-    parts = [f"<b>{title}</b>"] + render_sets(pairs, today)
+    parts = [f"<b>{title}</b>  <i>{_day_text(today)}</i>"] + render_sets(pairs, today)
     if missing:
         parts.append("<b>🕓 Not loaded yet</b>\n" + "\n".join(missing))
     if any(r["est"] for _, r in pairs):
@@ -285,4 +289,4 @@ def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
 
 
 def today_ist(now):
-    return now.astimezo
+    return now.astimezone(IST).date()
