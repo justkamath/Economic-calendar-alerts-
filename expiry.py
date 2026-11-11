@@ -27,9 +27,13 @@ INSTRUMENTS = {
     "nsegold10": ("🏅", "NSE Gold 10g", "NSE Gold 10 grams", "NSE"),
     "nseguinea": ("👑", "NSE Guinea", "NSE Gold Guinea", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
+    "goldm": ("🥇", "Gold Mini", "Gold Mini", "MCX"),
     "silver": ("🥈", "Silver", "Silver", "MCX"),
+    "silverm": ("🥈", "Silver Mini", "Silver Mini", "MCX"),
     "crude": ("🛢️", "Crude", "Crude oil", "MCX"),
+    "crudem": ("🛢️", "Crude Mini", "Crude oil Mini", "MCX"),
     "natgas": ("🔥", "Nat Gas", "Natural gas", "MCX"),
+    "natgasm": ("🔥", "Nat Gas Mini", "Natural gas Mini", "MCX"),
     "copper": ("🟠", "Copper", "Copper", "MCX"),
     "zinc": ("🧱", "Zinc", "Zinc", "MCX"),
     "aluminium": ("🥫", "Aluminium", "Aluminium", "MCX"),
@@ -41,16 +45,20 @@ NSE_COMMODITY = ("nsegold", "nsegoldm", "nsegold10", "nseguinea")
 NSE_NOTE = "Confirm NSE commodity dates on nseindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
-    ("nsegoldm", r"nse gold ?mini|goldm\b"), ("nsegold10", r"gold ?10"), ("nseguinea", r"guinea"),
+    ("nsegoldm", r"nse gold ?mini"), ("nsegold10", r"gold ?10"), ("nseguinea", r"guinea"),
     ("nsegold", r"nse gold"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
     ("next50", r"next ?50|nifty ?next"), ("stockfo", r"stocks?\b"),
-    ("nifty", r"nifty"), ("gold", r"gold"), ("silver", r"silver"),
+    ("nifty", r"nifty"),
+    ("goldm", r"gold ?mini|goldm\b"), ("silverm", r"silver ?(mini|micro)|silverm\b"),
+    ("crudem", r"crude( ?oil)? ?mini|crudem\b"), ("natgasm", r"(natural ?gas|nat ?gas|natgas) ?mini|natgasm\b"),
+    ("gold", r"gold"), ("silver", r"silver"),
     ("natgas", r"natural ?gas|nat ?gas|natgas"), ("crude", r"crude"),
     ("copper", r"copper"), ("zinc", r"zinc"), ("aluminium", r"alumini?um"), ("lead", r"\blead\b"),
 )
 # MCX products with a steady monthly pattern (estimates when nothing is listed)
-MCX_DAY_OF_MONTH = {"gold": 5, "silver": 5, "crude": 19}
+MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "silverm": 5, "crude": 19, "crudem": 19}
+MCX_FOLLOWS = {"crudem": "crude", "natgasm": "natgas"}   # mini uses the standard contract's dates (estimate)
 MCX_LAST_DAY = ("copper", "zinc", "aluminium", "lead", "nsegold10", "nseguinea")
 MCX_DAY_OF_MONTH["nsegold"] = 5
 
@@ -158,8 +166,9 @@ def _mcx(key, today, data):
     """MCX products, and NSE commodity products (which use the NSE holiday list)."""
     holidays = _dates(data.get("nse_holidays" if key in NSE_COMMODITY else "mcx_holidays"))
     out, taken = [], set()
+    source = MCX_FOLLOWS.get(key, key)
     for row in data.get("mcx_expiries") or ():
-        if row.get("i") != key:
+        if row.get("i") != source:
             continue
         try:
             day = date.fromisoformat(row["d"])
@@ -167,7 +176,7 @@ def _mcx(key, today, data):
             continue
         if day >= today:
             out.append({"date": day, "kind": row.get("t", "Futures"),
-                        "est": not row.get("listed", False)})
+                        "est": key in MCX_FOLLOWS or not row.get("listed", False)})
             taken.add((day.year, day.month))
     for step in range(0, 4):
         first = _month_start(today, step)
@@ -195,6 +204,9 @@ def upcoming(key, today, count=3, data=None):
 
 
 # ---------- how it reads in Telegram ----------
+NOTE = "~ is an estimate. Confirm with the exchange before you trade."
+
+
 def _when(day, today):
     gap = (day - today).days
     if gap == 0:
@@ -208,32 +220,46 @@ def _day_text(day):
     return f"{day.strftime('%a')} {day.day} {day.strftime('%b')}"
 
 
-def instrument_lines(key, today, count=3, data=None):
-    emoji, _, name, exchange = INSTRUMENTS[key]
-    rows = upcoming(key, today, count, data)
-    lines = [f"<b>{emoji} {name}</b> <i>({exchange})</i>"]
-    if not rows:
-        lines.append("No date loaded yet")
-    for row in rows:
-        mark = "~" if row["est"] else ""
-        lines.append(f"{row['kind']}: <b>{mark}{_day_text(row['date'])}</b> ({_when(row['date'], today)})")
-    return "\n".join(lines)
+def next_expiries(key, today, data=None):
+    """(next weekly row or None, next monthly row or None)."""
+    rows = upcoming(key, today, 8, data)
+    weekly = next((r for r in rows if r["kind"].startswith("Weekly")), None)
+    monthly = next((r for r in rows if not r["kind"].startswith("Weekly")), None)
+    return weekly, monthly
 
 
-def expiry_card(keys, today, count=3, data=None, title="📅 Expiry dates"):
-    keys = [k for k in ORDER if k in set(keys)]
+def _section(title, items, today):
+    """Instruments sharing a date sit together under that date, soonest first."""
+    groups = {}
+    for key, row in items:
+        groups.setdefault((row["date"], row["est"]), []).append(key)
+    blocks = []
+    for (day, est), keys in sorted(groups.items(), key=lambda g: g[0]):
+        names = ", ".join(label(k) for k in sorted(keys, key=ORDER.index))
+        blocks.append(f"<b>{'~' if est else ''}{_day_text(day)}</b> ({_when(day, today)})\n{names}")
+    return f"<b>{title}</b>\n" + "\n\n".join(blocks)
+
+
+def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
+    """Weekly and monthly kept apart, soonest first, only the next date for each."""
+    weekly, monthly, missing = [], [], []
+    for key in (k for k in ORDER if k in set(keys)):
+        w, m = next_expiries(key, today, data)
+        if w:
+            weekly.append((key, w))
+        if m:
+            monthly.append((key, m))
+        if not w and not m:
+            missing.append(label(key))
     parts = [f"<b>{title}</b>"]
-    parts += [instrument_lines(k, today, count, data) for k in keys]
-    notes = []
-    if any(INSTRUMENTS[k][3] == "MCX" for k in keys):
-        notes.append(MCX_NOTE)
-    if any(k in NSE_COMMODITY for k in keys):
-        notes.append(NSE_NOTE)
-    shown = [r for k in keys for r in upcoming(k, today, count, data)]
-    if any(r["est"] for r in shown):
-        notes.append("~ means an estimate from the usual pattern.")
-    if notes:
-        parts.append("<i>" + " ".join(notes) + "</i>")
+    if weekly:
+        parts.append(_section("🗓 Weekly", weekly, today))
+    if monthly:
+        parts.append(_section("🗓 Monthly", monthly, today))
+    if missing:
+        parts.append("<b>🕓 Not loaded yet</b>\n" + "\n".join(missing))
+    if any(r["est"] for _, r in weekly + monthly):
+        parts.append(f"<i>{NOTE}</i>")
     return "\n\n".join(parts)
 
 
