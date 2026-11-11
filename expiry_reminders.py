@@ -26,12 +26,8 @@ def due_for(keys, now):
 
 def _message(items):
     day = min(r["date"] for _, _, r in items)
-    parts = [f"⏰ <b>Expiry tomorrow</b>\n{expiry._day_text(day)}"]
-    for name, heading in expiry.CATEGORIES:
-        group = [(k, r) for _, k, r in items if expiry.category(r["kind"]) == name]
-        if group:
-            names = [expiry.label(k) + (" ~" if r["est"] else "") for k, r in group]
-            parts.append(f"<b>{heading}</b>\n" + "\n".join(names))
+    parts = [f"⏰ <b>Expiry tomorrow</b>\n<i>{expiry._day_text(day)}</i>"]
+    parts += expiry.render_sets([(k, r) for _, k, r in items])
     if any(r["est"] for _, _, r in items):
         parts.append(f"<i>{expiry.NOTE}</i>")
     return "\n\n".join(parts)
