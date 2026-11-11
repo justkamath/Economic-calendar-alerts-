@@ -96,7 +96,7 @@
   },
   "EUR|ECB President Lagarde Speaks|2026-11-11T09:45:00+00:00": {
     "1h": true,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "EUR|ECB President Lagarde Speaks|2026-11-12T19:30:00+00:00": {
