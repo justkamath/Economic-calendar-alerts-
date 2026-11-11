@@ -18,7 +18,7 @@ def due_for(keys, now):
     today = ist.date()
     out = []
     for key in keys:
-        for row in expiry.upcoming(key, today, count=8):
+        for row in expiry.upcoming(key, today, count=14):
             if (row["date"] - today).days == 1:
                 out.append((f"{key}|{row['date'].isoformat()}|eve", key, row))
     return out
@@ -26,13 +26,12 @@ def due_for(keys, now):
 
 def _message(items):
     day = min(r["date"] for _, _, r in items)
-    weekly = [(k, r) for _, k, r in items if r["kind"].startswith("Weekly")]
-    monthly = [(k, r) for _, k, r in items if not r["kind"].startswith("Weekly")]
     parts = [f"⏰ <b>Expiry tomorrow</b>\n{expiry._day_text(day)}"]
-    for title, group in (("🗓 Weekly", weekly), ("🗓 Monthly", monthly)):
+    for name, heading in expiry.CATEGORIES:
+        group = [(k, r) for _, k, r in items if expiry.category(r["kind"]) == name]
         if group:
             names = [expiry.label(k) + (" ~" if r["est"] else "") for k, r in group]
-            parts.append(f"<b>{title}</b>\n" + "\n".join(names))
+            parts.append(f"<b>{heading}</b>\n" + "\n".join(names))
     if any(r["est"] for _, _, r in items):
         parts.append(f"<i>{expiry.NOTE}</i>")
     return "\n\n".join(parts)
