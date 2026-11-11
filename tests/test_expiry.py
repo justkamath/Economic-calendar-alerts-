@@ -50,7 +50,7 @@ class NseRules(unittest.TestCase):
         for key in ("banknifty", "finnifty", "midcap", "next50", "stockfo"):
             self.assertTrue(all("Monthly" in r["kind"] for r in self.rows(key)), key)
         for key in expiry.ORDER:
-            self.assertTrue(expiry.upcoming(key, date(2026, 11, 1), 1, DATA) or key == "natgas", key)
+            self.assertTrue(expiry.upcoming(key, date(2026, 11, 1), 1, DATA) or key in ("natgas", "natgasm"), key)
 
     def test_nothing_in_the_past_and_today_counts(self):
         self.assertEqual(self.rows("nifty", date(2026, 11, 3))[0]["date"], date(2026, 11, 3))
@@ -77,7 +77,9 @@ class McxRules(unittest.TestCase):
 
     def test_product_without_a_pattern_says_so(self):
         self.assertEqual(expiry.upcoming("natgas", date(2026, 11, 1), 3, DATA), [])
-        self.assertIn("No date loaded yet", expiry.instrument_lines("natgas", date(2026, 11, 1), data=DATA))
+        card = expiry.expiry_card(["natgas", "natgasm"], date(2026, 11, 1), data=DATA)
+        self.assertIn("Not loaded yet", card)
+        self.assertIn("Nat Gas", card)
 
     def test_missing_or_broken_data_file_does_not_crash(self):
         self.assertTrue(expiry.upcoming("nifty", date(2026, 11, 1), 2, {}))
@@ -113,8 +115,7 @@ class NseCommodity(unittest.TestCase):
                          ["nsegold", "nsegoldm", "nsegold10", "nseguinea"])
         self.assertEqual(expiry.find_instruments("gold"), ["gold"])
         card = expiry.expiry_card(["nsegold"], date(2026, 11, 10), data=DATA)
-        self.assertIn("nseindia.com", card)
-        self.assertNotIn("mcxindia", card)
+        self.assertIn("Confirm with the exchange", card)
 
     def test_picker_button_and_reminder(self):
         for key in expiry.NSE_COMMODITY:
@@ -124,7 +125,35 @@ class NseCommodity(unittest.TestCase):
         bot = FakeBot()
         reminders.send_expiry_reminders(bot, Audience([], store), utc(2026, 11, 29, 17, 30))
         self.assertIn("NSE Gold 10g", bot.sent[0][1])
-        self.assertIn("nseindia.com", bot.sent[0][1])
+        self.assertIn("Confirm with the exchange", bot.sent[0][1])
+
+
+class Layout(unittest.TestCase):
+    def test_same_date_instruments_are_grouped_and_sections_are_separate(self):
+        card = expiry.expiry_card(["nifty", "banknifty", "midcap"], date(2026, 11, 11), data=DATA)
+        self.assertEqual(card.count("Mon 23 Nov"), 1)
+        self.assertIn("🏦 Bank Nifty, 🌱 Midcap", card)
+        self.assertLess(card.index("Weekly"), card.index("Monthly"))
+        self.assertEqual(card.count("Weekly"), 1)
+
+    def test_minis_exist_and_follow_their_parents(self):
+        for key in ("goldm", "silverm", "crudem", "natgasm"):
+            self.assertIn(key, expiry.INSTRUMENTS)
+        self.assertEqual(expiry.find_instruments("crude mini silver micro gold mini"),
+                         ["goldm", "silverm", "crudem"])
+        self.assertEqual(expiry.find_instruments("crude")[0], "crude")
+        data = dict(DATA, mcx_expiries=DATA["mcx_expiries"] + [
+            {"i": "natgas", "t": "Futures", "d": "2026-11-24", "listed": False}])
+        mini = expiry.upcoming("natgasm", date(2026, 11, 1), 1, data)[0]
+        self.assertEqual((mini["date"], mini["est"]), (date(2026, 11, 24), True))
+
+    def test_picker_rows_stay_inside_one_group(self):
+        rows = [[b["text"] for b in r] for r in commands.expiry_keyboard(["gold"])["keyboard"]]
+        self.assertLessEqual(max(len(r) for r in rows), 3)
+        self.assertIn("🥇 Gold ✓", [t for r in rows for t in r])
+        for r in rows[:-1]:
+            groups = {"NSE" if ("Nifty" in t or t.startswith(("🌱", "🚀", "🎟"))) else "X" for t in r}
+            self.assertEqual(len(groups), 1, r)
 
 
 class Words(unittest.TestCase):
@@ -134,13 +163,13 @@ class Words(unittest.TestCase):
         self.assertEqual(expiry.find_instruments("nat gas & natural gas"), ["natgas"])
         self.assertEqual(expiry.find_instruments("hello"), [])
 
-    def test_card_is_valid_html_short_and_mentions_mcx_note(self):
+    def test_card_is_valid_html_short_and_flags_estimates(self):
         card = expiry.expiry_card(expiry.ORDER, date(2026, 11, 1), count=3, data=DATA)
         self.assertLess(len(card), 4000)
         for tag in ("b", "i"):
             self.assertEqual(card.count(f"<{tag}>"), card.count(f"</{tag}>"))
-        self.assertIn("mcxindia.com", card)
-        self.assertNotIn("mcxindia", expiry.expiry_card(["nifty"], date(2026, 11, 1), data=DATA))
+        self.assertIn("Confirm with the exchange", card)
+        self.assertNotIn("~", expiry.expiry_card(["nifty"], date(2026, 11, 1), data=DATA))
 
 
 class Bot(unittest.TestCase):
@@ -249,15 +278,15 @@ class Reminders(unittest.TestCase):
     def run_at(self, when):
         return reminders.send_expiry_reminders(self.bot, self.aud, when)
 
-    def test_evening_before_and_morning_of(self):
+    def test_one_alert_the_evening_before(self):
         self.assertEqual(self.run_at(utc(2026, 11, 22, 17, 5)), 1)       # day before Mon 23 Nov
         chat, text = self.bot.sent[0]
         self.assertEqual(chat, "7")
         self.assertIn("Expiry tomorrow", text)
         self.assertIn("Bank Nifty", text)
         self.assertIn("Mon 23 Nov", text)
-        self.assertEqual(self.run_at(utc(2026, 11, 23, 9, 0)), 1)
-        self.assertIn("Expiry today", self.bot.sent[1][1])
+        self.assertEqual(self.run_at(utc(2026, 11, 23, 9, 0)), 0)      # no second, same-day message
+        self.assertEqual(len(self.bot.sent), 1)
 
     def test_each_reminder_is_sent_once(self):
         self.run_at(utc(2026, 11, 22, 17, 5))
@@ -279,11 +308,22 @@ class Reminders(unittest.TestCase):
         self.assertIn("Nifty 50", self.bot.sent[0][1])
         self.assertIn("Bank Nifty", self.bot.sent[0][1])
 
-    def test_mcx_message_carries_the_confirm_note(self):
-        self.store.update("7", expiry=["crude"])
+    def test_message_is_short_and_keeps_weekly_and_monthly_apart(self):
+        self.store.update("7", expiry=["nifty", "crude", "crudem"])
         self.run_at(utc(2026, 11, 18, 17, 30))
-        self.assertIn("mcxindia.com", self.bot.sent[0][1])
-        self.assertIn("Thu 19 Nov", self.bot.sent[0][1])
+        text = self.bot.sent[0][1]
+        self.assertIn("Thu 19 Nov", text)
+        self.assertIn("Monthly", text)
+        self.assertNotIn("Weekly", text)
+        self.assertIn("Crude Mini ~", text)                # the mini is an estimate
+        self.assertIn("Confirm with the exchange", text)
+        self.store.update("7", expiry=["nifty"])
+        self.run_at(utc(2026, 11, 16, 17, 30))
+        text = self.bot.sent[1][1]
+        self.assertIn("Weekly", text)
+        self.assertNotIn("Monthly", text)
+        self.assertNotIn("Confirm", text)                  # exact date: no disclaimer needed
+        self.assertLess(len(text), 200)
 
     def test_failed_send_is_retried_and_blocked_users_are_removed(self):
         self.bot.fail = RuntimeError("boom")
@@ -293,7 +333,7 @@ class Reminders(unittest.TestCase):
         blocked = RuntimeError("blocked")
         blocked.code = 403
         self.bot = FakeBot(fail=blocked)
-        self.assertEqual(self.run_at(utc(2026, 11, 23, 9, 0)), 0)
+        self.assertEqual(self.run_at(utc(2026, 12, 28, 18, 0)), 0)
         self.assertIsNone(self.store.get("7"))
 
     def test_paused_owner_gets_nothing_and_no_store_means_no_reminders(self):
