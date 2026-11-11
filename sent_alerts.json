@@ -29,11 +29,6 @@
     "30m": false,
     "detected": true
   },
-  "CAD|Trade Balance|2026-11-04T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CAD|Unemployment Rate|2026-11-06T13:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -75,16 +70,6 @@
     "detected": true
   },
   "CNY|PPI y/y|2026-11-09T01:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|CPI Flash Estimate y/y|2026-11-04T10:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Core CPI Flash Estimate y/y|2026-11-04T10:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -269,11 +254,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|ADP Non-Farm Employment Change|2026-11-04T13:15:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Average Hourly Earnings m/m|2026-11-06T13:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -300,11 +280,6 @@
     "detected": true
   },
   "USD|Core PPI m/m|2026-11-13T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Crude Oil Inventories|2026-11-04T15:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -344,16 +319,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Final Services PMI|2026-11-04T14:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|ISM Services PMI|2026-11-04T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Natural Gas Storage|2026-11-05T15:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -385,11 +350,6 @@
     "detected": true
   },
   "USD|Prelim UoM Inflation Expectations|2026-11-06T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Trade Balance|2026-11-04T13:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
