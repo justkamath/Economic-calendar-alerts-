@@ -6,6 +6,7 @@ from datetime import time as clock, timedelta
 
 import config as cfg
 import expiry
+from alerts import is_dead_chat
 
 EVE_FROM = clock(17, 0)     # IST
 
@@ -49,7 +50,7 @@ def send_expiry_reminders(notifier, audience, now):
             notifier.send(_message(items), chat_id=chat_id)
         except Exception as e:
             print("EXPIRY REMINDER FAILED:", e)
-            if getattr(e, "code", None) == 403:
+            if is_dead_chat(e):
                 audience.remove(chat_id)
             continue
         for token, *_ in items:
