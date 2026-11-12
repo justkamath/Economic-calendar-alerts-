@@ -57,6 +57,13 @@ def select_upcoming(calendar, now, min_rank=None, state=None):
     )
 
 
+def is_dead_chat(error):
+    """True when Telegram says this chat can never receive our messages: the person
+    blocked the bot (403) or the chat does not exist any more / never started it (400)."""
+    code = getattr(error, "code", None)
+    return code == 403 or (code == 400 and "chat not found" in str(error).lower())
+
+
 def send_once(notifier, state, key, status_name, message, force=False,
               recipients=None, on_blocked=None):
     """Send one alert stage; mark it done only after Telegram confirms it.
@@ -81,8 +88,8 @@ def send_once(notifier, state, key, status_name, message, force=False,
                 delivered += 1
             except Exception as e:
                 print(f"SEND FAILED: {status_name} {key} to chat #{number}: {e}")
-                if getattr(e, "code", None) == 403 and on_blocked:
-                    on_blocked(chat_id)   # they blocked the bot: stop trying
+                if is_dead_chat(e) and on_blocked:
+                    on_blocked(chat_id)   # blocked the bot or chat gone: stop trying
             time.sleep(cfg.SEND_DELAY_SECONDS)
         if not delivered:
             return
