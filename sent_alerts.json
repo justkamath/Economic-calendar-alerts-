@@ -161,7 +161,7 @@
   },
   "GBP|GDP m/m|2026-11-12T07:00:00+00:00": {
     "1h": true,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "GBP|Lloyds HPI m/m|2026-11-06T07:00:00+00:00": {
@@ -191,7 +191,7 @@
   },
   "GBP|Prelim GDP q/q|2026-11-12T07:00:00+00:00": {
     "1h": true,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "JPY|Adjusted Current Account|2026-11-09T23:50:00+00:00": {
