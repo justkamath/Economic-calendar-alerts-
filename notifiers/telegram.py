@@ -1,26 +1,4 @@
-"""Telegram delivery. Credentials come from config (environment only).
-
-Note: chat IDs are never printed - GitHub Actions logs can be public.
-"""
-import json
-import urllib.error
-import urllib.parse
-import urllib.request
-
-import config as cfg
-
-
-class TelegramError(RuntimeError):
-    def __init__(self, code, description):
-        super().__init__(f"Telegram error {code}: {description}")
-        self.code = code
-        self.description = description
-
-
-def parse_chat_ids(value):
-    """'111, -100222' -> ['111', '-100222'] (duplicates and blanks dropped)."""
-    seen = []
-    for part in str(value or "").replace(";", ",").replace("\n", ",").split(","):
+):
         part = part.strip()
         if part and part not in seen:
             seen.append(part)
