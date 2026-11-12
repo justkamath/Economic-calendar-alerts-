@@ -41,6 +41,7 @@ class MainTests(unittest.TestCase):
         with mock.patch.object(main, "TelegramNotifier", return_value=bot), \
                 mock.patch.object(main, "fetch_calendar", return_value=list(calendar)), \
                 mock.patch.object(main, "maybe_send_summary"), \
+                mock.patch.object(main, "maybe_sync"), \
                 mock.patch.object(main, "load_state", return_value={}), \
                 mock.patch("alerts.save_state"), mock.patch("alerts.prune_state"), \
                 mock.patch.object(cfg, "SUBSCRIBERS_KEY", key), \
