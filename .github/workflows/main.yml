@@ -62,6 +62,7 @@ jobs:
           SUBSCRIBERS_KEY: ${{ secrets.SUBSCRIBERS_KEY }}
           SIGNUP_CODE: ${{ secrets.SIGNUP_CODE }}
           MAX_SUBSCRIBERS: ${{ vars.MAX_SUBSCRIBERS || '200' }}
+          EXPIRY_SYNC: ${{ vars.EXPIRY_SYNC || 'on' }}
 
       - name: Save sent alert history and calendar database
         if: always()
