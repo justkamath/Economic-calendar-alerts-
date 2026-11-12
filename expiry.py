@@ -12,7 +12,8 @@ from datetime import date, datetime, timedelta, timezone
 import config as cfg
 
 IST = timezone(timedelta(hours=5, minutes=30))
-DATA_FILE = str(cfg.BASE_DIR / "expiry_data.json")
+DATA_FILE = str(cfg.BASE_DIR / "expiry_data.json")          # holidays (edit by hand once a year)
+SYNCED_FILE = str(cfg.BASE_DIR / "expiry_synced.json")      # exact dates, written by expiry_sync.py
 
 # key -> (emoji, button label, full name, exchange)
 INSTRUMENTS = {
@@ -22,8 +23,6 @@ INSTRUMENTS = {
     "midcap": ("🌱", "Midcap", "Midcap Nifty", "NSE"),
     "next50": ("🚀", "Next 50", "Nifty Next 50", "NSE"),
     "stockfo": ("🧾", "Stock F&O", "Stock futures & options", "NSE"),
-    "nsegold": ("🥇", "NSE Gold", "NSE Gold", "NSE"),
-    "nsegoldm": ("🏅", "NSE Gold Mini", "NSE Gold Mini", "NSE"),
     "nsecrude": ("🛢️", "NSE Crude", "NSE Crude oil (WTI)", "NSE"),
     "nsenatgas": ("🔥", "NSE Nat Gas", "NSE Natural gas", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
@@ -35,12 +34,11 @@ INSTRUMENTS = {
     "natgas": ("🔥", "Nat Gas", "Natural gas", "MCX"),
 }
 ORDER = tuple(INSTRUMENTS)
-NSE_COMMODITY = ("nsegold", "nsegoldm", "nsecrude", "nsenatgas")
+NSE_COMMODITY = ("nsecrude", "nsenatgas")
 INDEX_KEYS = tuple(k for k in ORDER if INSTRUMENTS[k][3] == "NSE" and k not in NSE_COMMODITY)
 MCX_NOTE = "Confirm MCX dates on mcxindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
-    ("nsegoldm", r"nse gold ?mini"), ("nsegold", r"nse gold"),
     ("nsecrude", r"nse (wti )?crude( ?oil)?|\bwti\b"), ("nsenatgas", r"nse (natural ?gas|nat ?gas|natgas)"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
     ("next50", r"next ?50|nifty ?next"), ("stockfo", r"stocks?\b"),
@@ -52,8 +50,10 @@ ALIASES = (
 )
 # MCX products with a steady pattern (estimates when nothing is listed)
 MCX_DAY_OF_MONTH = {"gold": 5, "goldm": 5, "silver": 5, "crude": 19, "crudem": 19,
-                    "nsegold": 5, "nsecrude": 19, "nsenatgas": 25}
+                    "nsecrude": 19, "nsenatgas": 25}
 MCX_MONTHS = {"gold": {2, 4, 6, 8, 10, 12}, "silver": {3, 5, 7, 9, 12}}   # bi-monthly contracts
+# MCX crude and nat gas options expire 2 trading days before the futures (fits every listed date)
+OPTIONS_DAYS_BEFORE_FUTURES = {"crude": 2, "crudem": 2, "natgas": 2}
 MCX_LAST_DAY = ("silverm",)
 
 _cache = {}
@@ -75,16 +75,39 @@ def find_instruments(text):
     return [k for k in ORDER if k in found]
 
 
-def load_data(path=None):
+def _read_json(path):
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def load_data(path=None, synced_path=None):
+    """Holidays plus the synced exact dates. Cached for the life of one run."""
     path = path or DATA_FILE
-    if path not in _cache:
+    synced_path = SYNCED_FILE if synced_path is None and path == DATA_FILE else synced_path
+    key = (path, synced_path)
+    if key not in _cache:
+        data = dict(_read_json(path))
+        if synced_path:
+            data["expiries"] = list(_read_json(synced_path).get("expiries") or [])
+        _cache[key] = data
+    return _cache[key]
+
+
+def listed_rows(data, key):
+    """Exact dates for one instrument: [(date, kind)]."""
+    out = []
+    for row in list(data.get("expiries") or ()) + list(data.get("mcx_expiries") or ()):
+        if row.get("i") != key:
+            continue
         try:
-            with open(path, encoding="utf-8") as f:
-                data = json.load(f)
-        except (OSError, ValueError):
-            data = {}
-        _cache[path] = data if isinstance(data, dict) else {}
-    return _cache[path]
+            out.append((date.fromisoformat(row["d"]), row.get("t", "Futures")))
+        except (KeyError, TypeError, ValueError):
+            pass
+    return out
 
 
 def _dates(items):
@@ -142,18 +165,14 @@ def _nse(key, today, data):
                 out.append({"date": day, "kind": "Weekly options", "est": _estimated(day, data)})
     elif key not in ("banknifty", "finnifty", "midcap", "next50", "stockfo"):
         return []
+    listed = [(d, k) for d, k in listed_rows(data, key) if d >= today]
+    if listed:                         # exact dates win; rule dates inside their window are dropped
+        horizon = {}
+        for d, k in listed:
+            horizon[category(k)] = max(d, horizon.get(category(k), d))
+        out = [e for e in out if e["date"] > horizon.get(category(e["kind"]), date.min)]
+        out += [{"date": d, "kind": k, "est": False} for d, k in listed]
     return sorted(out, key=lambda e: e["date"])
-
-
-def _third_last_business_day(first, holidays):
-    day = _month_start(first, 1) - timedelta(days=1)
-    count = 0
-    while True:
-        if day.weekday() < 5 and day not in holidays:
-            count += 1
-            if count == 3:
-                return day
-        day -= timedelta(days=1)
 
 
 def _mcx(key, today, data):
@@ -161,16 +180,9 @@ def _mcx(key, today, data):
     NSE commodities follow the NSE holiday list, MCX ones the MCX list."""
     holidays = _dates(data.get("nse_holidays" if key in NSE_COMMODITY else "mcx_holidays"))
     out, taken = [], set()
-    for row in data.get("mcx_expiries") or ():
-        if row.get("i") != key:
-            continue
-        try:
-            day = date.fromisoformat(row["d"])
-        except (KeyError, TypeError, ValueError):
-            continue
+    for day, kind in listed_rows(data, key):
         if day >= today:
-            out.append({"date": day, "kind": row.get("t", "Futures"),
-                        "est": not row.get("listed", False)})
+            out.append({"date": day, "kind": kind, "est": False})
             taken.add((day.year, day.month))
     for step in range(0, 9):
         first = _month_start(today, step)
@@ -180,14 +192,21 @@ def _mcx(key, today, data):
             raw = date(first.year, first.month, MCX_DAY_OF_MONTH[key])
         elif key in MCX_LAST_DAY:
             raw = _month_start(first, 1) - timedelta(days=1)
-        elif key == "nsegoldm":
-            raw = _third_last_business_day(first, holidays)
         else:
             continue                      # no steady pattern: only listed dates
         day = previous_trading_day(raw, holidays)
         listed_near = any(e["kind"] == "Futures" and abs((e["date"] - day).days) <= 4 for e in out)
         if day >= today and not listed_near:
             out.append({"date": day, "kind": "Futures", "est": True})
+    lead = OPTIONS_DAYS_BEFORE_FUTURES.get(key)
+    if lead:
+        for fut in [e for e in out if e["kind"] == "Futures"]:
+            day = fut["date"]
+            for _ in range(lead):
+                day = previous_trading_day(day - timedelta(days=1), holidays)
+            if day >= today and not any(e["kind"] == "Options" and abs((e["date"] - day).days) <= 3
+                                        for e in out):
+                out.append({"date": day, "kind": "Options", "est": True})
     return sorted(out, key=lambda e: e["date"])
 
 
