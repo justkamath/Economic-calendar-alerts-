@@ -1,9 +1,154 @@
 {
- "synced_at": null,
- "source": "seed from the Groww commodities calendar (Nov 2026 to Jan 2027); replaced by the first Upstox sync",
+ "synced_at": "2026-11-12T06:47:01.008039+00:00",
+ "attempted_at": "2026-11-12T06:47:01.008039+00:00",
+ "source": "Upstox public instrument files",
  "expiries": [
   {
+   "i": "crude",
+   "t": "Options",
+   "d": "2026-11-17",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Options",
+   "d": "2026-11-17",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Weekly options",
+   "d": "2026-11-17",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Options",
+   "d": "2026-11-18",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2026-11-19",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2026-11-19",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2026-11-19",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Options",
+   "d": "2026-11-20",
+   "listed": true
+  },
+  {
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2026-11-23",
+   "listed": true
+  },
+  {
+   "i": "finnifty",
+   "t": "Monthly futures & options",
+   "d": "2026-11-23",
+   "listed": true
+  },
+  {
+   "i": "midcap",
+   "t": "Monthly futures & options",
+   "d": "2026-11-23",
+   "listed": true
+  },
+  {
+   "i": "next50",
+   "t": "Monthly futures & options",
+   "d": "2026-11-23",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2026-11-23",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2026-11-23",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Futures",
+   "d": "2026-11-24",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2026-11-24",
+   "listed": true
+  },
+  {
    "i": "gold",
+   "t": "Options",
+   "d": "2026-11-27",
+   "listed": true
+  },
+  {
+   "i": "goldm",
+   "t": "Options",
+   "d": "2026-11-27",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2026-11-27",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2026-11-30",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2026-11-30",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Futures",
+   "d": "2026-11-30",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Weekly options",
+   "d": "2026-12-01",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2026-12-04",
+   "listed": true
+  },
+  {
+   "i": "goldm",
    "t": "Futures",
    "d": "2026-12-04",
    "listed": true
@@ -15,81 +160,21 @@
    "listed": true
   },
   {
-   "i": "goldm",
-   "t": "Futures",
-   "d": "2026-12-04",
+   "i": "nifty",
+   "t": "Weekly options",
+   "d": "2026-12-08",
    "listed": true
   },
   {
-   "i": "goldm",
-   "t": "Futures",
-   "d": "2027-01-05",
-   "listed": true
-  },
-  {
-   "i": "crude",
-   "t": "Futures",
-   "d": "2026-11-19",
-   "listed": true
-  },
-  {
-   "i": "crude",
-   "t": "Futures",
-   "d": "2026-12-18",
-   "listed": true
-  },
-  {
-   "i": "crude",
-   "t": "Futures",
-   "d": "2027-01-19",
-   "listed": true
-  },
-  {
-   "i": "crudem",
-   "t": "Futures",
-   "d": "2026-11-19",
-   "listed": true
-  },
-  {
-   "i": "crudem",
-   "t": "Futures",
-   "d": "2026-12-18",
-   "listed": true
-  },
-  {
-   "i": "crudem",
-   "t": "Futures",
-   "d": "2027-01-19",
-   "listed": true
-  },
-  {
-   "i": "natgas",
-   "t": "Futures",
-   "d": "2026-11-24",
-   "listed": true
-  },
-  {
-   "i": "natgas",
-   "t": "Futures",
-   "d": "2026-12-28",
-   "listed": true
-  },
-  {
-   "i": "natgas",
-   "t": "Futures",
-   "d": "2027-01-25",
-   "listed": true
-  },
-  {
-   "i": "silverm",
-   "t": "Futures",
-   "d": "2026-11-30",
-   "listed": true
-  },
-  {
-   "i": "crude",
+   "i": "nsecrude",
    "t": "Options",
-   "d": "2026-11-17",
+   "d": "2026-12-09",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Weekly options",
+   "d": "2026-12-15",
    "listed": true
   },
   {
@@ -99,33 +184,33 @@
    "listed": true
   },
   {
-   "i": "crude",
-   "t": "Options",
-   "d": "2027-01-15",
-   "listed": true
-  },
-  {
-   "i": "crudem",
-   "t": "Options",
-   "d": "2026-11-17",
-   "listed": true
-  },
-  {
    "i": "crudem",
    "t": "Options",
    "d": "2026-12-16",
    "listed": true
   },
   {
-   "i": "crudem",
-   "t": "Options",
-   "d": "2027-01-15",
+   "i": "crude",
+   "t": "Futures",
+   "d": "2026-12-18",
    "listed": true
   },
   {
-   "i": "natgas",
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2026-12-18",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2026-12-18",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
    "t": "Options",
-   "d": "2026-11-20",
+   "d": "2026-12-21",
    "listed": true
   },
   {
@@ -136,32 +221,14 @@
   },
   {
    "i": "natgas",
-   "t": "Options",
-   "d": "2027-01-21",
-   "listed": true
-  },
-  {
-   "i": "silverm",
-   "t": "Options",
-   "d": "2026-11-23",
-   "listed": true
-  },
-  {
-   "i": "silverm",
-   "t": "Options",
+   "t": "Futures",
    "d": "2026-12-28",
    "listed": true
   },
   {
-   "i": "silverm",
-   "t": "Options",
-   "d": "2027-01-25",
-   "listed": true
-  },
-  {
-   "i": "silver",
-   "t": "Options",
-   "d": "2026-11-27",
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2026-12-28",
    "listed": true
   },
   {
@@ -171,33 +238,21 @@
    "listed": true
   },
   {
-   "i": "silver",
+   "i": "silverm",
    "t": "Options",
-   "d": "2027-01-25",
+   "d": "2026-12-28",
    "listed": true
   },
   {
-   "i": "gold",
-   "t": "Options",
-   "d": "2026-11-27",
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2026-12-29",
    "listed": true
   },
   {
-   "i": "gold",
-   "t": "Options",
-   "d": "2026-12-31",
-   "listed": true
-  },
-  {
-   "i": "gold",
-   "t": "Options",
-   "d": "2027-01-29",
-   "listed": true
-  },
-  {
-   "i": "goldm",
-   "t": "Options",
-   "d": "2026-11-27",
+   "i": "finnifty",
+   "t": "Monthly futures & options",
+   "d": "2026-12-29",
    "listed": true
   },
   {
@@ -207,51 +262,45 @@
    "listed": true
   },
   {
+   "i": "midcap",
+   "t": "Monthly futures & options",
+   "d": "2026-12-29",
+   "listed": true
+  },
+  {
+   "i": "next50",
+   "t": "Monthly futures & options",
+   "d": "2026-12-29",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2026-12-29",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2026-12-31",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2026-12-31",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2026-12-31",
+   "listed": true
+  },
+  {
    "i": "goldm",
-   "t": "Options",
-   "d": "2027-01-29",
-   "listed": true
-  },
-  {
-   "i": "nsecrude",
    "t": "Futures",
-   "d": "2026-11-19",
-   "listed": true
-  },
-  {
-   "i": "nsecrude",
-   "t": "Futures",
-   "d": "2026-12-18",
-   "listed": true
-  },
-  {
-   "i": "nsecrude",
-   "t": "Futures",
-   "d": "2027-01-19",
-   "listed": true
-  },
-  {
-   "i": "nsenatgas",
-   "t": "Futures",
-   "d": "2026-11-24",
-   "listed": true
-  },
-  {
-   "i": "nsenatgas",
-   "t": "Futures",
-   "d": "2026-12-28",
-   "listed": true
-  },
-  {
-   "i": "nsenatgas",
-   "t": "Futures",
-   "d": "2027-01-25",
-   "listed": true
-  },
-  {
-   "i": "nsecrude",
-   "t": "Options",
-   "d": "2026-12-09",
+   "d": "2027-01-05",
    "listed": true
   },
   {
@@ -261,21 +310,597 @@
    "listed": true
   },
   {
-   "i": "nsenatgas",
+   "i": "crude",
    "t": "Options",
-   "d": "2026-11-18",
+   "d": "2027-01-15",
    "listed": true
   },
   {
-   "i": "nsenatgas",
+   "i": "crudem",
    "t": "Options",
-   "d": "2026-12-21",
+   "d": "2027-01-15",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-01-19",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-01-19",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2027-01-19",
    "listed": true
   },
   {
    "i": "nsenatgas",
    "t": "Options",
    "d": "2027-01-19",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Options",
+   "d": "2027-01-21",
+   "listed": true
+  },
+  {
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "finnifty",
+   "t": "Monthly futures & options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "midcap",
+   "t": "Monthly futures & options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Futures",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "next50",
+   "t": "Monthly futures & options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-01-25",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-01-29",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-01-29",
+   "listed": true
+  },
+  {
+   "i": "goldm",
+   "t": "Options",
+   "d": "2027-01-29",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-01-29",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-02-05",
+   "listed": true
+  },
+  {
+   "i": "goldm",
+   "t": "Futures",
+   "d": "2027-02-05",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-02-19",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-02-19",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2027-02-19",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-02-19",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Futures",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-02-26",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-02-26",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-02-26",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-02-26",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Futures",
+   "d": "2027-02-26",
+   "listed": true
+  },
+  {
+   "i": "goldm",
+   "t": "Futures",
+   "d": "2027-03-05",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-03-05",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-03-19",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-03-19",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2027-03-19",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Futures",
+   "d": "2027-03-25",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2027-03-25",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-03-25",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-03-25",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-03-29",
+   "listed": true
+  },
+  {
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2027-03-30",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2027-03-30",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-03-31",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-03-31",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-04-05",
+   "listed": true
+  },
+  {
+   "i": "goldm",
+   "t": "Futures",
+   "d": "2027-04-05",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-04-19",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-04-19",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2027-04-19",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-04-23",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Futures",
+   "d": "2027-04-27",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2027-04-27",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-04-28",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-04-30",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-04-30",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-04-30",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Futures",
+   "d": "2027-04-30",
+   "listed": true
+  },
+  {
+   "i": "goldm",
+   "t": "Futures",
+   "d": "2027-05-05",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-05-05",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-05-26",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-05-26",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-05-28",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-06-04",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-06-21",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-06-21",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-06-23",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-06-28",
+   "listed": true
+  },
+  {
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2027-06-29",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2027-06-29",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-06-30",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-06-30",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Futures",
+   "d": "2027-06-30",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-07-05",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-07-27",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-07-27",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-07-29",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-08-05",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Options",
+   "d": "2027-08-24",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Options",
+   "d": "2027-08-27",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-08-31",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Futures",
+   "d": "2027-08-31",
+   "listed": true
+  },
+  {
+   "i": "silver",
+   "t": "Futures",
+   "d": "2027-09-03",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-09-20",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-09-20",
+   "listed": true
+  },
+  {
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2027-09-28",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Options",
+   "d": "2027-09-28",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2027-09-28",
+   "listed": true
+  },
+  {
+   "i": "gold",
+   "t": "Futures",
+   "d": "2027-10-05",
+   "listed": true
+  },
+  {
+   "i": "silverm",
+   "t": "Futures",
+   "d": "2027-11-30",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-12-17",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-12-17",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2027-12-28",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2028-03-20",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2028-03-20",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2028-06-27",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
+   "d": "2028-12-26",
    "listed": true
   }
  ]
