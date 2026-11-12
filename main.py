@@ -6,6 +6,7 @@ from alerts import process, select_upcoming
 from calendar_service import fetch_calendar
 from commands import handle_updates
 from expiry_reminders import send_expiry_reminders
+from expiry_sync import maybe_sync
 from notifiers import TelegramNotifier
 from state import load_state
 from subscribers import build_audience
@@ -26,6 +27,10 @@ def main():
     print("Resend detection mode:", cfg.RESEND_DETECTION)
 
     # ---- run ----
+    try:
+        maybe_sync(now, notifier)            # fresh exact expiry dates (at most once a day)
+    except Exception as e:                   # never let this break the calendar run
+        print("Expiry sync error:", type(e).__name__)
     if enabled:
         handle_updates(notifier, audience)   # answer /start, /level, /currencies ...
         store.save()                         # remember them even if the calendar fails
