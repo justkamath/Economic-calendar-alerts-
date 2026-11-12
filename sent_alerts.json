@@ -1,9 +1,4 @@
 {
-  "AUD|Goods Trade Balance|2026-11-05T00:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|RBA Deputy Gov Hauser Speaks|2026-11-05T06:45:00+00:00": {
     "1h": false,
     "30m": false,
@@ -199,11 +194,6 @@
     "30m": false,
     "detected": true
   },
-  "JPY|10-y Bond Auction|2026-11-05T03:35:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|Adjusted Current Account|2026-11-09T23:50:00+00:00": {
     "1h": false,
     "30m": false,
@@ -235,11 +225,6 @@
     "detected": true
   },
   "JPY|Household Spending y/y|2026-11-09T23:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Monetary Policy Meeting Minutes|2026-11-04T23:50:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -369,9 +354,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-11-05T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-11-06T00:00:00+00:00": {
     "sent": true
   },
@@ -388,6 +370,9 @@
     "sent": true
   },
   "summary|daily|2026-11-11T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-12T00:00:00+00:00": {
     "sent": true
   }
 }
