@@ -1,4 +1,4 @@
-"""Notification channels. Each exposes send(message)."""
-from notifiers.telegram import TelegramNotifier
+"""Notification channels. Each exposes send(message, chat_id=None)."""
+from notifiers.telegram import TelegramError, TelegramNotifier
 
-__all__ = ["TelegramNotifier"]
+__all__ = ["TelegramError", "TelegramNotifier"]
