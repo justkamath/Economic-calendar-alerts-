@@ -71,6 +71,7 @@ jobs:
           git add sent_alerts.json
           if [ -f data/calendar.db ]; then git add data/calendar.db; fi
           if [ -f subscribers.enc ]; then git add subscribers.enc; fi
+          if [ -f expiry_synced.json ]; then git add expiry_synced.json; fi
           if ! git diff --cached --quiet; then
             git commit -m "Update alert history and calendar data"
             # GitHub sometimes answers with a temporary server error: try again
