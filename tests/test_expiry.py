@@ -65,7 +65,7 @@ class NseRules(unittest.TestCase):
 
 class McxRules(unittest.TestCase):
     def test_listed_date_wins_and_is_not_an_estimate(self):
-        rows = expiry.upcoming("crude", date(2026, 11, 1), 3, DATA)
+        rows = [r for r in expiry.upcoming("crude", date(2026, 11, 1), 9, DATA) if r["kind"] == "Futures"]
         self.assertEqual((rows[0]["date"], rows[0]["est"]), (date(2026, 11, 19), False))
         self.assertEqual(len([r for r in rows if abs((r["date"] - date(2026, 11, 19)).days) <= 4]), 1)
 
@@ -91,7 +91,8 @@ class McxRules(unittest.TestCase):
         for key in ("nse_holidays", "mcx_holidays"):
             self.assertTrue(expiry._dates(data[key]))
             self.assertEqual(len(expiry._dates(data[key])), len(data[key]))
-        for row in data["mcx_expiries"]:
+        self.assertTrue(data["expiries"])
+        for row in data["expiries"]:
             self.assertIn(row["i"], expiry.INSTRUMENTS)
             date.fromisoformat(row["d"])
 
@@ -131,8 +132,8 @@ class Layout(unittest.TestCase):
         self.assertEqual(expiry.find_instruments("crude mini silver micro gold mini"),
                          ["goldm", "silverm", "crudem"])
         self.assertEqual(expiry.find_instruments("crude")[0], "crude")
-        mini = expiry.upcoming("crudem", date(2026, 11, 1), 1, DATA)[0]
-        self.assertEqual((mini["date"], mini["est"]), (date(2026, 11, 19), True))   # follows crude
+        mini = expiry.next_expiries("crudem", date(2026, 11, 1), DATA)["Futures"]
+        self.assertEqual((mini["date"], mini["est"]), (date(2026, 11, 19), True))   # same day as crude
 
     def test_commodities_show_options_and_futures_with_mcx_tag(self):
         card = expiry.expiry_card(["crude", "gold"], date(2026, 11, 11))
@@ -151,7 +152,7 @@ class Layout(unittest.TestCase):
         self.assertNotIn("Crude", indices)
         self.assertNotIn("Nifty", nse + mcx)
         self.assertEqual(card.count("↳ Weekly"), 1)
-        self.assertNotIn("Options", nse)                       # NSE commodities: futures only
+        self.assertIn("Options", nse)
         self.assertIn("Options", mcx)
         headers = [ln for ln in card.splitlines() if re.fullmatch(r"\S+ <b>[^<]+</b>", ln)]
         self.assertEqual(len(headers), len(expiry.ORDER))     # one block per instrument
@@ -171,21 +172,18 @@ class Layout(unittest.TestCase):
     def test_only_the_requested_commodities_exist(self):
         mcx = [k for k, v in expiry.INSTRUMENTS.items() if v[3] == "MCX"]
         self.assertEqual(mcx, ["gold", "goldm", "silver", "silverm", "crude", "crudem", "natgas"])
-        self.assertEqual(expiry.NSE_COMMODITY, ("nsegold", "nsegoldm", "nsecrude", "nsenatgas"))
+        self.assertEqual(expiry.NSE_COMMODITY, ("nsecrude", "nsenatgas"))
 
     def test_nse_commodities_use_nse_holidays_and_are_estimates(self):
         today = date(2026, 11, 1)
-        first = lambda key: expiry.upcoming(key, today, 1, DATA)[0]
-        self.assertEqual(first("nsegold")["date"], date(2026, 11, 5))
-        self.assertEqual(first("nsegoldm")["date"], date(2026, 11, 26))      # 3rd last business day
+        first = lambda key, data=DATA: expiry.upcoming(key, today, 1, data)[0]
         self.assertEqual(first("nsecrude")["date"], date(2026, 11, 19))
         self.assertEqual(first("nsenatgas")["date"], date(2026, 11, 25))
         self.assertTrue(all(first(k)["est"] for k in expiry.NSE_COMMODITY))
-        data = dict(DATA, nse_holidays=["2026-11-05"], mcx_holidays=[])
-        self.assertEqual(expiry.upcoming("nsegold", today, 1, data)[0]["date"], date(2026, 11, 4))
+        data = dict(DATA, nse_holidays=["2026-11-19"], mcx_holidays=[])
+        self.assertEqual(first("nsecrude", data)["date"], date(2026, 11, 18))
 
     def test_typed_nse_names_do_not_swallow_mcx_ones(self):
-        self.assertEqual(expiry.find_instruments("nse gold mini and gold"), ["nsegoldm", "gold"])
         self.assertEqual(expiry.find_instruments("nse crude, crude mini, nse nat gas"),
                          ["nsecrude", "nsenatgas", "crudem"])
         for key in expiry.NSE_COMMODITY:
@@ -198,6 +196,62 @@ class Layout(unittest.TestCase):
         for r in rows[:-1]:
             groups = {"NSE" if ("Nifty" in t or t.startswith(("🌱", "🚀", "🧾"))) else "X" for t in r}
             self.assertEqual(len(groups), 1, r)
+
+
+class ListedCalendar(unittest.TestCase):
+    """Exact dates copied from the Groww commodities calendar (Nov 2026 to Jan 2027)."""
+    def get(self, key, kind, today=date(2026, 11, 11)):
+        rows = [r for r in expiry.upcoming(key, today, 40) if expiry.category(r["kind"]) == kind]
+        return [(r["date"].isoformat(), r["est"]) for r in rows][:3]
+
+    def test_mcx_futures(self):
+        self.assertEqual(self.get("crude", "Futures"), [("2026-11-19", False), ("2026-12-18", False), ("2027-01-19", False)])
+        self.assertEqual(self.get("crudem", "Futures")[:3], self.get("crude", "Futures"))
+        self.assertEqual(self.get("natgas", "Futures"), [("2026-11-24", False), ("2026-12-28", False), ("2027-01-25", False)])
+        self.assertEqual(self.get("goldm", "Futures")[:2], [("2026-12-04", False), ("2027-01-05", False)])
+        self.assertEqual(self.get("gold", "Futures")[0], ("2026-12-04", False))
+        self.assertEqual(self.get("silver", "Futures")[0], ("2026-12-04", False))
+
+    def test_silver_mini_futures_after_november_are_estimates(self):
+        self.assertEqual(self.get("silverm", "Futures"), [("2026-11-30", False), ("2026-12-31", True), ("2027-01-29", True)])
+
+    def test_mcx_options(self):
+        self.assertEqual(self.get("crude", "Options"), [("2026-11-17", False), ("2026-12-16", False), ("2027-01-15", False)])
+        self.assertEqual(self.get("natgas", "Options"), [("2026-11-20", False), ("2026-12-23", False), ("2027-01-21", False)])
+        self.assertEqual(self.get("gold", "Options"), [("2026-11-27", False), ("2026-12-31", False), ("2027-01-29", False)])
+        self.assertEqual(self.get("goldm", "Options"), [("2026-11-27", False), ("2026-12-29", False), ("2027-01-29", False)])
+        self.assertEqual(self.get("silver", "Options"), [("2026-11-27", False), ("2026-12-28", False), ("2027-01-25", False)])
+        self.assertEqual(self.get("silverm", "Options"), [("2026-11-23", False), ("2026-12-28", False), ("2027-01-25", False)])
+
+    def test_options_rule_reproduces_every_listed_crude_and_natgas_date(self):
+        data = expiry.load_data()
+        bare = dict(data, expiries=[r for r in data["expiries"] if r["t"] == "Futures"])
+        for key in ("crude", "crudem", "natgas"):
+            listed = [(r["d"]) for r in data["expiries"] if r["i"] == key and r["t"] == "Options"]
+            guessed = [r["date"].isoformat() for r in expiry.upcoming(key, date(2026, 11, 11), 40, bare)
+                       if r["kind"] == "Options"][:3]
+            self.assertEqual(guessed, listed, key)
+
+    def test_options_estimates_continue_past_the_listed_months_and_are_marked(self):
+        rows = [r for r in expiry.upcoming("crude", date(2027, 1, 20), 20) if r["kind"] == "Options"]
+        self.assertTrue(rows)
+        self.assertTrue(all(r["est"] for r in rows))
+        self.assertEqual(rows[0]["date"], date(2027, 2, 17))             # 19 Feb futures, 2 trading days earlier
+        self.assertEqual([r for r in expiry.upcoming("gold", date(2027, 2, 1), 20) if r["kind"] == "Options"], [])
+
+    def test_nse_commodities(self):
+        self.assertEqual(self.get("nsecrude", "Futures"), [("2026-11-19", False), ("2026-12-18", False), ("2027-01-19", False)])
+        self.assertEqual(self.get("nsenatgas", "Futures"), [("2026-11-24", False), ("2026-12-28", False), ("2027-01-25", False)])
+        self.assertEqual(self.get("nsecrude", "Options"), [("2026-12-09", False), ("2027-01-08", False)])
+        self.assertEqual(self.get("nsenatgas", "Options"), [("2026-11-18", False), ("2026-12-21", False), ("2027-01-19", False)])
+
+    def test_nse_has_no_gold_or_silver_here(self):
+        for gone in ("nsegold", "nsegoldm", "natgasm", "copper", "zinc"):
+            self.assertNotIn(gone, expiry.INSTRUMENTS)
+
+    def test_republic_day_2027_moves_the_january_monthly(self):
+        row = [r for r in expiry.upcoming("banknifty", date(2027, 1, 1), 1)][0]
+        self.assertEqual((row["date"], row["est"]), (date(2027, 1, 25), True))   # 2027 holidays not all known
 
 
 class Words(unittest.TestCase):
