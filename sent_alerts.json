@@ -160,7 +160,7 @@
     "detected": true
   },
   "GBP|GDP m/m|2026-11-12T07:00:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
@@ -190,7 +190,7 @@
     "detected": true
   },
   "GBP|Prelim GDP q/q|2026-11-12T07:00:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
