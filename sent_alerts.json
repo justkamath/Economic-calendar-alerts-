@@ -14,17 +14,7 @@
     "30m": false,
     "detected": true
   },
-  "CHF|Foreign Currency Reserves|2026-11-06T08:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CHF|Gov Board Member Tschudin Speaks|2026-11-06T11:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CHF|SECO Consumer Climate|2026-11-06T08:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -54,16 +44,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|French Trade Balance|2026-11-06T07:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|German Industrial Production m/m|2026-11-06T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|Retail Sales m/m|2026-11-06T10:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -82,11 +62,6 @@
   "GBP|GDP m/m|2026-11-12T07:00:00+00:00": {
     "1h": true,
     "30m": true,
-    "detected": true
-  },
-  "GBP|Lloyds HPI m/m|2026-11-06T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
     "detected": true
   },
   "GBP|MPC Member Pill Speaks|2026-11-06T12:15:00+00:00": {
