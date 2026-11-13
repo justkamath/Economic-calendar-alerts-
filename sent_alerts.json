@@ -1,9 +1,4 @@
 {
-  "CAD|Annual Budget Release|2026-11-05T21:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "CAD|Employment Change|2026-11-06T13:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -105,11 +100,6 @@
     "detected": true
   },
   "JPY|Adjusted Current Account|2026-11-09T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Average Cash Earnings y/y|2026-11-05T23:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -228,9 +218,6 @@
     "1h": false,
     "30m": false,
     "detected": true
-  },
-  "summary|daily|2026-11-06T00:00:00+00:00": {
-    "sent": true
   },
   "summary|daily|2026-11-07T00:00:00+00:00": {
     "sent": true
