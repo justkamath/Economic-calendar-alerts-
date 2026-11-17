@@ -164,27 +164,12 @@
     "30m": false,
     "detected": true
   },
-  "JPY|Adjusted Current Account|2026-11-09T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|BoJ Board Member Takata Speech|2026-11-16T04:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
-  "JPY|BoJ Summary of Opinions|2026-11-09T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|CFTC JPY Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Current Account n.s.a.|2026-11-09T23:50:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -200,16 +185,6 @@
     "detected": true
   },
   "JPY|GDP y/y|2026-11-15T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Household Spending m/m|2026-11-09T23:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Household Spending y/y|2026-11-09T23:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -353,9 +328,6 @@
     "1h": false,
     "30m": false,
     "detected": true
-  },
-  "summary|daily|2026-11-10T00:00:00+00:00": {
-    "sent": true
   },
   "summary|daily|2026-11-11T00:00:00+00:00": {
     "sent": true
