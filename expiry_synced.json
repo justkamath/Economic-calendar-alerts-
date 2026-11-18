@@ -1,14 +1,8 @@
 {
- "synced_at": "2026-11-17T19:20:03.464731+00:00",
- "attempted_at": "2026-11-17T19:20:03.464731+00:00",
+ "synced_at": "2026-11-18T23:55:19.443036+00:00",
+ "attempted_at": "2026-11-18T23:55:19.443036+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
-  {
-   "i": "nsenatgas",
-   "t": "Options",
-   "d": "2026-11-18",
-   "listed": true
-  },
   {
    "i": "crude",
    "t": "Futures",
@@ -193,6 +187,12 @@
    "i": "nsenatgas",
    "t": "Options",
    "d": "2026-12-21",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Weekly options",
+   "d": "2026-12-22",
    "listed": true
   },
   {

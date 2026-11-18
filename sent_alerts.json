@@ -6,7 +6,7 @@
   },
   "AUD|Employment Change|2026-11-19T00:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "AUD|RBA Gov Bullock Speaks|2026-11-16T22:50:00+00:00": {
@@ -16,7 +16,7 @@
   },
   "AUD|Unemployment Rate|2026-11-19T00:30:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "AUD|Wage Price Index q/q|2026-11-18T00:30:00+00:00": {
