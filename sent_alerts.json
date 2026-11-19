@@ -144,16 +144,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|GDP m/m|2026-11-12T07:00:00+00:00": {
-    "1h": true,
-    "30m": true,
-    "detected": true
-  },
-  "GBP|Prelim GDP q/q|2026-11-12T07:00:00+00:00": {
-    "1h": true,
-    "30m": true,
-    "detected": true
-  },
   "GBP|Retail Sales m/m|2026-11-20T07:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -296,11 +286,6 @@
   },
   "USD|Revised UoM Inflation Expectations|2026-11-20T15:00:00+00:00": {
     "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Unemployment Claims|2026-11-12T13:30:00+00:00": {
-    "1h": true,
     "30m": false,
     "detected": true
   },
