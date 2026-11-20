@@ -1,26 +1,8 @@
 {
- "synced_at": "2026-11-18T23:55:19.443036+00:00",
- "attempted_at": "2026-11-18T23:55:19.443036+00:00",
+ "synced_at": "2026-11-20T03:24:27.631900+00:00",
+ "attempted_at": "2026-11-20T03:24:27.631900+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
-  {
-   "i": "crude",
-   "t": "Futures",
-   "d": "2026-11-19",
-   "listed": true
-  },
-  {
-   "i": "crudem",
-   "t": "Futures",
-   "d": "2026-11-19",
-   "listed": true
-  },
-  {
-   "i": "nsecrude",
-   "t": "Futures",
-   "d": "2026-11-19",
-   "listed": true
-  },
   {
    "i": "natgas",
    "t": "Options",
@@ -424,6 +406,24 @@
    "listed": true
   },
   {
+   "i": "nsecrude",
+   "t": "Options",
+   "d": "2027-02-10",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Options",
+   "d": "2027-02-17",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Options",
+   "d": "2027-02-17",
+   "listed": true
+  },
+  {
    "i": "crude",
    "t": "Futures",
    "d": "2027-02-19",
@@ -661,6 +661,24 @@
    "i": "silver",
    "t": "Futures",
    "d": "2027-05-05",
+   "listed": true
+  },
+  {
+   "i": "crude",
+   "t": "Futures",
+   "d": "2027-05-19",
+   "listed": true
+  },
+  {
+   "i": "crudem",
+   "t": "Futures",
+   "d": "2027-05-19",
+   "listed": true
+  },
+  {
+   "i": "nsecrude",
+   "t": "Futures",
+   "d": "2027-05-19",
    "listed": true
   },
   {
