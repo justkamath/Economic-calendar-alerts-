@@ -1,14 +1,8 @@
 {
- "synced_at": "2026-11-20T03:24:27.631900+00:00",
- "attempted_at": "2026-11-20T03:24:27.631900+00:00",
+ "synced_at": "2026-11-21T07:55:01.893568+00:00",
+ "attempted_at": "2026-11-21T07:55:01.893568+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
-  {
-   "i": "natgas",
-   "t": "Options",
-   "d": "2026-11-20",
-   "listed": true
-  },
   {
    "i": "banknifty",
    "t": "Monthly futures & options",
