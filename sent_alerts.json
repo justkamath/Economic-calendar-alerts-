@@ -1,9 +1,4 @@
 {
-  "AUD|CFTC AUD Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|CPI m/m|2026-11-25T00:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -50,41 +45,6 @@
     "detected": true
   },
   "CAD|BoC Governor Macklem Speech|2026-11-24T23:19:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|CPI m/m|2026-11-16T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|Common CPI y/y|2026-11-16T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|Core CPI m/m|2026-11-16T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|Core CPI y/y|2026-11-16T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|Median CPI y/y|2026-11-16T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "CAD|Trimmed CPI y/y|2026-11-16T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|CFTC EUR Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -219,11 +179,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|CFTC GBP Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "GBP|CPI y/y|2026-11-18T07:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -254,11 +209,6 @@
     "30m": false,
     "detected": true
   },
-  "JPY|CFTC JPY Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|Tokyo Core CPI y/y|2026-11-26T23:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -284,19 +234,9 @@
     "30m": false,
     "detected": true
   },
-  "NZD|RBNZ Financial Stability Report|2026-11-16T20:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "NZD|RBNZ Gov Breman Speaks|2026-11-18T18:00:00+00:00": {
     "1h": false,
     "30m": true,
-    "detected": true
-  },
-  "NZD|RBNZ Governor Orr Speech|2026-11-16T22:00:00+00:00": {
-    "1h": false,
-    "30m": false,
     "detected": true
   },
   "NZD|Retail Sales q/q|2026-11-22T21:45:00+00:00": {
@@ -320,26 +260,6 @@
     "detected": true
   },
   "USD|CB Consumer Confidence Index|2026-11-24T15:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|CFTC Crude Oil Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|CFTC Gold Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|CFTC Nasdaq 100 Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|CFTC S&P 500 Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -374,22 +294,12 @@
     "30m": false,
     "detected": true
   },
-  "USD|Fed Chairman Warsh Speaks|2026-11-16T17:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Flash Manufacturing PMI|2026-11-23T14:45:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
   "USD|Flash Services PMI|2026-11-23T14:45:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|NY Fed Empire State Manufacturing Index|2026-11-16T13:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
