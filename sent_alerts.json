@@ -84,11 +84,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|Bbk Executive Board Member Mauderer Speech|2026-11-16T09:15:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|CFTC EUR Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -165,11 +160,6 @@
     "detected": true
   },
   "EUR|Ifo Current Business Situation|2026-11-24T09:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "EUR|Industrial Production m/m|2026-11-16T10:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -385,11 +375,6 @@
     "detected": true
   },
   "USD|Fed Chairman Warsh Speaks|2026-11-16T17:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Fed Vice Chair for Supervision Barr Speech|2026-11-16T10:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
