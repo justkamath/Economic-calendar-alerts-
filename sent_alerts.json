@@ -299,27 +299,7 @@
     "30m": false,
     "detected": true
   },
-  "JPY|GDP Price Index y/y|2026-11-15T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|GDP q/q|2026-11-15T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|GDP y/y|2026-11-15T23:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|Industrial Production m/m|2026-11-16T04:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Net Exports Contribution to GDP q/q|2026-11-15T23:50:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -513,9 +493,6 @@
     "1h": false,
     "30m": false,
     "detected": true
-  },
-  "summary|daily|2026-11-16T00:00:00+00:00": {
-    "sent": true
   },
   "summary|daily|2026-11-17T00:00:00+00:00": {
     "sent": true
