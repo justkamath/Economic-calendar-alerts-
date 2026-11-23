@@ -125,12 +125,12 @@
     "detected": true
   },
   "EUR|French Flash Manufacturing PMI|2026-11-23T08:15:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
   "EUR|French Flash Services PMI|2026-11-23T08:15:00+00:00": {
-    "1h": false,
+    "1h": true,
     "30m": false,
     "detected": true
   },
@@ -254,11 +254,6 @@
     "30m": false,
     "detected": true
   },
-  "JPY|BoJ Board Member Takata Speech|2026-11-16T04:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "JPY|BoJ Trimmed Mean Core CPI y/y|2026-11-25T05:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -270,11 +265,6 @@
     "detected": true
   },
   "JPY|CFTC JPY Non-Commercial Net Positions|2026-11-16T20:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "JPY|Industrial Production m/m|2026-11-16T04:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
