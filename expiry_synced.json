@@ -1,44 +1,8 @@
 {
- "synced_at": "2026-11-23T10:25:22.317106+00:00",
- "attempted_at": "2026-11-23T10:25:22.317106+00:00",
+ "synced_at": "2026-11-24T16:55:03.315257+00:00",
+ "attempted_at": "2026-11-24T16:55:03.315257+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
-  {
-   "i": "banknifty",
-   "t": "Monthly futures & options",
-   "d": "2026-11-23",
-   "listed": true
-  },
-  {
-   "i": "finnifty",
-   "t": "Monthly futures & options",
-   "d": "2026-11-23",
-   "listed": true
-  },
-  {
-   "i": "midcap",
-   "t": "Monthly futures & options",
-   "d": "2026-11-23",
-   "listed": true
-  },
-  {
-   "i": "next50",
-   "t": "Monthly futures & options",
-   "d": "2026-11-23",
-   "listed": true
-  },
-  {
-   "i": "nifty",
-   "t": "Monthly futures & options",
-   "d": "2026-11-23",
-   "listed": true
-  },
-  {
-   "i": "silverm",
-   "t": "Options",
-   "d": "2026-11-23",
-   "listed": true
-  },
   {
    "i": "natgas",
    "t": "Futures",
@@ -442,8 +406,38 @@
    "listed": true
   },
   {
+   "i": "banknifty",
+   "t": "Monthly futures & options",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "finnifty",
+   "t": "Monthly futures & options",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "midcap",
+   "t": "Monthly futures & options",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
    "i": "natgas",
    "t": "Futures",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "next50",
+   "t": "Monthly futures & options",
+   "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "nifty",
+   "t": "Monthly futures & options",
    "d": "2027-02-23",
    "listed": true
   },

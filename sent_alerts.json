@@ -36,7 +36,7 @@
   },
   "CAD|BOC Gov Macklem Speaks|2026-11-24T17:25:00+00:00": {
     "1h": false,
-    "30m": false,
+    "30m": true,
     "detected": true
   },
   "CAD|BoC Governor Macklem Speech|2026-11-24T23:19:00+00:00": {
@@ -154,11 +154,6 @@
     "30m": false,
     "detected": true
   },
-  "GBP|Average Earnings Index 3m/y|2026-11-17T07:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "GBP|BOE Gov Bailey Speaks|2026-11-18T07:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -259,11 +254,6 @@
     "30m": false,
     "detected": true
   },
-  "USD|Core Retail Sales m/m|2026-11-17T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "USD|Durable Goods Orders m/m|2026-11-25T13:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -300,11 +290,6 @@
     "detected": true
   },
   "USD|Prelim GDP q/q|2026-11-25T13:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "USD|Retail Sales m/m|2026-11-17T13:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
