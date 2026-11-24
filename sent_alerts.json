@@ -19,11 +19,6 @@
     "30m": true,
     "detected": true
   },
-  "AUD|RBA Gov Bullock Speaks|2026-11-16T22:50:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "AUD|Trimmed Mean CPI m/m|2026-11-25T00:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -224,16 +219,6 @@
     "30m": false,
     "detected": true
   },
-  "NZD|Inflation Expectations q/q|2026-11-17T02:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "NZD|RBNZ 2-Year Inflation Expectations|2026-11-17T02:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "NZD|RBNZ Gov Breman Speaks|2026-11-18T18:00:00+00:00": {
     "1h": false,
     "30m": true,
@@ -354,9 +339,6 @@
     "30m": false,
     "detected": true
   },
-  "summary|daily|2026-11-17T00:00:00+00:00": {
-    "sent": true
-  },
   "summary|daily|2026-11-18T00:00:00+00:00": {
     "sent": true
   },
@@ -373,6 +355,9 @@
     "sent": true
   },
   "summary|daily|2026-11-23T00:00:00+00:00": {
+    "sent": true
+  },
+  "summary|daily|2026-11-24T00:00:00+00:00": {
     "sent": true
   }
 }
