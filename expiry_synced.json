@@ -1,20 +1,8 @@
 {
- "synced_at": "2026-11-24T16:55:03.315257+00:00",
- "attempted_at": "2026-11-24T16:55:03.315257+00:00",
+ "synced_at": "2026-11-25T19:37:24.203285+00:00",
+ "attempted_at": "2026-11-25T19:37:24.203285+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
-  {
-   "i": "natgas",
-   "t": "Futures",
-   "d": "2026-11-24",
-   "listed": true
-  },
-  {
-   "i": "nsenatgas",
-   "t": "Futures",
-   "d": "2026-11-24",
-   "listed": true
-  },
   {
    "i": "gold",
    "t": "Options",
@@ -382,6 +370,12 @@
    "listed": true
   },
   {
+   "i": "nsenatgas",
+   "t": "Options",
+   "d": "2027-02-17",
+   "listed": true
+  },
+  {
    "i": "crude",
    "t": "Futures",
    "d": "2027-02-19",
@@ -667,6 +661,12 @@
    "i": "nsecrude",
    "t": "Futures",
    "d": "2027-05-19",
+   "listed": true
+  },
+  {
+   "i": "nsenatgas",
+   "t": "Futures",
+   "d": "2027-05-25",
    "listed": true
   },
   {
