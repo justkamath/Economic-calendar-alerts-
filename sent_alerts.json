@@ -44,11 +44,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|ECB Financial Stability Review|2026-11-18T09:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|ECB Non-monetary Policy Meeting|2026-11-25T08:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -149,22 +144,12 @@
     "30m": false,
     "detected": true
   },
-  "GBP|BOE Gov Bailey Speaks|2026-11-18T07:30:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "GBP|BOE Gov Bailey Speaks|2026-11-18T15:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
   },
   "GBP|CBI Distributive Trades|2026-11-24T11:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "GBP|CPI y/y|2026-11-18T07:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
