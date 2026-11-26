@@ -14,19 +14,9 @@
     "30m": false,
     "detected": true
   },
-  "AUD|Employment Change|2026-11-19T00:30:00+00:00": {
-    "1h": false,
-    "30m": true,
-    "detected": true
-  },
   "AUD|Trimmed Mean CPI m/m|2026-11-25T00:30:00+00:00": {
     "1h": false,
     "30m": false,
-    "detected": true
-  },
-  "AUD|Unemployment Rate|2026-11-19T00:30:00+00:00": {
-    "1h": false,
-    "30m": true,
     "detected": true
   },
   "CAD|BOC Gov Macklem Speaks|2026-11-24T17:25:00+00:00": {
@@ -283,9 +273,6 @@
     "1h": false,
     "30m": false,
     "detected": true
-  },
-  "summary|daily|2026-11-19T00:00:00+00:00": {
-    "sent": true
   },
   "summary|daily|2026-11-20T00:00:00+00:00": {
     "sent": true
