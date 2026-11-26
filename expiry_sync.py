@@ -17,6 +17,7 @@ import expiry
 
 URLS = ("https://assets.upstox.com/market-quote/instruments/exchange/MCX.json.gz",
         "https://assets.upstox.com/market-quote/instruments/exchange/NSE.json.gz")
+OPTIONAL_URLS = ("https://assets.upstox.com/market-quote/instruments/exchange/BSE.json.gz",)  # Sensex, Bankex
 MAX_DOWNLOAD_BYTES = 120 * 1024 * 1024
 SYNC_EVERY = timedelta(hours=int(os.environ.get("EXPIRY_SYNC_HOURS", "24") or 24))
 RETRY_AFTER_FAILURE = timedelta(hours=6)
@@ -30,7 +31,9 @@ MCX_NAMES = {"GOLD": "gold", "GOLDM": "goldm", "SILVER": "silver", "SILVERM": "s
 NSE_COMMODITY_NAMES = {"CRUDEOIL": "nsecrude", "NATURALGAS": "nsenatgas"}
 NSE_INDEX_NAMES = {"NIFTY": "nifty", "BANKNIFTY": "banknifty", "FINNIFTY": "finnifty",
                    "MIDCPNIFTY": "midcap", "NIFTYNXT50": "next50"}
-SEGMENTS = {"MCX_FO": MCX_NAMES, "NSE_COM": NSE_COMMODITY_NAMES, "NSE_FO": NSE_INDEX_NAMES}
+BSE_INDEX_NAMES = {"SENSEX": "sensex", "BANKEX": "bankex"}
+SEGMENTS = {"MCX_FO": MCX_NAMES, "NSE_COM": NSE_COMMODITY_NAMES, "NSE_FO": NSE_INDEX_NAMES,
+            "BSE_FO": BSE_INDEX_NAMES}
 NAME_FIELDS = ("underlying_symbol", "name", "asset_symbol")
 
 
@@ -49,10 +52,14 @@ def _instrument(record, names):
     return None
 
 
-def _kind(segment, record):
+def _kind(segment, record, key=None, day=None):
     options = record.get("instrument_type") in ("CE", "PE")
     if segment == "NSE_FO":
         return "Weekly options" if options and record.get("weekly") else "Monthly futures & options"
+    if segment == "BSE_FO":      # Sensex has weekly Thursdays; the last Thursday is the monthly one
+        weekly = (options and key == "sensex" and day is not None
+                  and (day + timedelta(days=7)).month == day.month)
+        return "Weekly options" if weekly else "Monthly futures & options"
     return "Options" if options else "Futures"
 
 
@@ -73,7 +80,7 @@ def parse(records, today):
             continue
         if not key or not (today <= day <= last):
             continue
-        kind = _kind(record["segment"], record)
+        kind = _kind(record["segment"], record, key, day)
         mark = (key, kind, day)
         if mark not in seen:
             seen.add(mark)
@@ -92,10 +99,16 @@ def download(url, timeout=120):
 
 def fetch_records(fetch=download):
     records = []
-    for url in URLS:
-        data = json.loads(gzip.decompress(fetch(url)))
-        if not isinstance(data, list):
-            raise ValueError("unexpected file format")
+    for url in URLS + OPTIONAL_URLS:
+        try:
+            data = json.loads(gzip.decompress(fetch(url)))
+            if not isinstance(data, list):
+                raise ValueError("unexpected file format")
+        except Exception as e:
+            if url in OPTIONAL_URLS:      # a bad BSE file must not stop NSE and MCX refreshing
+                print("Expiry sync: BSE file skipped:", type(e).__name__)
+                continue
+            raise
         records.extend(data)
     return records
 
@@ -120,7 +133,8 @@ def sync(now, fetch=download, path=None):
     today = expiry.today_ist(now)
     rows = parse(fetch_records(fetch), today)
     covered = sorted({r["i"] for r in rows})
-    wanted = set(MCX_NAMES.values()) | set(NSE_COMMODITY_NAMES.values()) | set(NSE_INDEX_NAMES.values())
+    wanted = set(MCX_NAMES.values()) | set(NSE_COMMODITY_NAMES.values()) | set(NSE_INDEX_NAMES.values()) \
+        | set(BSE_INDEX_NAMES.values())
     missing = sorted(wanted - set(covered))
     if len(covered) < 3:        # a file that mentions almost nothing is a broken file
         raise ValueError(f"only {len(covered)} of our instruments found in the download")
