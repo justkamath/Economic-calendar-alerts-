@@ -298,27 +298,29 @@ class Bot(unittest.TestCase):
 
     def test_picker_toggles_with_ticks_on_buttons_and_saves(self):
         reply, kb = self.tap(commands.BTN_EXPIRY)
-        self.assertIn("All expiries", reply)                  # nothing saved yet: show everything
+        self.assertIn("All expiries", reply)                  # always the full list, no extra tap
         self.assertTrue(kb.get("is_persistent"))
         reply, kb = self.tap("📈 Nifty 50")
-        self.assertIn("is in", reply)
-        self.assertIn("Your expiries", reply)                 # the saved list, not just this one
-        self.tap("🥇 Gold")
-        reply, _ = self.tap("🥇 Gold")                        # dropped again
-        self.assertNotIn("Gold", reply.split("\n\n", 1)[1].split("<i>")[0])
-        self.tap("🥇 Gold")
-        reply, _ = self.tap(commands.BTN_EXPIRY)              # opens straight onto the saved list
-        self.assertIn("Your expiries", reply)
-        self.assertLess(reply.index("Nifty 50"), reply.index("Gold"))
-        self.tap("🥇 Gold")
+        self.assertIn("ping is on", reply)
+        self.assertIn("All expiries", reply)                  # the full list again, picks only drive pings
+        self.assertIn("Evening-before ping:</b> Nifty 50", reply)
         self.assertIn("📈 Nifty 50 ✓", self.names(kb))
         self.assertEqual(self.store.get("7")["exp"], ["nifty"])
         self.tap("🥇 Gold")
         self.tap("📈 Nifty 50 ✓")
         self.assertEqual(self.store.get("7")["exp"], ["gold"])
-        self.assertNotIn("✓", self.tap(commands.BTN_EXPIRY)[0])
+        reply = self.tap(commands.BTN_EXPIRY)[0]
+        self.assertIn("Crude", reply)                         # not only the picks
+        self.assertIn("Evening-before ping:</b> Gold", reply)
+        self.assertNotIn("✓", reply)
         self.tap("🥇 Gold")
         self.assertNotIn("exp", self.store.get("7"))
+
+    def test_saved_crude_pick_does_not_hide_the_rest(self):
+        self.tap("🛢️ Crude")
+        reply = self.tap(commands.BTN_EXPIRY)[0]
+        for name in ("Gold", "Gold Mini", "Silver", "Silver Mini", "Crude Mini", "Nat Gas", "Nifty 50"):
+            self.assertIn(name, reply)
 
     def test_toggle_keeps_level_and_currencies(self):
         self.tap("/level medium")
