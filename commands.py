@@ -308,18 +308,18 @@ def respond(chat_id, text, audience):
         return (f"{note}\n\nRight now: {_currencies_text(current or None)}\n\n"
                 "<i>Kicks in within 5 min.</i>"), keys("currencies")
 
+    def _all_card(picks, today):
+        """Everything, in the fixed order. Picks only decide who gets the evening-before ping."""
+        names = ", ".join(expiry.INSTRUMENTS[k][1] for k in expiry.ORDER if k in picks)
+        foot = (f"🔔 <b>Evening-before ping:</b> {names}" if picks
+                else "🔔 <i>Tap the ones you trade to get a ping the evening before.</i>")
+        return expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries") + "\n\n" + foot
+
     if cmd == "/expiry":
         today = expiry.today_ist(datetime.now(cfg.UTC))
-        if args == ["all"]:
-            return expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries"), keys("none")
-        if args:
+        if args and args != ["all"]:
             return expiry.expiry_card(args, today), keys("none")
-        picks = _picks()
-        if not picks:                     # nothing saved yet: show everything, picker below
-            return (expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries")
-                    + "\n\n<i>Tap the ones you trade and I'll remember them.</i>"), keys("expiry")
-        return (expiry.expiry_card(picks, today, title="📅 Your expiries")
-                + "\n\n<i>Tap an instrument to add or drop it.</i>"), keys("expiry")
+        return _all_card(_picks(), today), keys("expiry" if args != ["all"] else "none")
 
     if cmd == "/xtoggle":
         key = args[0]
@@ -328,16 +328,14 @@ def respond(chat_id, text, audience):
             store.update(chat_id, level=audience.default_level, currencies=None)  # keep owner defaults
         if key in picks:
             picks.remove(key)
-            note = f"➖ {expiry.label(key)} is out"
+            note = f"➖ {expiry.label(key)} ping is off"
         else:
             picks.append(key)
-            note = f"➕ {expiry.label(key)} is in"
+            note = f"➕ {expiry.label(key)} ping is on"
         picks.sort(key=expiry.ORDER.index)
         store.update(chat_id, expiry=picks)
         today = expiry.today_ist(datetime.now(cfg.UTC))
-        body = expiry.expiry_card(picks, today, title="📅 Your expiries") if picks else ""
-        return (f"{note}\n\n{body}\n\n" if body else f"{note}\n\n") + \
-            "<i>Saved. You get a heads-up the evening before.</i>", keys("expiry")
+        return f"{note}\n\n{_all_card(picks, today)}", keys("expiry")
 
     if cmd == "/menu":
         return "🧰 Here are your buttons 👇", keys()
