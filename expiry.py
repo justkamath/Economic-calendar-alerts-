@@ -23,6 +23,8 @@ INSTRUMENTS = {
     "midcap": ("🌱", "Midcap", "Midcap Nifty", "NSE"),
     "next50": ("🚀", "Next 50", "Nifty Next 50", "NSE"),
     "stockfo": ("🧾", "Stock F&O", "Stock futures & options", "NSE"),
+    "sensex": ("🏛️", "Sensex", "Sensex", "BSE"),
+    "bankex": ("💰", "Bankex", "Bankex", "BSE"),
     "nsecrude": ("🛢️", "NSE Crude", "NSE Crude oil (WTI)", "NSE"),
     "nsenatgas": ("🔥", "NSE Nat Gas", "NSE Natural gas", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
@@ -35,11 +37,14 @@ INSTRUMENTS = {
 }
 ORDER = tuple(INSTRUMENTS)
 NSE_COMMODITY = ("nsecrude", "nsenatgas")
-INDEX_KEYS = tuple(k for k in ORDER if INSTRUMENTS[k][3] == "NSE" and k not in NSE_COMMODITY)
+NSE_INDEX_KEYS = tuple(k for k in ORDER if INSTRUMENTS[k][3] == "NSE" and k not in NSE_COMMODITY)
+BSE_KEYS = ("sensex", "bankex")
+INDEX_KEYS = NSE_INDEX_KEYS + BSE_KEYS
 MCX_NOTE = "Confirm MCX dates on mcxindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
     ("nsecrude", r"nse (wti )?crude( ?oil)?|\bwti\b"), ("nsenatgas", r"nse (natural ?gas|nat ?gas|natgas)"),
+    ("sensex", r"sensex"), ("bankex", r"bankex"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
     ("next50", r"next ?50|nifty ?next"), ("stockfo", r"stocks?\b"),
     ("nifty", r"nifty"),
@@ -153,17 +158,18 @@ def _nse(key, today, data):
             seen.add((day, kind))
             out.append({"date": day, "kind": kind, "est": _estimated(day, data)})
 
-    for step in range(0, 4):      # monthly: last Tuesday of the month
-        add(_last_weekday_of_month(_month_start(today, step), 1), "Monthly futures & options")
+    weekday = 3 if key in BSE_KEYS else 1     # BSE: Thursday, NSE: Tuesday
+    for step in range(0, 4):      # monthly: last Tuesday (NSE) or Thursday (BSE) of the month
+        add(_last_weekday_of_month(_month_start(today, step), weekday), "Monthly futures & options")
     monthly = {e["date"] for e in out}
-    if key == "nifty":            # weekly options: every Tuesday
-        tuesday = today + timedelta(days=(1 - today.weekday()) % 7)
+    if key in ("nifty", "sensex"):            # weekly options: every Tuesday (Nifty) / Thursday (Sensex)
+        first = today + timedelta(days=(weekday - today.weekday()) % 7)
         for week in range(0, 8):
-            raw = tuesday + timedelta(days=7 * week)
+            raw = first + timedelta(days=7 * week)
             day = previous_trading_day(raw, holidays)
             if day >= today and day not in monthly:
                 out.append({"date": day, "kind": "Weekly options", "est": _estimated(day, data)})
-    elif key not in ("banknifty", "finnifty", "midcap", "next50", "stockfo"):
+    elif key not in ("banknifty", "finnifty", "midcap", "next50", "stockfo", "bankex"):
         return []
     listed = [(d, k) for d, k in listed_rows(data, key) if d >= today]
     if listed:                         # exact dates win; rule dates inside their window are dropped
@@ -238,7 +244,8 @@ def _day_text(day):
 # Fixed order inside each set: Gold, Gold Mini, Silver, Silver Mini, Crude, Crude Mini, Nat Gas.
 # Two sets: indices and commodities. Each instrument is a small block with its
 # exchange tag and one arrow line per kind of expiry (same look as the daily summary).
-SETS = (("📊 Indices · NSE", INDEX_KEYS),
+SETS = (("📊 Indices · NSE", NSE_INDEX_KEYS),
+        ("📊 Indices · BSE", BSE_KEYS),
         ("🪙 Commodities · NSE", NSE_COMMODITY),
         ("🪙 Commodities · MCX", tuple(k for k in ORDER if INSTRUMENTS[k][3] == "MCX")))
 KINDS = ("Weekly", "Monthly", "Options", "Futures")
