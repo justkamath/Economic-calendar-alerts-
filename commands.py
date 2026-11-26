@@ -315,11 +315,9 @@ def respond(chat_id, text, audience):
         if args:
             return expiry.expiry_card(args, today), keys("none")
         picks = _picks()
-        if not picks:
-            return ("<b>📅 Pick your expiries</b>\n\n"
-                    "Tap the instruments you trade. You'll get their dates here, "
-                    "plus one heads-up the evening before each expiry.\n\n"
-                    "<i>Or ask: when is nifty expiry?</i>"), keys("expiry")
+        if not picks:                     # nothing saved yet: show everything, picker below
+            return (expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries")
+                    + "\n\n<i>Tap the ones you trade and I'll remember them.</i>"), keys("expiry")
         return (expiry.expiry_card(picks, today, title="📅 Your expiries")
                 + "\n\n<i>Tap an instrument to add or drop it.</i>"), keys("expiry")
 
@@ -337,9 +335,9 @@ def respond(chat_id, text, audience):
         picks.sort(key=expiry.ORDER.index)
         store.update(chat_id, expiry=picks)
         today = expiry.today_ist(datetime.now(cfg.UTC))
-        body = expiry.expiry_card([key], today, title="📅 Next dates") if key in picks else ""
+        body = expiry.expiry_card(picks, today, title="📅 Your expiries") if picks else ""
         return (f"{note}\n\n{body}\n\n" if body else f"{note}\n\n") + \
-            "<i>You get a heads-up the evening before.</i>", keys("expiry")
+            "<i>Saved. You get a heads-up the evening before.</i>", keys("expiry")
 
     if cmd == "/menu":
         return "🧰 Here are your buttons 👇", keys()
