@@ -158,11 +158,18 @@ class Layout(unittest.TestCase):
         self.assertEqual(len(headers), len(expiry.ORDER))     # one block per instrument
         self.assertLess(len(card), 3500)
 
-    def test_blocks_are_sorted_soonest_first_and_title_has_the_date(self):
-        card = expiry.expiry_card(["gold", "crude", "natgas"], date(2026, 11, 11))
+    def test_blocks_keep_a_fixed_order_not_by_date_and_title_has_the_date(self):
+        card = expiry.expiry_card(["natgas", "crude", "silverm", "gold", "crudem", "silver", "goldm"],
+                                  date(2026, 11, 11))
         self.assertIn("<i>Wed 11 Nov</i>", card.splitlines()[0])
-        self.assertLess(card.index("Crude"), card.index("Nat Gas"))
-        self.assertLess(card.index("Nat Gas"), card.index("Gold"))
+        names = ["Gold</b>", "Gold Mini", "Silver</b>", "Silver Mini", "Crude</b>", "Crude Mini", "Nat Gas"]
+        spots = [card.index(n) for n in names]
+        self.assertEqual(spots, sorted(spots))
+        for day in (date(2026, 11, 11), date(2026, 11, 26), date(2026, 12, 20)):
+            c = expiry.expiry_card(expiry.ORDER, day)
+            c = c[c.index("Commodities · MCX"):]
+            i = [c.index(n) for n in names]
+            self.assertEqual(i, sorted(i))
 
     def test_nearest_dates_are_called_out_in_bold(self):
         self.assertIn("(<b>today</b>)", expiry.expiry_card(["crude"], date(2026, 11, 19)))
@@ -291,10 +298,19 @@ class Bot(unittest.TestCase):
 
     def test_picker_toggles_with_ticks_on_buttons_and_saves(self):
         reply, kb = self.tap(commands.BTN_EXPIRY)
-        self.assertIn("Pick your expiries", reply)
+        self.assertIn("All expiries", reply)                  # nothing saved yet: show everything
         self.assertTrue(kb.get("is_persistent"))
         reply, kb = self.tap("📈 Nifty 50")
         self.assertIn("is in", reply)
+        self.assertIn("Your expiries", reply)                 # the saved list, not just this one
+        self.tap("🥇 Gold")
+        reply, _ = self.tap("🥇 Gold")                        # dropped again
+        self.assertNotIn("Gold", reply.split("\n\n", 1)[1].split("<i>")[0])
+        self.tap("🥇 Gold")
+        reply, _ = self.tap(commands.BTN_EXPIRY)              # opens straight onto the saved list
+        self.assertIn("Your expiries", reply)
+        self.assertLess(reply.index("Nifty 50"), reply.index("Gold"))
+        self.tap("🥇 Gold")
         self.assertIn("📈 Nifty 50 ✓", self.names(kb))
         self.assertEqual(self.store.get("7")["exp"], ["nifty"])
         self.tap("🥇 Gold")
