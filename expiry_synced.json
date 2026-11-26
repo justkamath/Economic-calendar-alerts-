@@ -1,6 +1,6 @@
 {
- "synced_at": "2026-11-25T19:37:24.203285+00:00",
- "attempted_at": "2026-11-25T19:37:24.203285+00:00",
+ "synced_at": "2026-11-26T20:10:13.658656+00:00",
+ "attempted_at": "2026-11-26T20:10:13.658656+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
   {
@@ -46,6 +46,12 @@
    "listed": true
   },
   {
+   "i": "sensex",
+   "t": "Weekly options",
+   "d": "2026-12-03",
+   "listed": true
+  },
+  {
    "i": "gold",
    "t": "Futures",
    "d": "2026-12-04",
@@ -76,6 +82,12 @@
    "listed": true
   },
   {
+   "i": "sensex",
+   "t": "Weekly options",
+   "d": "2026-12-10",
+   "listed": true
+  },
+  {
    "i": "nifty",
    "t": "Weekly options",
    "d": "2026-12-15",
@@ -91,6 +103,12 @@
    "i": "crudem",
    "t": "Options",
    "d": "2026-12-16",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Weekly options",
+   "d": "2026-12-17",
    "listed": true
   },
   {
@@ -127,6 +145,12 @@
    "i": "natgas",
    "t": "Options",
    "d": "2026-12-23",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Weekly options",
+   "d": "2026-12-24",
    "listed": true
   },
   {
@@ -190,6 +214,12 @@
    "listed": true
   },
   {
+   "i": "bankex",
+   "t": "Monthly futures & options",
+   "d": "2026-12-31",
+   "listed": true
+  },
+  {
    "i": "gold",
    "t": "Futures",
    "d": "2026-12-31",
@@ -198,6 +228,12 @@
   {
    "i": "gold",
    "t": "Options",
+   "d": "2026-12-31",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Monthly futures & options",
    "d": "2026-12-31",
    "listed": true
   },
@@ -211,6 +247,12 @@
    "i": "goldm",
    "t": "Futures",
    "d": "2027-01-05",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Weekly options",
+   "d": "2027-01-07",
    "listed": true
   },
   {
@@ -316,6 +358,18 @@
    "listed": true
   },
   {
+   "i": "bankex",
+   "t": "Monthly futures & options",
+   "d": "2027-01-28",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2027-01-28",
+   "listed": true
+  },
+  {
    "i": "gold",
    "t": "Futures",
    "d": "2027-01-29",
@@ -384,6 +438,12 @@
   {
    "i": "crudem",
    "t": "Futures",
+   "d": "2027-02-19",
+   "listed": true
+  },
+  {
+   "i": "natgas",
+   "t": "Options",
    "d": "2027-02-19",
    "listed": true
   },
@@ -510,6 +570,12 @@
   {
    "i": "nsenatgas",
    "t": "Futures",
+   "d": "2027-03-25",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Monthly futures & options",
    "d": "2027-03-25",
    "listed": true
   },
@@ -664,6 +730,12 @@
    "listed": true
   },
   {
+   "i": "natgas",
+   "t": "Futures",
+   "d": "2027-05-25",
+   "listed": true
+  },
+  {
    "i": "nsenatgas",
    "t": "Futures",
    "d": "2027-05-25",
@@ -709,6 +781,12 @@
    "i": "silverm",
    "t": "Options",
    "d": "2027-06-23",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2027-06-24",
    "listed": true
   },
   {
@@ -838,6 +916,12 @@
    "listed": true
   },
   {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2027-09-30",
+   "listed": true
+  },
+  {
    "i": "gold",
    "t": "Futures",
    "d": "2027-10-05",
@@ -868,6 +952,12 @@
    "listed": true
   },
   {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2027-12-30",
+   "listed": true
+  },
+  {
    "i": "crude",
    "t": "Futures",
    "d": "2028-03-20",
@@ -886,9 +976,21 @@
    "listed": true
   },
   {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2028-06-29",
+   "listed": true
+  },
+  {
    "i": "nifty",
    "t": "Monthly futures & options",
    "d": "2028-12-26",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2028-12-28",
    "listed": true
   }
  ]
