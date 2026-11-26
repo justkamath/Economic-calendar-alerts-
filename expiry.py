@@ -235,6 +235,7 @@ def _day_text(day):
     return f"{day.strftime('%a')} {day.day} {day.strftime('%b')}"
 
 
+# Fixed order inside each set: Gold, Gold Mini, Silver, Silver Mini, Crude, Crude Mini, Nat Gas.
 # Two sets: indices and commodities. Each instrument is a small block with its
 # exchange tag and one arrow line per kind of expiry (same look as the daily summary).
 SETS = (("📊 Indices · NSE", INDEX_KEYS),
@@ -269,10 +270,10 @@ def render_sets(pairs, today=None):
         entries = []
         for key in members:
             rows = sorted((r for k, r in pairs if k == key),
-                          key=lambda r: (r["date"], KINDS.index(category(r["kind"]))))
+                          key=lambda r: (KINDS.index(category(r["kind"])), r["date"]))
             if rows:
                 entries.append((rows[0]["date"], ORDER.index(key), key, rows))
-        for _, _, key, rows in sorted(entries):          # soonest expiry first
+        for _, _, key, rows in sorted(entries, key=lambda e: e[1]):   # fixed order, never by date
             name = INSTRUMENTS[key][1].replace("NSE ", "", 1)
             lines = [f"{INSTRUMENTS[key][0]} <b>{name}</b>"]
             for row in rows:
