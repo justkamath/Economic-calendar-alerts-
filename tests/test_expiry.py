@@ -146,17 +146,36 @@ class Layout(unittest.TestCase):
 
     def test_three_sets_in_order_each_instrument_once(self):
         card = expiry.expiry_card(expiry.ORDER, date(2026, 11, 11))
-        heads = ["📊 Indices · NSE", "🪙 Commodities · NSE", "🪙 Commodities · MCX"]
+        heads = ["📊 Indices · NSE", "📊 Indices · BSE", "🪙 Commodities · NSE", "🪙 Commodities · MCX"]
         self.assertEqual([card.index(h) for h in heads], sorted(card.index(h) for h in heads))
-        indices, nse, mcx = (card.split("<blockquote>")[i] for i in (1, 2, 3))
+        indices, bse, nse, mcx = (card.split("<blockquote>")[i] for i in (1, 2, 3, 4))
+        self.assertIn("Sensex", bse)
+        self.assertIn("Bankex", bse)
+        self.assertNotIn("Sensex", indices)
         self.assertNotIn("Crude", indices)
         self.assertNotIn("Nifty", nse + mcx)
-        self.assertEqual(card.count("↳ Weekly"), 1)
+        self.assertEqual(card.count("↳ Weekly"), 2)                # Nifty and Sensex
         self.assertIn("Options", nse)
         self.assertIn("Options", mcx)
         headers = [ln for ln in card.splitlines() if re.fullmatch(r"\S+ <b>[^<]+</b>", ln)]
         self.assertEqual(len(headers), len(expiry.ORDER))     # one block per instrument
-        self.assertLess(len(card), 3500)
+        self.assertLess(len(card), 3900)
+
+    def test_sensex_weekly_thursday_monthly_last_thursday_bankex_monthly_only(self):
+        today = date(2026, 11, 12)                              # a Thursday
+        sensex = expiry.next_expiries("sensex", today, DATA)
+        self.assertEqual(sensex["Weekly"]["date"], date(2026, 11, 12))
+        self.assertEqual(sensex["Monthly"]["date"], date(2026, 11, 26))
+        bankex = expiry.next_expiries("bankex", today, DATA)
+        self.assertEqual(list(bankex), ["Monthly"])
+        self.assertEqual(bankex["Monthly"]["date"], date(2026, 11, 26))
+        self.assertEqual(expiry.find_instruments("sensex bankex bank nifty"),
+                         ["banknifty", "sensex", "bankex"])
+
+    def test_bse_thursday_holiday_moves_to_the_day_before(self):
+        data = dict(DATA, nse_holidays=list(DATA.get("nse_holidays") or []) + ["2026-11-26"])
+        self.assertEqual(expiry.next_expiries("bankex", date(2026, 11, 12), data)["Monthly"]["date"],
+                         date(2026, 11, 25))
 
     def test_blocks_keep_a_fixed_order_not_by_date_and_title_has_the_date(self):
         card = expiry.expiry_card(["natgas", "crude", "silverm", "gold", "crudem", "silver", "goldm"],
