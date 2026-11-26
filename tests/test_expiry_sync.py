@@ -177,11 +177,11 @@ class Sync(unittest.TestCase):
             return fake_fetch()(url)
 
         self.assertIsNotNone(sync.maybe_sync(NOW, None, fetch, self.path))
-        self.assertEqual(len(calls), 2)                                    # MCX and NSE files
+        self.assertEqual(len(calls), 3)                                    # MCX, NSE and BSE files
         self.assertIsNone(sync.maybe_sync(NOW + timedelta(hours=5), None, fetch, self.path))
-        self.assertEqual(len(calls), 2)
+        self.assertEqual(len(calls), 3)
         self.assertIsNotNone(sync.maybe_sync(NOW + timedelta(hours=25), None, fetch, self.path))
-        self.assertEqual(len(calls), 4)
+        self.assertEqual(len(calls), 6)
 
     def test_failure_keeps_old_dates_notifies_once_and_retries_later(self):
         class Bot:
@@ -231,3 +231,26 @@ class Sync(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class BseRows(unittest.TestCase):
+    def test_sensex_weekly_vs_monthly_and_bankex(self):
+        rows = sync.parse([
+            rec("BSE_FO", "SENSEX", "CE", (2026, 11, 19)),
+            rec("BSE_FO", "SENSEX", "CE", (2026, 11, 26)),
+            rec("BSE_FO", "SENSEX", "FUT", (2026, 11, 26)),
+            rec("BSE_FO", "BANKEX", "FUT", (2026, 11, 26)),
+            rec("BSE_FO", "BANKEX", "CE", (2026, 11, 26)),
+            rec("BSE_FO", "SENSEX50", "FUT", (2026, 11, 26)),
+        ], TODAY)
+        got = {(r["i"], r["t"], r["d"]) for r in rows}
+        self.assertEqual(got, {("sensex", "Weekly options", "2026-11-19"),
+                               ("sensex", "Monthly futures & options", "2026-11-26"),
+                               ("bankex", "Monthly futures & options", "2026-11-26")})
+
+    def test_a_broken_bse_file_does_not_stop_the_rest(self):
+        def fetch(url):
+            if "BSE" in url:
+                raise OSError("down")
+            return gzip.compress(json.dumps(MCX + NSE).encode())
+        self.assertTrue(sync.fetch_records(fetch))
