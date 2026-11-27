@@ -177,10 +177,10 @@ class Layout(unittest.TestCase):
         self.assertEqual(expiry.next_expiries("bankex", date(2026, 11, 12), data)["Monthly"]["date"],
                          date(2026, 11, 25))
 
-    def test_blocks_keep_a_fixed_order_not_by_date_and_title_has_the_date(self):
+    def test_blocks_keep_a_fixed_order_not_by_date_and_title_has_no_date(self):
         card = expiry.expiry_card(["natgas", "crude", "silverm", "gold", "crudem", "silver", "goldm"],
                                   date(2026, 11, 11))
-        self.assertIn("<i>Wed 11 Nov</i>", card.splitlines()[0])
+        self.assertEqual(card.splitlines()[0], "<b>📅 Next expiries</b>")      # no today-date in the title
         names = ["Gold</b>", "Gold Mini", "Silver</b>", "Silver Mini", "Crude</b>", "Crude Mini", "Nat Gas"]
         spots = [card.index(n) for n in names]
         self.assertEqual(spots, sorted(spots))
@@ -420,8 +420,14 @@ class Reminders(unittest.TestCase):
         self.assertIn("Expiry tomorrow", text)
         self.assertIn("Bank Nifty", text)
         self.assertIn("Mon 23 Nov", text)
-        self.assertEqual(self.run_at(utc(2026, 11, 23, 9, 0)), 0)      # no second, same-day message
         self.assertEqual(len(self.bot.sent), 1)
+        self.assertEqual(self.run_at(utc(2026, 11, 23, 8, 10)), 1)     # 8:10 am on the day itself
+        self.assertEqual(self.bot.sent[1][0], "7")
+        self.assertIn("Expiry today", self.bot.sent[1][1])
+        self.assertIn("Bank Nifty", self.bot.sent[1][1])
+        self.assertIn("(<b>today</b>)", self.bot.sent[1][1])
+        self.assertEqual(self.run_at(utc(2026, 11, 23, 8, 40)), 0)      # only once
+        self.assertEqual(len(self.bot.sent), 2)
 
     def test_each_reminder_is_sent_once(self):
         self.run_at(utc(2026, 11, 22, 17, 5))
@@ -431,10 +437,22 @@ class Reminders(unittest.TestCase):
 
     def test_not_too_early_not_after_the_close_and_nothing_for_nonpickers(self):
         self.assertEqual(self.run_at(utc(2026, 11, 22, 12, 0)), 0)
-        self.assertEqual(self.run_at(utc(2026, 11, 23, 7, 0)), 0)
-        self.assertEqual(self.run_at(utc(2026, 11, 23, 16, 0)), 0)
+        self.assertEqual(self.run_at(utc(2026, 11, 23, 6, 30)), 0)        # 6:30 am: before the summary
+        self.assertEqual(self.run_at(utc(2026, 11, 23, 21, 30)), 0)       # 9:30 pm: too late for "today"
         self.assertEqual(self.run_at(utc(2026, 11, 20, 17, 5)), 0)       # a quiet day
         self.assertEqual(self.bot.sent, [])
+
+    def test_morning_note_comes_with_the_summary_hour_and_only_for_picked_instruments(self):
+        self.store.update("7", expiry=["crude"])
+        self.assertEqual(self.run_at(utc(2026, 11, 19, 7, 0)), 0)       # 7:00 am: not yet
+        self.assertEqual(self.run_at(utc(2026, 11, 19, 8, 5)), 1)       # 8:05 am
+        text = self.bot.sent[0][1]
+        self.assertIn("Expiry today", text)
+        self.assertIn("Crude", text)
+        self.assertIn("Thu 19 Nov", text)
+        self.assertNotIn("Nifty", text)
+        self.assertEqual(self.run_at(utc(2026, 11, 19, 17, 30)), 0)       # 5:30 pm: no repeat
+        self.assertEqual(self.run_at(utc(2026, 11, 20, 8, 30)), 0)        # nothing the next day
 
     def test_two_instruments_arrive_as_one_message(self):
         self.store.update("7", expiry=["nifty", "banknifty"])
