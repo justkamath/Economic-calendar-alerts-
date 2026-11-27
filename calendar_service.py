@@ -93,3 +93,32 @@ def fetch_calendar(now, notifier=None):
     with storage:
         return load_calendar(now, build_sources(cfg.CALENDAR_SOURCES), storage,
                              cfg.SOURCE_PRIORITY, cfg.DB_KEEP_DAYS, cfg.HORIZON_DAYS + 1, notify)
+
+
+_range_cache = {}
+
+
+def events_in_range(start, end):
+    """Calendar events (feed-style dicts) between two aware datetimes, for typed
+    questions like 'high impact events next week'. Reads what is already stored
+    (no new fetch from the sources); without the database it uses one Forex
+    Factory fetch, kept for the rest of the run."""
+    if cfg.USE_DATABASE:
+        try:
+            storage = open_storage(cfg.DATABASE_URL)
+        except StorageError as e:
+            print(f"Database unavailable ({e}); using a direct fetch.")
+        else:
+            with storage:
+                stored = storage.events_between(start, end)
+            return [e.to_calendar_dict()
+                    for e in merge(stored, tuple(cfg.SOURCE_PRIORITY), gap_fill=GAP_FILL_SOURCES)]
+    if "ff" not in _range_cache:
+        _range_cache["ff"] = ForexFactorySource().fetch_calendar() or []
+    from utils import parse_event_time
+    found = []
+    for event in _range_cache["ff"]:
+        when = parse_event_time(event.get("date")) if isinstance(event, dict) else None
+        if when is not None and start <= when < end:
+            found.append(event)
+    return found
