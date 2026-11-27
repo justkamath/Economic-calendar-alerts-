@@ -307,7 +307,7 @@ def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
         pairs += [(key, row) for row in nxt.values()]
         if not nxt:
             missing.append(label(key))
-    parts = [f"<b>{title}</b>  <i>{_day_text(today)}</i>"] + render_sets(pairs, today)
+    parts = [f"<b>{title}</b>"] + render_sets(pairs, today)
     if missing:
         parts.append("<b>🕓 Not loaded yet</b>\n" + "\n".join(missing))
     if any(r["est"] for _, r in pairs):
