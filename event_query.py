@@ -222,7 +222,10 @@ def build_reply(query, calendar, now, own_level=None, own_cur=None, latest=None)
         head.append(f"<i>{cur_note}. Say “all currencies” to see everything.</i>")
     if not rows:
         head.append("")
-        head.append("😌 Nothing matches that.")
+        if latest is not None and query["start"] > latest:
+            head.append("📭 Nothing published for those days yet.")
+        else:
+            head.append("😌 Nothing matches that.")
         head += _coverage_note(query, latest, today)
         return ["\n".join(head)]
     shown = rows[:MAX_EVENTS]
@@ -244,5 +247,6 @@ def build_reply(query, calendar, now, own_level=None, own_cur=None, latest=None)
 def _coverage_note(query, latest, today):
     """Say so when the question reaches past what the calendar holds."""
     if latest is not None and query["end"] > latest:
-        return ["", f"<i>The calendar only goes up to {_day_text(latest)} for now.</i>"]
+        return ["", f"<i>Our calendar sources have events up to {_day_text(latest)} so far. "
+                    "The next week usually appears over the weekend, so ask again then.</i>"]
     return []
