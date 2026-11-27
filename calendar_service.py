@@ -76,6 +76,11 @@ def load_calendar(now, sources, storage, priority, keep_days, ahead_days, notify
             return None
         print("No source reachable; using events stored by earlier runs.")
     print("Stored events by source:", storage.counts_by_source())
+    ahead = {}
+    for e in storage.events_between(now, now + timedelta(days=cfg.STORE_AHEAD_DAYS)):
+        ahead.setdefault(e.source, []).append(e.time)
+    print("Stored for the days ahead (count, last date):",
+          {src: (len(t), max(t).date().isoformat()) for src, t in sorted(ahead.items())} or "nothing")
     return [e.to_calendar_dict()
             for e in merge(stored, tuple(priority), gap_fill=GAP_FILL_SOURCES)]
 
