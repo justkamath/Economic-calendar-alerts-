@@ -3,7 +3,7 @@ from datetime import datetime
 
 import config as cfg
 from alerts import process, select_upcoming
-from calendar_service import fetch_calendar
+from calendar_service import events_in_range, fetch_calendar
 from commands import handle_updates
 from expiry_reminders import send_expiry_reminders
 from expiry_sync import maybe_sync
@@ -32,11 +32,24 @@ def main():
     except Exception as e:                   # never let this break the calendar run
         print("Expiry sync error:", type(e).__name__)
     if enabled:
-        handle_updates(notifier, audience)   # answer /start, /level, /currencies ...
+        handle_updates(notifier, audience, events_in_range)   # answer /start, /level, event questions ...
         store.save()                         # remember them even if the calendar fails
+    def expiry_notes():
+        """Expiry notes go out after the summary (so people see them together)."""
+        if not enabled:
+            return
+        try:
+            sent = send_expiry_reminders(notifier, audience, now)
+            if sent:
+                print("Expiry reminders sent:", sent)
+        except Exception as e:               # never let reminders break the calendar run
+            print("Expiry reminders failed:", type(e).__name__)
+        store.save()                         # e.g. someone who blocked the bot was removed
+
     calendar = fetch_calendar(now, notifier)
     if calendar is None:
         print("Could not fetch calendar this run. Exiting cleanly.")
+        expiry_notes()
         return
     print("Events received:", len(calendar))
 
@@ -45,15 +58,8 @@ def main():
     print(f"Upcoming events (min impact: {cfg.ALERT_MIN_IMPACT}):", len(upcoming))
 
     process(upcoming, now, notifier, state, audience if enabled else None)
-    if enabled:
-        try:
-            sent = send_expiry_reminders(notifier, audience, now)
-            if sent:
-                print("Expiry reminders sent:", sent)
-        except Exception as e:               # never let reminders break the calendar run
-            print("Expiry reminders failed:", type(e).__name__)
-        store.save()                         # e.g. someone who blocked the bot was removed
     maybe_send_summary(calendar, now, notifier, state)
+    expiry_notes()
     print("Calendar check completed.")
 
 
