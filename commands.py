@@ -8,9 +8,10 @@ Telegram bots on GitHub Actions can't listen all the time, so each run (every
 """
 import html
 import re
-from datetime import datetime
+from datetime import datetime, time as clock, timedelta
 
 import config as cfg
+import event_query
 import expiry
 from sources.common import KNOWN_CURRENCIES
 from summary import FLAGS
@@ -57,8 +58,13 @@ HELP = (
     "Tap <b>Expiries</b>, then tap the NSE, BSE or MCX instruments you trade. "
     "You get the dates right away, plus one heads-up the evening before "
     "each expiry. Or just ask: <i>when is nifty expiry?</i>\n\n"
+    "<b>🔎 Ask for events</b>\n"
+    "Just type it: <i>high impact events next 10 days</i>, "
+    "<i>usd events next week</i> or <i>all events 5 dec</i>. "
+    "Your own setup stays as it is.\n\n"
     "<b>🔔 How we ping you</b>\n"
-    f"{REMINDERS}\n\n"
+    f"{REMINDERS}\n"
+    "📅 Expiry day? A note at 8 am with the summary, and one the evening before.\n\n"
     "🧩 <b>Buttons gone?</b>\n"
     "Tap the little keyboard icon next to the message box,\n"
     "or send /menu.\n\n"
@@ -174,7 +180,10 @@ def parse(text):
     if raw.startswith("/"):
         parts = raw.replace(",", " ").split()
         cmd = parts[0].split("@")[0].lower()
-        cmd = {"/setup": "/status", "/pause": "/stop", "/expiries": "/expiry"}.get(cmd, cmd)
+        cmd = {"/setup": "/status", "/pause": "/stop", "/expiries": "/expiry",
+               "/calendar": "/events"}.get(cmd, cmd)
+        if cmd == "/events":
+            return cmd, [" ".join(parts[1:])]
         if cmd == "/expiry":
             rest = " ".join(parts[1:])
             return cmd, (["all"] if rest.lower().strip() == "all" else expiry.find_instruments(rest))
@@ -184,6 +193,8 @@ def parse(text):
     for key in expiry.ORDER:                      # a tapped instrument button
         if plain == expiry.label(key):
             return "/xtoggle", [key]
+    if event_query.looks_like_query(plain):        # "high impact events next week"
+        return "/events", [plain]
     if "expir" in low:                            # the button, or a typed question
         if "all expir" in low or "show all" in low:
             return "/expiry", ["all"]
@@ -212,8 +223,10 @@ def parse(text):
 
 
 # ---------- answering ----------
-def respond(chat_id, text, audience):
-    """Handle one message. Returns (reply text, keyboard)."""
+def respond(chat_id, text, audience, events=None):
+    """Handle one message. Returns (reply, keyboard). The reply is a text, or a list
+    of texts when the answer is long. `events(start, end)` reads the calendar for
+    typed questions about events."""
     store = audience.store
     cmd, args = parse(text)
     chat_id = str(chat_id)
@@ -337,6 +350,34 @@ def respond(chat_id, text, audience):
         today = expiry.today_ist(datetime.now(cfg.UTC))
         return f"{note}\n\n{_all_card(picks, today)}", keys("expiry")
 
+    if cmd == "/events":
+        if entry is None:
+            return "😴 Tap <b>▶️ Start</b> first, then ask me about events.", keys()
+        if events is None:
+            return "📭 The calendar isn't available right now. Try again in a few minutes.", keys("none")
+        now = datetime.now(cfg.UTC)
+        today = now.astimezone(cfg.DISPLAY_TZ).date()
+        query = event_query.parse_query(args[0] if args else "", today)
+        tz = cfg.DISPLAY_TZ
+
+        def at(day):
+            return datetime.combine(day, clock.min, tzinfo=tz).astimezone(cfg.UTC)
+        try:
+            found = events(at(query["start"]), at(query["end"] + timedelta(days=1)))
+            ahead = events(at(today), at(today + timedelta(days=event_query.MAX_AHEAD_DAYS)))
+        except Exception as e:
+            print("Event question failed:", type(e).__name__)
+            return "📭 I couldn't read the calendar just now. Try again in a few minutes.", keys("none")
+        latest = None
+        for event in ahead:
+            when = event_query.parse_event_time(event.get("date")) if isinstance(event, dict) else None
+            if when is not None:
+                day = when.astimezone(tz).date()
+                latest = day if latest is None or day > latest else latest
+        reply = event_query.build_reply(query, found, now, own_level=entry[0], own_cur=entry[1],
+                                        latest=latest)
+        return reply, keys("none")
+
     if cmd == "/menu":
         return "🧰 Here are your buttons 👇", keys()
 
@@ -363,7 +404,8 @@ def respond(chat_id, text, audience):
 
 def dispatch(chat_id, text, audience):
     """The reply text only (kept for older callers and tests)."""
-    return respond(chat_id, text, audience)[0]
+    reply = respond(chat_id, text, audience)[0]
+    return "\n\n".join(reply) if isinstance(reply, list) else reply
 
 
 def _publish_menu(notifier, store):
@@ -379,7 +421,7 @@ def _publish_menu(notifier, store):
         print("Could not update the bot's Menu list:", e)
 
 
-def handle_updates(notifier, audience):
+def handle_updates(notifier, audience, events=None):
     """Read new messages sent to the bot and apply them. Never prints chat IDs."""
     store = audience.store
     handled = 0
@@ -400,15 +442,19 @@ def handle_updates(notifier, audience):
             if chat.get("type") != "private" or not text:
                 continue
             try:
-                reply, keyboard = respond(chat["id"], text, audience)
+                reply, keyboard = respond(chat["id"], text, audience, events)
             except Exception as e:
                 print("Command failed:", type(e).__name__)
                 continue
             handled += 1
-            try:
-                notifier.send(reply, chat_id=str(chat["id"]), reply_markup=keyboard)
-            except Exception as e:
-                print("REPLY FAILED:", e)
+            parts = reply if isinstance(reply, list) else [reply]
+            for number, part in enumerate(parts):
+                try:
+                    last = number == len(parts) - 1
+                    notifier.send(part, chat_id=str(chat["id"]), reply_markup=keyboard if last else None)
+                except Exception as e:
+                    print("REPLY FAILED:", e)
+                    break
         if len(updates) < 100:
             break
     print("Commands handled:", handled, "| subscribers:", len(store))
