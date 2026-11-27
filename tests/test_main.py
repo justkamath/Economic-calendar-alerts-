@@ -42,6 +42,7 @@ class MainTests(unittest.TestCase):
                 mock.patch.object(main, "fetch_calendar", return_value=list(calendar)), \
                 mock.patch.object(main, "maybe_send_summary"), \
                 mock.patch.object(main, "maybe_sync"), \
+                mock.patch.object(main, "events_in_range", return_value=[]), \
                 mock.patch.object(main, "load_state", return_value={}), \
                 mock.patch("alerts.save_state"), mock.patch("alerts.prune_state"), \
                 mock.patch.object(cfg, "SUBSCRIBERS_KEY", key), \
@@ -63,6 +64,29 @@ class MainTests(unittest.TestCase):
         out, path = self.run_main(FakeBot())
         self.assertIn("Commands handled: 0 | subscribers: 0", out)
         self.assertFalse(os.path.exists(path))
+
+    def test_expiry_notes_go_out_after_the_summary_and_even_without_a_calendar(self):
+        order = []
+        update = {"update_id": 1, "message": {"chat": {"id": 7, "type": "private"}, "text": "/start"}}
+        with mock.patch.object(main, "send_expiry_reminders",
+                               side_effect=lambda *a: order.append("expiry") or 0):
+            tmp = tempfile.TemporaryDirectory()
+            self.addCleanup(tmp.cleanup)
+            for calendar in ([], None):
+                order.clear()
+                with mock.patch.object(main, "TelegramNotifier", return_value=FakeBot([update])), \
+                        mock.patch.object(main, "fetch_calendar", return_value=calendar), \
+                        mock.patch.object(main, "maybe_send_summary",
+                                          side_effect=lambda *a: order.append("summary")), \
+                        mock.patch.object(main, "maybe_sync"), \
+                        mock.patch.object(main, "events_in_range", return_value=[]), \
+                        mock.patch.object(main, "load_state", return_value={}), \
+                        mock.patch("alerts.save_state"), mock.patch("alerts.prune_state"), \
+                        mock.patch.object(cfg, "SUBSCRIBERS_KEY", KEY), \
+                        mock.patch.object(cfg, "SUBSCRIBERS_FILE", os.path.join(tmp.name, "s.enc")), \
+                        contextlib.redirect_stdout(io.StringIO()):
+                    main.main()
+                self.assertEqual(order, ["summary", "expiry"] if calendar is not None else ["expiry"])
 
     def test_without_a_key_it_is_owner_only(self):
         bot = FakeBot()
