@@ -39,11 +39,6 @@
     "30m": false,
     "detected": true
   },
-  "EUR|ECB President Lagarde Speaks|2026-11-20T08:15:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
   "EUR|French Flash Manufacturing PMI|2026-11-23T08:15:00+00:00": {
     "1h": true,
     "30m": false,
@@ -125,11 +120,6 @@
     "detected": true
   },
   "GBP|CBI Distributive Trades|2026-11-24T11:00:00+00:00": {
-    "1h": false,
-    "30m": false,
-    "detected": true
-  },
-  "GBP|Retail Sales m/m|2026-11-20T07:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
