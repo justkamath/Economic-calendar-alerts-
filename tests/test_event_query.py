@@ -134,8 +134,13 @@ class Answering(unittest.TestCase):
 
     def test_nothing_found_and_beyond_the_calendar(self):
         text = self.reply("high impact events 28 dec", latest=date(2026, 12, 6))
-        self.assertIn("Nothing matches", text)
-        self.assertIn("only goes up to Sun 6 Dec", text)
+        self.assertIn("Nothing published for those days yet", text)
+        self.assertIn("up to Sun 6 Dec so far", text)
+        partly = self.reply("high impact events 3 dec to 10 dec", latest=date(2026, 12, 6))
+        self.assertIn("Non-Farm Payrolls", partly)
+        self.assertIn("up to Sun 6 Dec so far", partly)
+        none_high = self.reply("high impact events 2 dec", latest=date(2026, 12, 6))
+        self.assertIn("Nothing matches", none_high)
 
     def test_long_answers_are_split_and_capped(self):
         many = [ev(date(2026, 12, 1), 1 + i % 20, f"Item {i} with a long name", "USD", "high",
