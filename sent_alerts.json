@@ -14,6 +14,11 @@
     "30m": false,
     "detected": true
   },
+  "AUD|CFTC AUD Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "AUD|CPI m/m|2026-11-25T00:30:00+00:00": {
     "1h": false,
     "30m": false,
@@ -179,6 +184,11 @@
     "30m": false,
     "detected": true
   },
+  "EUR|CFTC EUR Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "EUR|CPI m/m|2026-11-30T13:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -230,6 +240,11 @@
     "detected": true
   },
   "EUR|ECB Executive Board Member Lane Speech|2026-12-04T13:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "EUR|ECB Executive Board Member Lane Speech|2026-12-05T16:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -499,6 +514,11 @@
     "30m": false,
     "detected": true
   },
+  "JPY|CFTC JPY Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "JPY|Capital Spending y/y|2026-11-30T23:50:00+00:00": {
     "1h": false,
     "30m": false,
@@ -574,6 +594,16 @@
     "30m": false,
     "detected": true
   },
+  "USD|Baker Hughes US Oil Rig Count|2026-12-04T18:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Baker Hughes US Total Rig Count|2026-12-04T18:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|CB Consumer Confidence Index|2026-11-24T15:00:00+00:00": {
     "1h": false,
     "30m": false,
@@ -584,7 +614,17 @@
     "30m": false,
     "detected": true
   },
+  "USD|CFTC Crude Oil Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|CFTC Gold Non-Commercial Net Positions|2026-11-30T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|CFTC Gold Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -594,7 +634,17 @@
     "30m": false,
     "detected": true
   },
+  "USD|CFTC Nasdaq 100 Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
   "USD|CFTC S&P 500 Non-Commercial Net Positions|2026-11-30T20:30:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|CFTC S&P 500 Non-Commercial Net Positions|2026-12-04T20:30:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
@@ -690,6 +740,21 @@
     "detected": true
   },
   "USD|Michigan 5-Year Inflation Expectations|2026-12-04T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Michigan Consumer Expectations|2026-12-04T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Michigan Consumer Sentiment|2026-12-04T15:00:00+00:00": {
+    "1h": false,
+    "30m": false,
+    "detected": true
+  },
+  "USD|Michigan Inflation Expectations|2026-12-04T15:00:00+00:00": {
     "1h": false,
     "30m": false,
     "detected": true
