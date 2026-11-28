@@ -189,4 +189,6 @@ def maybe_sync(now, notifier=None, fetch=download, path=None):
         return None
     print(f"Expiry sync: {result['rows']} dates for {len(result['covered'])} instruments"
           + (f" | not found: {', '.join(result['missing'])}" if result["missing"] else ""))
+    metals = [k for k in expiry.EXACT_ONLY if k in result["covered"]]
+    print("Expiry sync: NSE gold/silver listed: " + (", ".join(metals) if metals else "none in the file"))
     return result
