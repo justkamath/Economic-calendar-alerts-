@@ -328,7 +328,9 @@ def respond(chat_id, text, audience, events=None):
         names = ", ".join(expiry.INSTRUMENTS[k][1] for k in expiry.ORDER if k in picks)
         foot = (f"🔔 <b>Evening-before ping:</b> {names}" if picks
                 else "🔔 <i>Tap the ones you trade to get a ping the evening before.</i>")
-        return expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries") + "\n\n" + foot
+        card = expiry.expiry_card(expiry.ORDER, today, title="📅 All expiries",
+                                  hide_empty=expiry.EXACT_ONLY)
+        return card + "\n\n" + foot
 
     if cmd == "/expiry":
         today = expiry.today_ist(datetime.now(cfg.UTC))
