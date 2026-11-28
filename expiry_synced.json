@@ -1,26 +1,8 @@
 {
- "synced_at": "2026-11-26T20:10:13.658656+00:00",
- "attempted_at": "2026-11-26T20:10:13.658656+00:00",
+ "synced_at": "2026-11-28T02:37:47.009790+00:00",
+ "attempted_at": "2026-11-28T02:37:47.009790+00:00",
  "source": "Upstox public instrument files",
  "expiries": [
-  {
-   "i": "gold",
-   "t": "Options",
-   "d": "2026-11-27",
-   "listed": true
-  },
-  {
-   "i": "goldm",
-   "t": "Options",
-   "d": "2026-11-27",
-   "listed": true
-  },
-  {
-   "i": "silver",
-   "t": "Options",
-   "d": "2026-11-27",
-   "listed": true
-  },
   {
    "i": "gold",
    "t": "Futures",
@@ -262,6 +244,12 @@
    "listed": true
   },
   {
+   "i": "sensex",
+   "t": "Weekly options",
+   "d": "2027-01-14",
+   "listed": true
+  },
+  {
    "i": "crude",
    "t": "Options",
    "d": "2027-01-15",
@@ -499,6 +487,18 @@
    "i": "nsenatgas",
    "t": "Futures",
    "d": "2027-02-23",
+   "listed": true
+  },
+  {
+   "i": "bankex",
+   "t": "Monthly futures & options",
+   "d": "2027-02-25",
+   "listed": true
+  },
+  {
+   "i": "sensex",
+   "t": "Monthly futures & options",
+   "d": "2027-02-25",
    "listed": true
   },
   {
