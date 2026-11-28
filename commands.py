@@ -11,6 +11,8 @@ import re
 from datetime import datetime, time as clock, timedelta
 
 import config as cfg
+import time
+
 import event_query
 import expiry
 from sources.common import KNOWN_CURRENCIES
@@ -451,6 +453,8 @@ def handle_updates(notifier, audience, events=None):
             for number, part in enumerate(parts):
                 try:
                     last = number == len(parts) - 1
+                    if number:
+                        time.sleep(0.5)          # several parts: stay under Telegram's per-chat rate
                     notifier.send(part, chat_id=str(chat["id"]), reply_markup=keyboard if last else None)
                 except Exception as e:
                     print("REPLY FAILED:", e)
