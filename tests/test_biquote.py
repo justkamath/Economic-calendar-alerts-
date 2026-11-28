@@ -14,6 +14,7 @@ import calendar_service as svc  # noqa: E402
 import config as cfg  # noqa: E402
 from models import Event  # noqa: E402
 from sources import BiquoteSource, CalendarSource  # noqa: E402
+from sources import biquote  # noqa: E402
 from sources.biquote import to_event  # noqa: E402
 from sources.registry import build_sources  # noqa: E402
 from storage import open_storage  # noqa: E402
@@ -49,7 +50,7 @@ class FakeResponse:
 
 def fetch(payload):
     out = io.StringIO()
-    src = BiquoteSource(retries=1, clock=lambda: NOW)
+    src = BiquoteSource(retries=1, clock=lambda: NOW, pause=0)
     with mock.patch("urllib.request.urlopen", return_value=FakeResponse(payload)) as op, \
             contextlib.redirect_stdout(out):
         return src.fetch_events(), out.getvalue(), op
@@ -102,11 +103,48 @@ class SourceTests(unittest.TestCase):
         self.assertEqual(len(events), 1)
         self.assertIn("1 events (2 skipped", out)
 
-    def test_url_has_the_date_range(self):
+    def test_it_asks_one_day_at_a_time_because_each_answer_is_capped(self):
         _, _, op = fetch([])
-        end = (NOW + timedelta(days=min(cfg.STORE_AHEAD_DAYS, 90))).date()
-        self.assertEqual(op.call_args[0][0].full_url,
-                         f"https://biquote.io/api/calendar?from=2026-11-01&to={end}")
+        urls = [c[0][0].full_url for c in op.call_args_list]
+        days = 2 + 1 + min(cfg.STORE_AHEAD_DAYS, biquote.AHEAD_DAYS)
+        self.assertEqual(len(urls), days)
+        self.assertEqual(urls[0], "https://biquote.io/api/calendar?from=2026-11-01&to=2026-11-02")
+        self.assertEqual(urls[3], "https://biquote.io/api/calendar?from=2026-11-04&to=2026-11-05")
+        self.assertEqual(len(set(urls)), days)
+
+    def test_days_after_the_first_are_all_read_and_repeats_are_dropped(self):
+        def later(day):
+            return rec(eventId=f"x:{day}", name=f"Item {day}",
+                       time=f"2026-11-{day:02d}T10:00:00Z", currency="EUR", countryCode="DE")
+        answers = iter([[later(3)], [later(3), later(4)], [later(4), later(5)]] + [[]] * 40)
+
+        def reply(request, timeout=None):
+            return FakeResponse(next(answers))
+        with mock.patch("urllib.request.urlopen", side_effect=reply), \
+                contextlib.redirect_stdout(io.StringIO()):
+            events = BiquoteSource(retries=1, clock=lambda: NOW, pause=0).fetch_events()
+        self.assertEqual(sorted(e.title for e in events), ["Item 3", "Item 4", "Item 5"])
+
+    def test_a_failure_part_way_keeps_what_was_read(self):
+        import urllib.error
+        calls = []
+
+        def reply(request, timeout=None):
+            calls.append(1)
+            if len(calls) == 3:
+                raise urllib.error.HTTPError("u", 429, "x", {}, None)
+            return FakeResponse([rec(eventId=f"e{len(calls)}", name=f"N{len(calls)}")])
+        out = io.StringIO()
+        with mock.patch("urllib.request.urlopen", side_effect=reply), contextlib.redirect_stdout(out):
+            events = BiquoteSource(retries=1, clock=lambda: NOW, pause=0).fetch_events()
+        self.assertEqual(len(events), 2)
+        self.assertIn("stopped early", out.getvalue())
+
+    def test_a_full_day_is_reported(self):
+        many = [rec(eventId=f"e{i}", name=f"N{i}", currency="EUR", countryCode="DE")
+                for i in range(biquote.RESPONSE_CAP)]
+        events, out, _ = fetch(many)
+        self.assertIn("hit the 200-record limit", out)
 
     def test_wrapped_responses_work(self):
         for key in ("events", "data", "items", "results"):
@@ -122,7 +160,7 @@ class SourceTests(unittest.TestCase):
         err = urllib.error.HTTPError("u", 429, "x", {}, None)
         with mock.patch("urllib.request.urlopen", side_effect=err), \
                 contextlib.redirect_stdout(io.StringIO()):
-            self.assertIsNone(BiquoteSource(retries=1, clock=lambda: NOW).fetch_events())
+            self.assertIsNone(BiquoteSource(retries=1, clock=lambda: NOW, pause=0).fetch_events())
 
     def test_empty_list_is_reachable_but_empty(self):
         self.assertEqual(fetch([])[0], [])
