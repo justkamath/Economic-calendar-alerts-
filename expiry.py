@@ -25,6 +25,10 @@ INSTRUMENTS = {
     "stockfo": ("🧾", "Stock F&O", "Stock futures & options", "NSE"),
     "sensex": ("🏛️", "Sensex", "Sensex", "BSE"),
     "bankex": ("💰", "Bankex", "Bankex", "BSE"),
+    "nsegold": ("🥇", "NSE Gold", "NSE Gold", "NSE"),
+    "nsegoldm": ("🏅", "NSE Gold Mini", "NSE Gold Mini", "NSE"),
+    "nsesilver": ("🥈", "NSE Silver", "NSE Silver", "NSE"),
+    "nsesilverm": ("🪙", "NSE Silver Mini", "NSE Silver Mini", "NSE"),
     "nsecrude": ("🛢️", "NSE Crude", "NSE Crude oil (WTI)", "NSE"),
     "nsenatgas": ("🔥", "NSE Nat Gas", "NSE Natural gas", "NSE"),
     "gold": ("🥇", "Gold", "Gold", "MCX"),
@@ -36,13 +40,19 @@ INSTRUMENTS = {
     "natgas": ("🔥", "Nat Gas", "Natural gas", "MCX"),
 }
 ORDER = tuple(INSTRUMENTS)
-NSE_COMMODITY = ("nsecrude", "nsenatgas")
+NSE_COMMODITY = ("nsegold", "nsegoldm", "nsesilver", "nsesilverm", "nsecrude", "nsenatgas")
+# NSE metals have no steady pattern: only dates the exchange has really listed are shown
+EXACT_ONLY = ("nsegold", "nsegoldm", "nsesilver", "nsesilverm")
+BOTH_EXCHANGES = (("gold", "nsegold"), ("goldm", "nsegoldm"), ("silver", "nsesilver"),
+                  ("silverm", "nsesilverm"), ("crude", "nsecrude"), ("natgas", "nsenatgas"))
 NSE_INDEX_KEYS = tuple(k for k in ORDER if INSTRUMENTS[k][3] == "NSE" and k not in NSE_COMMODITY)
 BSE_KEYS = ("sensex", "bankex")
 INDEX_KEYS = NSE_INDEX_KEYS + BSE_KEYS
 MCX_NOTE = "Confirm MCX dates on mcxindia.com before you trade."
 # words people type -> instrument (checked in this order)
 ALIASES = (
+    ("nsegoldm", r"nse gold ?mini|nse goldm\b"), ("nsegold", r"nse gold"),
+    ("nsesilverm", r"nse silver ?(mini|micro)|nse silverm\b"), ("nsesilver", r"nse silver"),
     ("nsecrude", r"nse (wti )?crude( ?oil)?|\bwti\b"), ("nsenatgas", r"nse (natural ?gas|nat ?gas|natgas)"),
     ("sensex", r"sensex"), ("bankex", r"bankex"),
     ("banknifty", r"bank ?nifty"), ("finnifty", r"fin ?nifty"), ("midcap", r"midcap"),
@@ -77,13 +87,14 @@ def find_instruments(text):
         if re.search(pattern, low):
             found.append(key)
             low = re.sub(pattern, " ", low)    # so 'bank nifty' doesn't also match 'nifty'
-    # Crude and Nat Gas trade on both exchanges: say "nse" or "mcx" to pick one,
-    # otherwise (or if both are said) show both.
+    # These trade on both exchanges: say "nse" or "mcx" to pick one, say both (or nothing)
+    # to see both. NSE metals are added without naming NSE only if NSE has listed dates.
     said = (text or "").lower()
     nse, mcx = re.search(r"\bnse\b", said), re.search(r"\bmcx\b", said)
-    for mcx_key, nse_key in (("crude", "nsecrude"), ("natgas", "nsenatgas")):
-        if mcx_key in found and nse_key not in found and (nse or not mcx):
-            found.append(nse_key)
+    for mcx_key, nse_key in BOTH_EXCHANGES:
+        if mcx_key in found and nse_key not in found:
+            if nse or (not mcx and (nse_key not in EXACT_ONLY or listed_rows(load_data(), nse_key))):
+                found.append(nse_key)
         if nse and not mcx and mcx_key in found:
             found.remove(mcx_key)
     return [k for k in ORDER if k in found]
@@ -308,13 +319,13 @@ def render_sets(pairs, today=None):
     return parts
 
 
-def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries"):
+def expiry_card(keys, today, count=None, data=None, title="📅 Next expiries", hide_empty=()):
     """Indices and commodities as two sets, soonest first, only the next date for each."""
     pairs, missing = [], []
     for key in (k for k in ORDER if k in set(keys)):
         nxt = next_expiries(key, today, data)
         pairs += [(key, row) for row in nxt.values()]
-        if not nxt:
+        if not nxt and key not in hide_empty:
             missing.append(label(key))
     parts = [f"<b>{title}</b>"] + render_sets(pairs, today)
     if missing:
