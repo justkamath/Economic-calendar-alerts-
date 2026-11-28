@@ -14,9 +14,8 @@ from summary import (FLAGS, ORDER as LEVEL_ORDER, RANK, TITLES, _chunk, _event_l
                      _style)
 from utils import parse_event_time
 
-MAX_SPAN_DAYS = 31        # one answer covers at most this many days
-MAX_AHEAD_DAYS = 90       # how far ahead the calendar can be asked
-MAX_EVENTS = 60           # beyond this the answer says to narrow the question
+MAX_AHEAD_DAYS = 3650     # how far the "what do we hold" check looks: effectively everything stored
+MAX_EVENTS = 300          # safety cap on one answer (several messages long); no limit on the dates
 MONTHS = {m: i + 1 for i, m in enumerate(
     ("jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"))}
 WEEKDAYS = {d: i for i, d in enumerate(("mon", "tue", "wed", "thu", "fri", "sat", "sun"))}
@@ -144,9 +143,6 @@ def parse_query(text, today):
     low = (text or "").lower()
     span = _range(low, today) or (today, today + timedelta(days=6))
     start, end = span
-    cut = False
-    if (end - start).days + 1 > MAX_SPAN_DAYS:
-        end, cut = start + timedelta(days=MAX_SPAN_DAYS - 1), True
     levels = []
     for word in ("high", "medium", "low"):
         if re.search(rf"\b{word}\b", low):
@@ -154,7 +150,7 @@ def parse_query(text, today):
     if re.search(r"\bholidays?\b", low):
         levels.append("holiday")
     currencies = [c for c in re.findall(r"\b([a-z]{3})\b", low) if c.upper() in KNOWN_CURRENCIES]
-    return {"start": start, "end": end, "cut": cut, "levels": levels,
+    return {"start": start, "end": end, "levels": levels,
             "everything": bool(re.search(r"\b(all|every|everything)\b", low)) and not levels,
             "currencies": [c.upper() for c in dict.fromkeys(currencies)],
             "all_currencies": bool(re.search(r"\b(all|every) (the )?currenc", low))}
@@ -223,7 +219,7 @@ def build_reply(query, calendar, now, own_level=None, own_cur=None, latest=None)
     if not rows:
         head.append("")
         if latest is not None and query["start"] > latest:
-            head.append("📭 Nothing published for those days yet.")
+            head.append("📭 Nothing on the list for those days yet. It will be added soon.")
         else:
             head.append("😌 Nothing matches that.")
         head += _coverage_note(query, latest, today)
@@ -238,8 +234,6 @@ def build_reply(query, calendar, now, own_level=None, own_cur=None, latest=None)
     if len(rows) > len(shown):
         lines += [f"<i>+{len(rows) - len(shown)} more. Ask for a shorter stretch or a "
                   "higher impact to see them.</i>"]
-    if query["cut"]:
-        lines += [f"<i>Showing the first {MAX_SPAN_DAYS} days.</i>"]
     lines += _coverage_note(query, latest, today)
     return _chunk(lines)
 
@@ -247,6 +241,6 @@ def build_reply(query, calendar, now, own_level=None, own_cur=None, latest=None)
 def _coverage_note(query, latest, today):
     """Say so when the question reaches past what the calendar holds."""
     if latest is not None and query["end"] > latest:
-        return ["", f"<i>Our calendar sources have events up to {_day_text(latest)} so far. "
-                    "The next week usually appears over the weekend, so ask again then.</i>"]
+        return ["", f"<i>📭 Events after {_day_text(latest)} aren't on the list yet. "
+                    "They will be added soon.</i>"]
     return []
