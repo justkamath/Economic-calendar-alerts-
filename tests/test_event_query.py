@@ -81,10 +81,10 @@ class Reading(unittest.TestCase):
         self.assertEqual((a["start"], a["end"]), (TODAY, date(2026, 12, 3)))
         self.assertTrue(a["everything"])
 
-    def test_long_ranges_are_cut(self):
+    def test_there_is_no_limit_on_how_far_a_question_can_reach(self):
         a = self.ask("events from 1 dec to 30 mar 2027")
-        self.assertTrue(a["cut"])
-        self.assertEqual((a["end"] - a["start"]).days + 1, q.MAX_SPAN_DAYS)
+        self.assertEqual((a["start"], a["end"]), (date(2026, 12, 1), date(2027, 3, 30)))
+        self.assertEqual(self.ask("events next 200 days")["end"], TODAY + timedelta(days=199))
 
     def test_levels_and_currencies(self):
         a = self.ask("high and medium usd eur events")
@@ -134,21 +134,22 @@ class Answering(unittest.TestCase):
 
     def test_nothing_found_and_beyond_the_calendar(self):
         text = self.reply("high impact events 28 dec", latest=date(2026, 12, 6))
-        self.assertIn("Nothing published for those days yet", text)
-        self.assertIn("up to Sun 6 Dec so far", text)
+        self.assertIn("Nothing on the list for those days yet", text)
+        self.assertIn("after Sun 6 Dec aren't on the list yet", text)
         partly = self.reply("high impact events 3 dec to 10 dec", latest=date(2026, 12, 6))
         self.assertIn("Non-Farm Payrolls", partly)
-        self.assertIn("up to Sun 6 Dec so far", partly)
+        self.assertIn("after Sun 6 Dec aren't on the list yet", partly)
+        self.assertIn("will be added soon", partly)
         none_high = self.reply("high impact events 2 dec", latest=date(2026, 12, 6))
         self.assertIn("Nothing matches", none_high)
 
     def test_long_answers_are_split_and_capped(self):
         many = [ev(date(2026, 12, 1), 1 + i % 20, f"Item {i} with a long name", "USD", "high",
-                 previous="1.234%", forecast="1.345%") for i in range(90)]
+                 previous="1.234%", forecast="1.345%") for i in range(400)]
         parts = q.build_reply(q.parse_query("all events 1 dec", TODAY), many, NOW, latest=None)
         self.assertGreater(len(parts), 1)
         self.assertTrue(all(len(p) < 4096 for p in parts))
-        self.assertIn("+30 more", parts[-1])
+        self.assertIn("+100 more", parts[-1])
 
 
 class Bot(unittest.TestCase):
