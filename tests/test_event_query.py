@@ -76,6 +76,22 @@ class Reading(unittest.TestCase):
         self.assertEqual((r["start"], r["end"]), (date(2026, 12, 2), date(2026, 12, 5)))
         self.assertEqual(self.ask("events 5 jan")["start"], date(2027, 1, 5))   # next year's date
 
+    def test_specific_date_ranges_in_every_way_people_write_them(self):
+        for text in ("Give me high impact events from 7-12 dec", "events 7 to 12 dec",
+                     "events from 7th to 12th december", "events 7 - 12 dec", "events dec 7-12",
+                     "events between 7 and 12 dec", "events 7 dec to 12 dec", "events 7 dec - 12 dec",
+                     "events 7–12 Dec", "high impact events from 7 dec till 12 dec"):
+            r = self.ask(text)
+            self.assertEqual((r["start"], r["end"]), (date(2026, 12, 7), date(2026, 12, 12)), text)
+        self.assertEqual(self.ask("high impact events from 7-12 dec")["levels"], ["high"])
+        r = self.ask("events 28-3 jan")                                         # across a month end
+        self.assertEqual((r["start"], r["end"]), (date(2026, 12, 28), date(2027, 1, 3)))
+        r = self.ask("events 30 dec to 3 jan 2027")
+        self.assertEqual((r["start"], r["end"]), (date(2026, 12, 30), date(2027, 1, 3)))
+        r = self.ask("events 25 to 2 dec")
+        self.assertEqual((r["start"], r["end"]), (date(2026, 11, 25), date(2026, 12, 2)))
+        self.assertEqual(self.ask("events 5/12")["start"], date(2026, 12, 5))       # still day/month
+
     def test_no_time_means_the_next_seven_days(self):
         a = self.ask("all events")
         self.assertEqual((a["start"], a["end"]), (TODAY, date(2026, 12, 3)))
