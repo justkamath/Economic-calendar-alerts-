@@ -254,3 +254,13 @@ class BseRows(unittest.TestCase):
                 raise OSError("down")
             return gzip.compress(json.dumps(MCX + NSE).encode())
         self.assertTrue(sync.fetch_records(fetch))
+
+
+class NseMetals(unittest.TestCase):
+    def test_nse_gold_and_silver_are_read_when_listed_and_never_reported_missing(self):
+        rows = sync.parse([rec("NSE_COM", "GOLD", "FUT", (2026, 12, 4)),
+                           rec("NSE_COM", "GOLDM", "CE", (2026, 12, 4)),
+                           rec("NSE_COM", "SILVER", "FUT", (2026, 12, 4)),
+                           rec("NSE_COM", "GOLDTEN", "FUT", (2026, 12, 4))], TODAY)    # not ours
+        self.assertEqual({r["i"] for r in rows}, {"nsegold", "nsegoldm", "nsesilver"})
+        self.assertNotIn("nsesilverm", {r["i"] for r in rows})
