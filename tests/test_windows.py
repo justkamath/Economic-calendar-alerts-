@@ -69,15 +69,21 @@ class WindowTests(unittest.TestCase):
         self.assertEqual([e.title for e in kept], ["CPI +-200d"])
 
 
+def BiquoteSource_ahead():
+    from sources import biquote
+    return min(60, biquote.AHEAD_DAYS)
+
+
 class SourceRangeTests(unittest.TestCase):
     def test_sources_ask_for_the_storage_range_not_the_alert_window(self):
         from sources.biquote import BiquoteSource
         from sources.trading_economics import TradingEconomicsSource
         with mock.patch.object(cfg, "HORIZON_DAYS", 7), \
                 mock.patch.object(cfg, "STORE_AHEAD_DAYS", 60):
-            biquote = BiquoteSource(clock=lambda: NOW)._url()
+            biquote = BiquoteSource(clock=lambda: NOW)._urls()
             te = TradingEconomicsSource("k", clock=lambda: NOW)._url()
-        self.assertTrue(biquote.endswith("to=2027-01-02"), biquote)   # NOW + 60 days
+        ahead = (NOW + timedelta(days=BiquoteSource_ahead() + 1)).date()
+        self.assertTrue(biquote[-1].endswith(f"to={ahead}"), biquote[-1])   # a day at a time
         self.assertIn("/2027-01-02?", te)
 
 
