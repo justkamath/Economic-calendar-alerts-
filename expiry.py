@@ -77,6 +77,15 @@ def find_instruments(text):
         if re.search(pattern, low):
             found.append(key)
             low = re.sub(pattern, " ", low)    # so 'bank nifty' doesn't also match 'nifty'
+    # Crude and Nat Gas trade on both exchanges: say "nse" or "mcx" to pick one,
+    # otherwise (or if both are said) show both.
+    said = (text or "").lower()
+    nse, mcx = re.search(r"\bnse\b", said), re.search(r"\bmcx\b", said)
+    for mcx_key, nse_key in (("crude", "nsecrude"), ("natgas", "nsenatgas")):
+        if mcx_key in found and nse_key not in found and (nse or not mcx):
+            found.append(nse_key)
+        if nse and not mcx and mcx_key in found:
+            found.remove(mcx_key)
     return [k for k in ORDER if k in found]
 
 
