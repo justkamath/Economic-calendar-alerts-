@@ -34,6 +34,13 @@ _DATE_PATTERNS = (
     re.compile(r"\b(\d{1,2})[/-](\d{1,2})(?:[/-](\d{2,4}))?\b"),                 # 5/12 (day first)
 )
 _WEEKDAY = re.compile(r"\b(mon|tue|wed|thu|fri|sat|sun)(?:day|sday|nesday|rsday|urday|s|rs)?\b")
+_TO = r"(?:-|–|—|to|till|until|through|thru|and)"
+_SHARED_MONTH = (                       # "7-12 dec", "7 to 12 december", "dec 7-12"
+    re.compile(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s*{_TO}\s*(\d{{1,2}})(?:st|nd|rd|th)?\s+(?:of\s+)?"
+               rf"{_MONTH}\b(?:\s*,?\s*(\d{{4}}))?"),
+    re.compile(rf"\b{_MONTH}\s+(\d{{1,2}})(?:st|nd|rd|th)?\s*{_TO}\s*(\d{{1,2}})(?:st|nd|rd|th)?\b"
+               rf"(?:\s*,?\s*(\d{{4}}))?"),
+)
 _RANGE_WORDS = re.compile(
     r"\b(today|tonight|tomorrow|yesterday|this week|next week|this month|next month|"
     r"next\s+\w+\s+(?:days?|weeks?)|coming\s+\w+\s+days?|"
@@ -93,6 +100,21 @@ def _count(word):
 
 def _range(low, today):
     """(first day, last day) the question is about, or None if it names no time."""
+    m = _SHARED_MONTH[0].search(low)
+    if m:
+        first, last, month, year = int(m.group(1)), int(m.group(2)), _month_number(m.group(3)), m.group(4)
+    else:
+        m = _SHARED_MONTH[1].search(low)
+        first, last, month, year = ((int(m.group(2)), int(m.group(3)), _month_number(m.group(1)),
+                                     m.group(4)) if m else (None,) * 4)
+    if first:
+        b = _resolve(last, month, year, today)
+        a = _resolve(first, month, year, today)
+        if a and b and first > last:          # "28-3 jan": the first day is in the month before
+            before = _safe_date(b.year - (b.month == 1), b.month - 1 or 12, first)
+            a = before or a
+        if a and b:
+            return (min(a, b), max(a, b))
     dates = _find_dates(low, today)
     if len(dates) >= 2:
         a, b = dates[0][1], dates[1][1]
