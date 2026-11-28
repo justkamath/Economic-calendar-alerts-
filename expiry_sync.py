@@ -28,7 +28,9 @@ SYNCED_FILE = expiry.SYNCED_FILE
 # Upstox names (spaces removed, upper case) -> our instrument key
 MCX_NAMES = {"GOLD": "gold", "GOLDM": "goldm", "SILVER": "silver", "SILVERM": "silverm",
              "CRUDEOIL": "crude", "CRUDEOILM": "crudem", "NATURALGAS": "natgas"}
-NSE_COMMODITY_NAMES = {"CRUDEOIL": "nsecrude", "NATURALGAS": "nsenatgas"}
+NSE_COMMODITY_NAMES = {"CRUDEOIL": "nsecrude", "NATURALGAS": "nsenatgas",
+                       "GOLD": "nsegold", "GOLDM": "nsegoldm", "GOLDMINI": "nsegoldm",
+                       "SILVER": "nsesilver", "SILVERM": "nsesilverm", "SILVERMINI": "nsesilverm"}
 NSE_INDEX_NAMES = {"NIFTY": "nifty", "BANKNIFTY": "banknifty", "FINNIFTY": "finnifty",
                    "MIDCPNIFTY": "midcap", "NIFTYNXT50": "next50"}
 BSE_INDEX_NAMES = {"SENSEX": "sensex", "BANKEX": "bankex"}
@@ -133,7 +135,8 @@ def sync(now, fetch=download, path=None):
     today = expiry.today_ist(now)
     rows = parse(fetch_records(fetch), today)
     covered = sorted({r["i"] for r in rows})
-    wanted = set(MCX_NAMES.values()) | set(NSE_COMMODITY_NAMES.values()) | set(NSE_INDEX_NAMES.values()) \
+    wanted = (set(MCX_NAMES.values()) | set(NSE_COMMODITY_NAMES.values()) | set(NSE_INDEX_NAMES.values())) \
+        - set(expiry.EXACT_ONLY) \
         | set(BSE_INDEX_NAMES.values())
     missing = sorted(wanted - set(covered))
     if len(covered) < 3:        # a file that mentions almost nothing is a broken file
