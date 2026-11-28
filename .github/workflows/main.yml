@@ -63,6 +63,7 @@ jobs:
           SIGNUP_CODE: ${{ secrets.SIGNUP_CODE }}
           MAX_SUBSCRIBERS: ${{ vars.MAX_SUBSCRIBERS || '200' }}
           EXPIRY_SYNC: ${{ vars.EXPIRY_SYNC || 'on' }}
+          BIQUOTE_AHEAD_DAYS: ${{ vars.BIQUOTE_AHEAD_DAYS || '14' }}
 
       - name: Save sent alert history and calendar database
         if: always()
