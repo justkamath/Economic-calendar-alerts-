@@ -51,7 +51,8 @@ class NseRules(unittest.TestCase):
         for key in ("banknifty", "finnifty", "midcap", "next50", "stockfo"):
             self.assertTrue(all("Monthly" in r["kind"] for r in self.rows(key)), key)
         for key in expiry.ORDER:
-            self.assertTrue(expiry.upcoming(key, date(2026, 11, 1), 1, DATA) or key in ("natgas", "natgasm"), key)
+            self.assertTrue(expiry.upcoming(key, date(2026, 11, 1), 1, DATA)
+                            or key in ("natgas", "natgasm") + expiry.EXACT_ONLY, key)
 
     def test_nothing_in_the_past_and_today_counts(self):
         self.assertEqual(self.rows("nifty", date(2026, 11, 3))[0]["date"], date(2026, 11, 3))
@@ -135,7 +136,7 @@ class Layout(unittest.TestCase):
         self.assertEqual(expiry.find_instruments("nse crude"), ["nsecrude"])
         self.assertEqual(expiry.find_instruments("natural gas expiry"), ["nsenatgas", "natgas"])
         self.assertEqual(expiry.find_instruments("nat gas on mcx"), ["natgas"])
-        self.assertEqual(expiry.find_instruments("mcx gold and nse crude"), ["nsecrude", "gold"])
+        self.assertEqual(expiry.find_instruments("mcx gold and nse crude"), ["nsegold", "nsecrude", "gold"])
         self.assertEqual(expiry.find_instruments("crude mini"), ["crudem"])
 
     def test_minis_exist_and_follow_their_parents(self):
@@ -170,7 +171,8 @@ class Layout(unittest.TestCase):
         self.assertIn("Options", nse)
         self.assertIn("Options", mcx)
         headers = [ln for ln in card.splitlines() if re.fullmatch(r"\S+ <b>[^<]+</b>", ln)]
-        self.assertEqual(len(headers), len(expiry.ORDER))     # one block per instrument
+        shown = [k for k in expiry.ORDER if k not in expiry.EXACT_ONLY]   # NSE metals: only when listed
+        self.assertEqual(len(headers), len(shown))            # one block per instrument
         self.assertLess(len(card), 3900)
 
     def test_sensex_weekly_thursday_monthly_last_thursday_bankex_monthly_only(self):
@@ -210,14 +212,15 @@ class Layout(unittest.TestCase):
     def test_only_the_requested_commodities_exist(self):
         mcx = [k for k, v in expiry.INSTRUMENTS.items() if v[3] == "MCX"]
         self.assertEqual(mcx, ["gold", "goldm", "silver", "silverm", "crude", "crudem", "natgas"])
-        self.assertEqual(expiry.NSE_COMMODITY, ("nsecrude", "nsenatgas"))
+        self.assertEqual(expiry.NSE_COMMODITY, ("nsegold", "nsegoldm", "nsesilver", "nsesilverm",
+                                                "nsecrude", "nsenatgas"))
 
     def test_nse_commodities_use_nse_holidays_and_are_estimates(self):
         today = date(2026, 11, 1)
         first = lambda key, data=DATA: expiry.upcoming(key, today, 1, data)[0]
         self.assertEqual(first("nsecrude")["date"], date(2026, 11, 19))
         self.assertEqual(first("nsenatgas")["date"], date(2026, 11, 25))
-        self.assertTrue(all(first(k)["est"] for k in expiry.NSE_COMMODITY))
+        self.assertTrue(first("nsecrude")["est"] and first("nsenatgas")["est"])
         data = dict(DATA, nse_holidays=["2026-11-19"], mcx_holidays=[])
         self.assertEqual(first("nsecrude", data)["date"], date(2026, 11, 18))
 
@@ -283,9 +286,38 @@ class ListedCalendar(unittest.TestCase):
         self.assertEqual(self.get("nsecrude", "Options"), [("2026-12-09", False), ("2027-01-08", False)])
         self.assertEqual(self.get("nsenatgas", "Options"), [("2026-11-18", False), ("2026-12-21", False), ("2027-01-19", False)])
 
-    def test_nse_has_no_gold_or_silver_here(self):
-        for gone in ("nsegold", "nsegoldm", "natgasm", "copper", "zinc"):
+    def test_nse_gold_and_silver_show_only_dates_the_exchange_listed(self):
+        for gone in ("natgasm", "copper", "zinc"):
             self.assertNotIn(gone, expiry.INSTRUMENTS)
+        today = date(2026, 11, 29)
+        for key in expiry.EXACT_ONLY:                                  # nothing listed: nothing guessed
+            self.assertEqual(expiry.upcoming(key, today, 3, DATA), [])
+        listed = dict(DATA, expiries=list(DATA.get("expiries") or []) + [
+            {"i": "nsegold", "t": "Futures", "d": "2026-12-04", "listed": True},
+            {"i": "nsegold", "t": "Options", "d": "2026-12-04", "listed": True}])
+        rows = expiry.upcoming("nsegold", today, 3, listed)
+        self.assertEqual([(r["date"], r["est"]) for r in rows], [(date(2026, 12, 4), False)] * 2)
+        card = expiry.expiry_card(["nsegold", "gold"], today, data=listed)
+        self.assertLess(card.index("Commodities · NSE"), card.index("Commodities · MCX"))
+        self.assertIn("🥇 <b>Gold</b>", card.split("Commodities · MCX")[0])
+
+    def test_nse_metals_are_hidden_when_empty_unless_asked_for(self):
+        today = date(2026, 11, 29)
+        everything = expiry.expiry_card(expiry.ORDER, today, data=DATA, hide_empty=expiry.EXACT_ONLY)
+        self.assertNotIn("Not loaded yet", everything.split("Commodities · MCX")[0].split("Commodities · NSE")[-1]
+                         .replace("Crude", ""))
+        asked = expiry.expiry_card(["nsegold"], today, data=DATA)
+        self.assertIn("Not loaded yet", asked)
+        self.assertIn("NSE Gold", asked)
+
+    def test_typed_questions_for_metals_on_both_exchanges(self):
+        text = "When is next crude gold natural gas silver expiry in mcx and nse"
+        self.assertEqual(expiry.find_instruments(text),
+                         ["nsegold", "nsesilver", "nsecrude", "nsenatgas", "gold", "silver", "crude", "natgas"])
+        self.assertEqual(expiry.find_instruments("gold on mcx"), ["gold"])
+        self.assertEqual(expiry.find_instruments("gold in nse"), ["nsegold"])
+        self.assertEqual(expiry.find_instruments("nse gold mini and nse silver"), ["nsegoldm", "nsesilver"])
+        self.assertEqual(expiry.find_instruments("gold"), ["gold"])      # NSE has no listed gold date yet
 
     def test_republic_day_2027_moves_the_january_monthly(self):
         row = [r for r in expiry.upcoming("banknifty", date(2027, 1, 1), 1)][0]
