@@ -126,12 +126,24 @@ class Layout(unittest.TestCase):
         self.assertIn("🏦 <b>Bank Nifty</b>\n    ↳ Monthly", card)
         self.assertLess(card.index("Nifty 50"), card.index("Bank Nifty"))
 
+    def test_crude_and_natgas_show_both_exchanges_unless_one_is_named(self):
+        both = ["nsecrude", "crude"]
+        for text in ("When is next crude expiry in mcx and nse", "crude expiry", "nse and mcx crude"):
+            self.assertEqual(expiry.find_instruments(text), both, text)
+        self.assertEqual(expiry.find_instruments("crude in mcx"), ["crude"])
+        self.assertEqual(expiry.find_instruments("crude in nse"), ["nsecrude"])
+        self.assertEqual(expiry.find_instruments("nse crude"), ["nsecrude"])
+        self.assertEqual(expiry.find_instruments("natural gas expiry"), ["nsenatgas", "natgas"])
+        self.assertEqual(expiry.find_instruments("nat gas on mcx"), ["natgas"])
+        self.assertEqual(expiry.find_instruments("mcx gold and nse crude"), ["nsecrude", "gold"])
+        self.assertEqual(expiry.find_instruments("crude mini"), ["crudem"])
+
     def test_minis_exist_and_follow_their_parents(self):
         for key in ("goldm", "silverm", "crudem"):
             self.assertIn(key, expiry.INSTRUMENTS)
         self.assertEqual(expiry.find_instruments("crude mini silver micro gold mini"),
                          ["goldm", "silverm", "crudem"])
-        self.assertEqual(expiry.find_instruments("crude")[0], "crude")
+        self.assertEqual(expiry.find_instruments("crude"), ["nsecrude", "crude"])
         mini = expiry.next_expiries("crudem", date(2026, 11, 1), DATA)["Futures"]
         self.assertEqual((mini["date"], mini["est"]), (date(2026, 11, 19), True))   # same day as crude
 
@@ -283,8 +295,9 @@ class ListedCalendar(unittest.TestCase):
 class Words(unittest.TestCase):
     def test_find_instruments(self):
         self.assertEqual(expiry.find_instruments("when is bank nifty expiry"), ["banknifty"])
-        self.assertEqual(expiry.find_instruments("nifty and gold, crude oil"), ["nifty", "gold", "crude"])
-        self.assertEqual(expiry.find_instruments("nat gas & natural gas"), ["natgas"])
+        self.assertEqual(expiry.find_instruments("nifty and gold, crude oil"),
+                         ["nifty", "nsecrude", "gold", "crude"])        # crude: both exchanges
+        self.assertEqual(expiry.find_instruments("nat gas & natural gas"), ["nsenatgas", "natgas"])
         self.assertEqual(expiry.find_instruments("hello"), [])
 
     def test_card_is_valid_html_short_and_flags_estimates(self):
